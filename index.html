@@ -1552,14 +1552,14 @@ function confirmSheet2(msg,label,fn){
 /* ---------- Planning : emploi du temps, habitudes, obligations, programme du jour ---------- */
 function fixedFor(date){
   const P=X.planning||DEF_PLAN(),wd=wdOf(date),out=[];
-  const add=(x,kind)=>{const s=toMin(x.start),e=toMin(x.end);if(s==null||e==null||e<=s)return;out.push({s,e,title:x.title||x.matiere||"",kind,ref:x.id,lieu:x.lieu||"",type:x.type||""})};
+  const add=(x,kind)=>{const s=toMin(x.start),e=toMin(x.end);if(s==null||e==null||e<=s)return;out.push({s,e,title:x.title||x.matiere||"",kind,ref:x.id,lieu:x.lieu||"",type:x.type||"",flex:!!x.flex})};
   (P.edt||[]).forEach(x=>{if(+x.day===wd&&(!x.from||date>=x.from)&&(!x.to||date<=x.to))add(x,"cours")});
   (P.habits||[]).forEach(x=>{if((x.days||[]).map(Number).includes(wd))add(x,"habitude")});
   (P.obligations||[]).forEach(x=>{if(x.date?x.date===date:(x.days||[]).map(Number).includes(wd))add(x,"obligation")});
   ((X.plans[date]||{}).extra||[]).forEach(x=>add(x,"imprévu"));
   return out.sort((a,b)=>a.s-b.s||a.e-b.e);
 }
-function conflicts(fixed){const c=[];for(let i=0;i<fixed.length;i++)for(let j=i+1;j<fixed.length;j++)if(fixed[j].s<fixed[i].e&&fixed[j].e>fixed[i].s)c.push([fixed[i],fixed[j]]);return c}
+function conflicts(fixed){const c=[];for(let i=0;i<fixed.length;i++)for(let j=i+1;j<fixed.length;j++)if(!fixed[i].flex&&!fixed[j].flex&&fixed[j].s<fixed[i].e&&fixed[j].e>fixed[i].s)c.push([fixed[i],fixed[j]]);return c}
 function tasksFor(date){
   const P=X.planning||DEF_PLAN(),pr=m=>+(P.priorities?.[m]||2),T=[],seen=new Set();
   const push=t=>{if(seen.has(t.key))return;seen.add(t.key);t.prio+=(pr(t.mat)-2)*6;T.push(t)};

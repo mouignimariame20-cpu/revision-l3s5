@@ -230,6 +230,12 @@ input[type=time],input[type=number]{width:100%;padding:10px 12px;border:1px soli
 .askbar textarea{min-height:44px;max-height:140px;resize:none;border-radius:12px;flex:1;min-width:0}
 .fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:7;border:0;border-radius:999px;padding:12px 18px;background:var(--scrub);color:var(--scrub-ink);font-weight:800;box-shadow:0 6px 20px rgba(0,0,0,.18)}
 
+.jbtn{cursor:pointer;background:transparent;font:inherit;font-family:var(--f-mono);font-size:.8rem;padding:6px 10px;display:inline-flex;flex-direction:column;align-items:center;gap:1px;min-width:46px}
+.jbtn small{font-size:.62rem;opacity:.8}
+.jbtn:disabled{opacity:.4;cursor:default}
+.jbtn.done{border-style:solid}
+.tagbtn{border:0;cursor:pointer;font-family:var(--f-mono)}
+
 </style>
 
 <div class="wrap" id="app">
@@ -674,7 +680,7 @@ function tabFiche(d){
   else if(info.finished)jblock=`<div class="row">${jStrip(d)}<span class="pill ok">Cycle terminé</span></div>`;
   else jblock=`<div class="stack" style="gap:8px">${jStrip(d)}<div class="row"><span class="help">Prochain : <strong>J${info.next}</strong> le ${fmtDate(info.date)}</span>${info.status!=="upcoming"?`<button class="btn small" data-act="jdone">J${info.next} fait</button>`:""}</div></div>`;
   const figs=ficheFigures(d.fiche);
-  return `<div class="panel stack" style="margin-bottom:14px"><div class="label">Méthode des J</div>${jblock}</div>
+  return `<div class="panel stack" style="margin-bottom:14px"><div class="label">Méthode des J</div>${jPanel(d)}</div>
   ${figs.length?`<div class="panel stack" style="margin-bottom:14px"><div class="label">Schémas · ${figs.length}</div><div class="chips">${figs.map((f,n)=>`<button class="chip" data-act="jump" data-anchor="fig-${n}">${esc(f.cap||"Schéma "+(n+1))}</button>`).join("")}</div></div>`:""}
   ${ficheExtras(d)}
   <div class="panel fiche">${d.fiche?.trim()?md(d.fiche):`<div class="empty">Pas encore de fiche. Écris-la dans l'onglet Modifier.</div>`}</div>`;
@@ -970,7 +976,7 @@ function classSteps(e){
     ["Fiche",!!(d&&d.fiche&&d.fiche.trim())],
     ["Flashcards",!!(d&&(d.cards||[]).some(c=>(c.box||0)>0))],
     ["QCM",!!(d&&d.lastScore!=null)],
-    ["Révisions J",d?(d.jDone||[]).length/5:0]];
+    ["Révisions J",d?(d.jDone||[]).length/5:0]].map(([l,v])=>{const m=(e.done||{})[l];return [l,m===true?true:m===false&&l!=="Révisions J"?false:v]});
 }
 function classStatus(e){
   const st=classSteps(e),pct=Math.round(st.reduce((n,[,v])=>n+(v===true?1:v===false?0:v),0)/st.length*100);
@@ -1037,6 +1043,16 @@ function courseText(d,max=60000){
   const prof=d.profNotes?"\n\nNOTES DU PROFESSEUR :\n"+d.profNotes:"";
   let t=(src?"COURS ORIGINAL :\n"+src+"\n\n":"")+"FICHE :\n"+f+prof;
   return t.length>max?t.slice(0,max):t;
+}
+
+/* ---------- Cocher les J à la main ---------- */
+function jPanel(d,compact){
+  const info=jInfo(d),done=new Set(d.jDone||[]);
+  const chip=(j)=>{if(j===0)return `<button class="j jbtn ${d.learnedOn?"done":""}" data-act="jtog" data-d="${d.id}" data-j="0" aria-pressed="${!!d.learnedOn}">J0${d.learnedOn?" ✓":""}</button>`;
+    let c="j jbtn";if(done.has(j))c+=" done";else if(d.learnedOn&&info.next===j)c+=info.status==="late"?" late":info.status==="due"?" due":"";
+    return `<button class="${c}" data-act="jtog" data-d="${d.id}" data-j="${j}" aria-pressed="${done.has(j)}" ${d.learnedOn?"":"disabled"} title="${d.learnedOn?fmtDate(addDays(d.learnedOn,j)):""}">J${j}${done.has(j)?" ✓":""}${!compact&&d.learnedOn?`<small>${esc(fmtDate(addDays(d.learnedOn,j)).replace(/^\S+\s/,""))}</small>`:""}</button>`};
+  return `<div class="jstrip">${[0,...J_STEPS].map(chip).join("")}</div>
+  ${compact?"":d.learnedOn?`<div class="row" style="gap:8px"><label class="help" style="display:flex;gap:6px;align-items:center">J0 (appris le)<input type="date" data-jdate="${d.id}" value="${esc(d.learnedOn)}" style="width:auto;padding:6px 8px"></label>${info.finished?`<span class="pill ok">Cycle terminé</span>`:info.next?`<span class="help">Prochain : <strong>J${info.next}</strong> le ${fmtDate(info.date)}</span>`:""}</div><p class="help">Touche un J pour le cocher ou le décocher.</p>`:`<p class="help">Touche <strong>J0</strong> le jour où tu apprends le cours : les J1, J3, J7, J15 et J30 se calculent à partir de là.</p>`}`;
 }
 
 /* ---------- Importation : PDF, PowerPoint, Word, photos, texte (+ OCR par Claude) ---------- */
@@ -1204,7 +1220,9 @@ function viewClasse(){
   <div class="section">${shown.length?shown.map(({e,st})=>{const d=getDeck(e.deckId);return `<div class="deck">
     <div class="top"><div><div class="label">${esc(fmtDate(e.date))} · ${esc(e.matiere||"")}${e.type?" · "+esc(e.type):""}</div><h3>${esc(d?d.name:e.titre||"Cours")}</h3></div><span class="pill ${st.cls}">${st.label}</span></div>
     <div class="progress" aria-label="Avancement ${st.pct}%"><i style="width:${st.pct}%"></i></div>
-    <div class="row" style="gap:4px">${st.steps.map(([l,v])=>`<span class="tag ${v===true||v>=1?"okt":""}">${v===true||v>=1?"✓":typeof v==="number"&&v>0?Math.round(v*5)+"/5":"✗"} ${l}</span>`).join("")}<span class="help" style="margin-left:auto">${st.pct}%</span></div>
+    <div class="row" style="gap:4px">${st.steps.filter(([l])=>l!=="Révisions J").map(([l,v])=>`<button class="tag tagbtn ${v===true?"okt":""}" data-act="cstep" data-id="${e.id}" data-k="${l}" aria-pressed="${v===true}">${v===true?"✓":"☐"} ${l}</button>`).join("")}<span class="help" style="margin-left:auto">${st.pct}%</span></div>
+    ${d?`<div class="stack" style="gap:4px"><span class="label">Révisions J</span>${jPanel(d,true)}</div>`:""}
+    <p class="help" style="margin:0">Touche une étape pour la cocher ou la décocher.</p>
     ${e.comp?`<div class="help">Compréhension : ${"●".repeat(e.comp)}${"○".repeat(5-e.comp)}</div>`:""}
     <div class="row">${d?`<button class="btn small" data-act="open" data-id="${d.id}">Ouvrir le chapitre</button>`:""}<button class="btn ghost small" data-act="cedit" data-id="${e.id}">Modifier</button></div></div>`}).join("")
     :list.length?`<div class="empty">Aucun cours dans ce filtre.</div>`:`<div class="empty"><h3>Note ici chaque cours suivi</h3><p>Date, notes prises, supports du prof, ta compréhension… Le site suit ensuite la fiche, les flashcards, les QCM et les révisions J de chaque cours.</p><button class="btn" data-act="cnew">+ Cours suivi</button></div>`}</div>`;
@@ -1978,6 +1996,14 @@ document.addEventListener("click",async e=>{
     case "chend":chronoEnd();break;
     case "chcancel":confirmSheet("Annuler cette séance sans l'enregistrer ?","Annuler la séance",()=>{X.chrono=null;chronoSave();render()});break;
     case "chstep":{const c=X.chrono;if(c){c.steps[b.dataset.k]=b.checked;chronoSave();render()}break}
+    /* Cocher J et étapes */
+    case "jtog":{const dk=getDeck(b.dataset.d);if(!dk)break;const j=+b.dataset.j;
+      if(j===0){if(dk.learnedOn){confirmSheet(`Décocher J0 pour « ${dk.name} » ? Les J cochés seront effacés.`,"Décocher",()=>{dk.learnedOn=null;dk.jDone=[];markDirty(dk.id);render()})}else{dk.learnedOn=today();dk.jDone=[];markDirty(dk.id);markTaskDone(today(),"learn:"+dk.id,true);toast("J0 aujourd'hui : J1 demain");render()}break}
+      const set=new Set(dk.jDone||[]);if(set.has(j)){set.delete(j)}else{set.add(j);markTaskDone(today(),`J${j}:${dk.id}`,true)}
+      dk.jDone=J_STEPS.filter(x=>set.has(x));markDirty(dk.id);toast(set.has(j)?`J${j} coché`:`J${j} décoché`);render();break}
+    case "cstep":{const x=X.classes.find(y=>y.id===b.dataset.id);if(!x)break;const k=b.dataset.k;const cur=classSteps(x).find(s=>s[0]===k)?.[1]===true;
+      x.done={...(x.done||{})};const auto=classSteps({...x,done:{}}).find(s=>s[0]===k)?.[1]===true;const nv=!cur;
+      if(nv===auto)delete x.done[k];else x.done[k]=nv;putDoc("classes/"+x.id,x);render();break}
     /* Syndromes et triades */
     case "synopen":S.mat=b.dataset.m||"";X.ai.syq="";S.view="synd";render();window.scrollTo(0,0);break;
     case "synai":synTable();break;
@@ -2024,6 +2050,7 @@ document.addEventListener("change",e=>{
   const t=e.target;
   if(t.id==="cf-files"&&t.files?.length){readClasseForm();const fs=[...t.files];readFiles(fs,"cours");render()}
   else if(t.id==="cf-deck"||t.id==="cf-mat"||t.id==="cf-new"){readClasseForm();if(t.id==="cf-mat"&&X.form.deckId&&normLine(getDeck(X.form.deckId)?.matiere||"")!==normLine(X.form.matiere))X.form.deckId="";cfDeckRefresh(t.id==="cf-new"?"new":t.id==="cf-deck"?"deck":"mat")}
+  else if(t.dataset&&t.dataset.jdate){const dk=getDeck(t.dataset.jdate);if(dk&&t.value){dk.learnedOn=t.value;markDirty(dk.id);toast("Date de J0 modifiée");render()}}
   else if(t.id==="ch-mat"){X.ai.chm=t.value;render()}
   else if(t.id==="as-mat"){X.chat.mat=t.value;X.chat.deck="";chatSave();render()}
   else if(t.id==="as-deck"){X.chat.deck=t.value;chatSave();render()}

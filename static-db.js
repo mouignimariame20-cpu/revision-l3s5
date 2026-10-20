@@ -5,11 +5,18 @@
   let ov;try{ov=JSON.parse(localStorage.getItem(KEY)||"null")}catch(e){}
   ov=ov||{decks:{},deleted:[],sources:{},meta:{}};
   const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(ov))}catch(e){}};
-  /* planning fourni avec le site : ajouté sans écraser ce que la visiteuse a déjà saisi */
-  try{const bp=base.planning&&base.planning.main;if(bp){ov.planning=ov.planning||{};const cur=ov.planning.main;
-    if(!cur){ov.planning.main=JSON.parse(JSON.stringify(bp))}
-    else{["edt","habits","obligations","exams"].forEach(k=>{const have=new Set((cur[k]||[]).map(x=>x.id));(bp[k]||[]).forEach(x=>{if(!have.has(x.id))(cur[k]=cur[k]||[]).push(x)})});if(!cur.semStart&&bp.semStart)cur.semStart=bp.semStart}
-    save()}}catch(e){}
+  /* planning fourni avec le site : chaque personne choisit ce qu'elle garde (cours de la promo, prières, Coran…) ; rien n'écrase ce qu'elle a saisi ni ne revient après suppression */
+  const FRESH=!localStorage.getItem(KEY);window.__FRESH=FRESH;
+  const SEEDCAT=(k,x)=>k!=="habits"?"edt":/^hab-(fajr|dhuhr|asr|maghrib|icha)/.test(x.id)?"prieres":/^hab-coran/.test(x.id)?"coran":x.id==="hab-batch"?"batch":"perso";
+  function seed(opts){try{const bp=base.planning&&base.planning.main;if(!bp)return;ov.planning=ov.planning||{};
+    const cur=ov.planning.main=ov.planning.main||{edt:[],habits:[],obligations:[],exams:[]};const o=opts||ov.seedOpts||null,rm=new Set(cur.removed||[]);
+    ["edt","habits","obligations","exams"].forEach(k=>{const have=new Set((cur[k]||[]).map(x=>x.id));(bp[k]||[]).forEach(x=>{if(have.has(x.id)||rm.has(x.id))return;if(o&&!o[SEEDCAT(k,x)])return;(cur[k]=cur[k]||[]).push(JSON.parse(JSON.stringify(x)))})});
+    if(!cur.semStart&&bp.semStart)cur.semStart=bp.semStart;
+    if(!cur.prefs&&bp.prefs)cur.prefs=JSON.parse(JSON.stringify(bp.prefs));save()}catch(e){}}
+  if(FRESH){ov.pending=true;save()}
+  window.__ONBOARD=!!ov.pending;
+  if(!ov.pending)seed(null);
+  window.__seedPlanning=opts=>{ov.seedOpts=opts;ov.pending=false;window.__ONBOARD=false;seed(opts);save()};
   const clone=x=>JSON.parse(JSON.stringify(x));
   const content=d=>JSON.stringify({n:d.name,m:d.matiere,p:d.partie,s:d.source,f:d.fiche,c:(d.cards||[]).map(c=>[c.id,c.q,c.a,c.img||""]),q:d.qcm||[]});
   const CK=new Set(["id","q","a","src","img"]),QK=new Set(["id","q","options","correct","expl"]),DK=new Set(["fiche","cards","qcm","name","matiere","partie","source"]);

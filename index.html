@@ -1987,7 +1987,9 @@ document.addEventListener("click",async e=>{
     case "asgo":{const el=$("#as-in");if(el){const q=el.value;el.value="";askAssist(q)}break}
     case "asclear":X.chat.turns=[];chatSave();render();break;
     case "aiprov":try{localStorage.setItem("revision-ai-provider",b.dataset.p)}catch(err){}render();break;
-    case "aikey":{const pv=b.dataset.p||"gemini";const k=($("#ai-key")?.value||"").trim();if(k.length<20){toast("Clé trop courte");break}try{localStorage.setItem(pv==="claude"?"revision-claude-key":"revision-ai-key",k);localStorage.setItem("revision-ai-provider",pv)}catch(err){toast("Impossible d'enregistrer la clé dans ce navigateur");break}toast("Clé enregistrée : l'IA s'active…");setTimeout(()=>location.reload(),600);break}
+    case "aikey":{const pv=b.dataset.p||"gemini";const k=($("#ai-key")?.value||"").replace(/[\s\u200b-\u200d\ufeff"'«»]/g,"");if(k.length<20){toast("Clé trop courte : copie la clé complète, pas seulement « …sk8A »");break}
+      if(pv==="gemini"&&!/^AIza[0-9A-Za-z_-]{30,}$/.test(k)){toast("Attention : une clé Gemini commence par « AIza » et fait 39 caractères. Vérifie que tu as copié la clé entière.")}
+      if(pv==="claude"&&!/^sk-ant-/.test(k)){toast("Attention : une clé Claude commence par « sk-ant- ».")}try{localStorage.setItem(pv==="claude"?"revision-claude-key":"revision-ai-key",k);localStorage.setItem("revision-ai-provider",pv)}catch(err){toast("Impossible d'enregistrer la clé dans ce navigateur");break}toast("Clé enregistrée : l'IA s'active…");setTimeout(()=>location.reload(),600);break}
     case "aikeydel":try{localStorage.removeItem(b.dataset.p==="claude"?"revision-claude-key":"revision-ai-key")}catch(err){}toast("Clé supprimée");setTimeout(()=>location.reload(),600);break;
     /* Planning */
     case "pltab":X.plTab=b.dataset.t;render();break;

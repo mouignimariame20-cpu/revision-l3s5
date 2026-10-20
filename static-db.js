@@ -49,7 +49,7 @@
     delete:async()=>{if(c==="decks"){delete ov.decks[id];if(!ov.deleted.includes(id))ov.deleted.push(id)}else if(c==="sources")ov.sources[id]=null;else if(ov[c])delete ov[c][id];save()}}}};
   /* IA hors Claude : Gemini (Google) avec la clé personnelle de la visiteuse, gardée dans son navigateur */
   window.__STATIC=true;
-  let AIKEY="",CKEY="",PROV="gemini";try{AIKEY=localStorage.getItem("revision-ai-key")||"";CKEY=localStorage.getItem("revision-claude-key")||"";PROV=localStorage.getItem("revision-ai-provider")||(CKEY&&!AIKEY?"claude":"gemini")}catch(e){}
+  let AIKEY="",CKEY="",PROV="gemini";try{AIKEY=(localStorage.getItem("revision-ai-key")||"").replace(/[\s\u200b-\u200d\ufeff"'«»]/g,"");CKEY=(localStorage.getItem("revision-claude-key")||"").replace(/[\s\u200b-\u200d\ufeff"'«»]/g,"");PROV=localStorage.getItem("revision-ai-provider")||(CKEY&&!AIKEY?"claude":"gemini")}catch(e){}
   if(PROV==="claude"&&!CKEY)PROV="gemini";if(PROV==="gemini"&&!AIKEY&&CKEY)PROV="claude";
   const MODELS=["gemini-flash-latest","gemini-3.8-flash","gemini-3.6-flash","gemini-2.5-flash"];let MI=0;
   try{const m=localStorage.getItem("revision-ai-model");if(m)MODELS.unshift(m)}catch(e){}
@@ -70,7 +70,7 @@
       const j=await r.json().catch(()=>({}));
       if(!r.ok){const m=j?.error?.message||("Erreur "+r.status);
         if(r.status===429)throw err("rate_limited",m);
-        if(r.status===400&&/api key/i.test(m))throw err("not_granted_key","Clé Gemini invalide : vérifie-la dans l'Assistant.");
+        if(r.status===400&&/api key/i.test(m))throw err("not_granted_key","Clé Gemini refusée par Google ("+m+"). Recopie la clé entière depuis aistudio.google.com (bouton copier), puis colle-la dans « IA active · changer ».");
         if(r.status===403)throw err("not_granted_key","Clé Gemini refusée ou service non disponible dans ton pays : "+m);
         throw err("upstream_error",m)}
       try{localStorage.setItem("revision-ai-model",MODELS[MI])}catch(e){}

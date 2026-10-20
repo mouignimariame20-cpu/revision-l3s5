@@ -18,7 +18,7 @@
 <title>Révisions Mariame</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Nunito:ital,wght@0,400;0,700;0,800;1,400&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
 /* Layout: mobile-first single column, sticky header, bottom tab bar; deck pages use a segmented control (Fiche / Flashcards / QCM / Modifier) */
 :root{
@@ -235,6 +235,76 @@ input[type=time],input[type=number]{width:100%;padding:10px 12px;border:1px soli
 .jbtn:disabled{opacity:.4;cursor:default}
 .jbtn.done{border-style:solid}
 .tagbtn{border:0;cursor:pointer;font-family:var(--f-mono)}
+
+/* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
+:root{
+  --bg:#fff6f7; --surface:#ffffff; --ink:#3b2630; --muted:#8a6d78; --line:#f2d9e0;
+  --scrub:#b4506e; --scrub-ink:#ffffff; --scrub-soft:#fbe3ea;
+  --late:#b5533f; --late-soft:#fbe6df; --ok:#4f7f60; --ok-soft:#e3f0e5; --hl:#ffdbe6; --hl-ink:#3b2630;
+  --f-display:"Playfair Display",Georgia,serif; --f-body:"Nunito",ui-sans-serif,system-ui,sans-serif; --f-mono:"Nunito",ui-sans-serif,system-ui,sans-serif;
+  --r:22px; --sh:0 1px 2px rgba(180,80,110,.06),0 8px 24px rgba(180,80,110,.10);
+  --grad:radial-gradient(circle at 1px 1px,rgba(214,130,155,.18) 1px,transparent 1.6px) 0 0/22px 22px,linear-gradient(170deg,#fff3f5 0%,#fdeef3 50%,#fbeef0 100%);
+  --bar:rgba(255,246,247,.88);
+  --bow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 40'%3E%3Cg fill='none' stroke='%23d98aa2' stroke-width='3' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M32 18C24 6 8 2 6 10s8 16 26 8z' fill='%23f7cdd9'/%3E%3Cpath d='M32 18c8-12 24-16 26-8s-8 16-26 8z' fill='%23f7cdd9'/%3E%3Cpath d='M30 21l-8 16M34 21l8 16'/%3E%3C/g%3E%3Ccircle cx='32' cy='19' r='4.5' fill='%23d98aa2'/%3E%3C/svg%3E");
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1f1519; --surface:#2a1d23; --ink:#f6e9ee; --muted:#c3a6b1; --line:#3f2c34;
+  --scrub:#ec9ab3; --scrub-ink:#2a121b; --scrub-soft:#43262f;
+  --late:#f0a08c; --late-soft:#45271f; --ok:#9fd0ad; --ok-soft:#1f3326; --hl:#5d2f3d; --hl-ink:#fbe9ef;
+  --sh:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+  --grad:radial-gradient(circle at 1px 1px,rgba(236,154,179,.10) 1px,transparent 1.6px) 0 0/22px 22px,linear-gradient(170deg,#24171c 0%,#1d1418 100%);
+  --bar:rgba(31,21,25,.88)}}
+:root[data-theme="dark"]{
+  --bg:#1f1519; --surface:#2a1d23; --ink:#f6e9ee; --muted:#c3a6b1; --line:#3f2c34;
+  --scrub:#ec9ab3; --scrub-ink:#2a121b; --scrub-soft:#43262f;
+  --late:#f0a08c; --late-soft:#45271f; --ok:#9fd0ad; --ok-soft:#1f3326; --hl:#5d2f3d; --hl-ink:#fbe9ef;
+  --sh:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+  --grad:radial-gradient(circle at 1px 1px,rgba(236,154,179,.10) 1px,transparent 1.6px) 0 0/22px 22px,linear-gradient(170deg,#24171c 0%,#1d1418 100%);
+  --bar:rgba(31,21,25,.88)}
+body{background-attachment:fixed}
+h1{font-weight:700;font-style:italic;letter-spacing:0;font-size:2.05rem}
+h2{font-weight:700;font-size:1.3rem}
+h3{font-weight:600}
+.label{font-size:.7rem;font-weight:800;letter-spacing:.14em}
+.topbar{border-bottom:0;box-shadow:0 1px 0 var(--line)}
+.topbar .t{font-style:italic;font-weight:700}
+.hero h1{position:relative;display:inline-block;padding-right:52px;align-self:flex-start}
+.hero h1::after{content:"";position:absolute;right:0;top:-6px;width:44px;height:28px;background:var(--bow) center/contain no-repeat;transform:rotate(12deg)}
+.panel,.stat,.deck,.mtile,.res,.mini,.searchbar,.seg,.edit-item,.opt,.face,details.item{border-color:transparent;box-shadow:var(--sh)}
+.panel,.stat,.deck,.mtile,.res{border-radius:var(--r)}
+.mini{border-radius:16px}
+.stat{background:linear-gradient(160deg,var(--surface),var(--scrub-soft))}
+.stat b{font-family:var(--f-display);font-weight:700}
+.btn{box-shadow:0 4px 12px rgba(180,80,110,.22)}
+.btn.ghost,.btn.soft{box-shadow:none}
+.btn.ghost{background:var(--surface);border-color:var(--line)}
+.progress{height:8px;background:var(--scrub-soft)}
+.progress i{background:linear-gradient(90deg,#e9a2b6,var(--scrub))}
+.tabbar{border-top:0;box-shadow:0 -6px 24px rgba(180,80,110,.10);border-radius:24px 24px 0 0}
+.tabbar button[aria-current="page"]{border-radius:16px}
+.timer{font-style:italic;font-weight:700}
+input[type=text],input[type=date],input[type=time],textarea,select{border-radius:14px;background:var(--surface);border-color:var(--line)}
+.fab{box-shadow:0 8px 22px rgba(180,80,110,.32)}
+.fiche h3,.partie{color:var(--scrub)}
+.partie{font-style:italic;margin-top:14px}
+.empty{border-color:#efc3d0;border-radius:var(--r);background:rgba(255,255,255,.45)}
+/* Mosaïque */
+.pins{columns:2 160px;column-gap:12px}
+@media (min-width:640px){.pins{columns:3 180px}}
+.pins>*{break-inside:avoid;margin:0 0 12px;display:flex}
+.pin{padding:0;overflow:hidden;gap:0;border:0}
+.pin .cover{position:relative;width:100%;display:grid;place-items:center;overflow:hidden}
+.pin .cover img{width:100%;height:100%;object-fit:cover;display:block}
+.pin .cover .ini{font-family:var(--f-display);font-style:italic;font-weight:700;font-size:2.6rem;color:rgba(80,40,55,.55)}
+.pin .cover::after{content:"";position:absolute;right:8px;top:6px;width:30px;height:20px;background:var(--bow) center/contain no-repeat;opacity:.9}
+.pin .cover.img::after{display:none}
+.pin .body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.pin h3{font-size:1rem;line-height:1.25;overflow-wrap:anywhere}
+.pin .pill{align-self:flex-start}
+.pin .jstrip{gap:4px}.pin .j{font-size:.66rem;padding:2px 6px}
+.c0{background:linear-gradient(150deg,#fbd9e3,#f6c4d3)}.c1{background:linear-gradient(150deg,#fde5d8,#f9cfbd)}.c2{background:linear-gradient(150deg,#ece0f7,#dcc9f0)}
+.c3{background:linear-gradient(150deg,#e0eee3,#c9e2cf)}.c4{background:linear-gradient(150deg,#faf0dc,#f2dfba)}.c5{background:linear-gradient(150deg,#deeaf6,#c8daee)}
+.mgrid.pins{display:block}
 
 </style>
 
@@ -588,6 +658,22 @@ function jStrip(d){
     if(done)c+=" done";else if(info.next===j)c+=info.status==="late"?" late":info.status==="due"?" due":"";
     return `<span class="${c}" title="${fmtDate(addDays(d.learnedOn,j))}">J${j}</span>`}).join("")}</div>`;
 }
+function pinHash(s){let h=0;for(const ch of String(s))h=(h*31+ch.charCodeAt(0))>>>0;return h}
+function pinImg(d){const m=/!\[[^\]]*\]\(([^)\s]+)/.exec(d.fiche||"");return m?safeUrl(m[1]):""}
+function pinCard(d){
+  const dc=dueCards(d).length,info=jInfo(d),h=pinHash(d.id||d.name),img=pinImg(d);
+  let pill="";
+  if(info.status==="late")pill=`<span class="pill late">J${info.next} en retard</span>`;
+  else if(info.status==="due")pill=`<span class="pill">J${info.next} aujourd'hui</span>`;
+  else if(info.finished)pill=`<span class="pill ok">J30 terminé</span>`;
+  else if(info.status==="upcoming")pill=`<span class="pill ok">J${info.next} · ${fmtDate(info.date)}</span>`;
+  const ar=["4/5","1/1","3/4","5/4"][h%4];
+  const cover=img?`<div class="cover img" style="aspect-ratio:${ar}"><img src="${esc(img)}" alt="" loading="lazy"></div>`:`<div class="cover c${pinHash(d.matiere||"")%6}" style="height:${[70,96,120][h%3]}px"><span class="ini">${esc((d.name||"?").replace(/^[^A-Za-zÀ-ÿ]+/,"").charAt(0).toUpperCase())}</span></div>`;
+  return `<button class="deck pin" data-act="open" data-id="${d.id}">${cover}<div class="body">
+    ${d.partie?`<div class="label">${esc(d.partie.replace(/^\d+\s*·\s*/,""))}</div>`:""}<h3>${esc(d.name)}</h3>${pill}
+    ${jStrip(d)}
+    <div class="help">${(d.cards||[]).length} cartes${dc?` · <strong>${dc} à revoir</strong>`:""} · ${(d.qcm||[]).length} QCM${d.lastScore!=null?` · ${d.lastScore}%`:""}</div></div></button>`;
+}
 function deckCard(d,showJ=true){
   const dc=dueCards(d).length, info=jInfo(d);
   let pill="";
@@ -607,11 +693,12 @@ function viewMatieres(){
   return topbar("Matières")+`<div class="row" style="justify-content:space-between;margin-bottom:14px"><h1>Mes matières · L3S5</h1><button class="btn" data-act="new">+ Chapitre</button></div>
   ${searchBox("hq","","Chercher dans toutes les matières…")}
   <button class="mini" data-act="synopen" data-m="" style="margin-bottom:14px"><span><strong>Syndromes et triades</strong> <span class="muted">· toutes les matières</span></span><span class="pill">→</span></button>
-  ${keys.length?`<div class="mgrid">${keys.map(k=>{const list=groups[k],done=list.filter(d=>d.learnedOn).length,due=list.reduce((n,d)=>n+dueCards(d).length,0),src=list.filter(d=>S.src.has(d.id)).length;
-    return `<button class="mtile" data-act="mat" data-m="${esc(k)}"><h3>${esc(k)}</h3>
+  ${keys.length?`<div class="mgrid pins">${keys.map(k=>{const list=groups[k],done=list.filter(d=>d.learnedOn).length,due=list.reduce((n,d)=>n+dueCards(d).length,0),src=list.filter(d=>S.src.has(d.id)).length;
+    const im=list.map(pinImg).find(Boolean),hh=pinHash(k);
+    return `<button class="mtile pin" data-act="mat" data-m="${esc(k)}">${im&&hh%2?`<div class="cover img" style="aspect-ratio:${["4/5","1/1","3/4"][hh%3]}"><img src="${esc(im)}" alt="" loading="lazy"></div>`:`<div class="cover c${hh%6}" style="height:${[90,120,150][hh%3]}px"><span class="ini">${esc(k.charAt(0).toUpperCase())}</span></div>`}<div class="body"><h3>${esc(k)}</h3>
       <div class="help">${list.length} chapitre${list.length>1?"s":""}${due?` · <strong>${due} cartes à revoir</strong>`:""}</div>
       <div class="progress" aria-label="${done} sur ${list.length} révisés"><i style="width:${Math.round(done/list.length*100)}%"></i></div>
-      <div class="help">${done}/${list.length} révisés${S.srcLoaded?` · cours source ${src}/${list.length}`:""}</div></button>`}).join("")}</div>`
+      <div class="help">${done}/${list.length} révisés${S.srcLoaded?` · cours source ${src}/${list.length}`:""}</div></div></button>`}).join("")}</div>`
   :`<div class="empty"><h3>Aucun chapitre</h3><p>Crée un chapitre pour y ranger ta fiche, tes flashcards et tes QCM.</p></div>`}`;
 }
 function viewMatiere(){
@@ -620,7 +707,8 @@ function viewMatiere(){
   const done=all.filter(d=>d.learnedOn).length;
   const list=S.mf==="todo"?all.filter(d=>!d.learnedOn):S.mf==="done"?all.filter(d=>d.learnedOn):all;
   const parts=[...new Set(list.map(d=>d.partie).filter(Boolean))];
-  const inner=parts.length?[...parts.map(p=>`<h3 class="partie">${esc(p)} <span class="muted" style="font-weight:400;font-size:.85rem">· ${list.filter(d=>d.partie===p).length}</span></h3>${list.filter(d=>d.partie===p).map(d=>deckCard(d)).join("")}`),list.filter(d=>!d.partie).map(d=>deckCard(d)).join("")].join(""):list.map(d=>deckCard(d)).join("");
+  const pw=l=>l.length?`<div class="pins">${l.map(pinCard).join("")}</div>`:"";
+  const inner=parts.length?[...parts.map(p=>`<h3 class="partie">${esc(p)} <span class="muted" style="font-weight:400;font-size:.85rem;font-style:normal">· ${list.filter(d=>d.partie===p).length}</span></h3>${pw(list.filter(d=>d.partie===p))}`),pw(list.filter(d=>!d.partie))].join(""):pw(list);
   return topbar(S.mat,true)+`<div class="hero"><div class="label">Matière</div><h1>${esc(S.mat)}</h1>
     <div class="progress" style="margin-top:8px"><i style="width:${Math.round(done/all.length*100)}%"></i></div>
     <div class="help">${done} révisé${done>1?"s":""} · ${all.length-done} à réviser · ${all.length} au total</div></div>
@@ -1828,7 +1916,7 @@ function viewHome(){
     ${errs.length?errs.map(x=>`<button class="mini" data-act="goto" data-id="${x.deckId}" data-tab="${x.kind==="carte"?"cards":"qcm"}" data-anchor="${x.kind==="carte"?"card-":"q-"}${x.id}"><span>${esc(x.q)} <span class="muted">· ${esc(x.d.name)}</span></span><span class="pill late">${x.n}×</span></button>`).join("")+`<button class="btn soft" data-act="nav" data-v="revise">Exercice ciblé sur mes erreurs</button>`:`<div class="empty">Aucune erreur enregistrée pour l'instant.</div>`}</div>
   ${recent.length?`<div class="section"><h2>Récemment consultés</h2><div class="stack" style="gap:8px">${recent.map(d=>`<button class="mini" data-act="open" data-id="${d.id}"><span><strong>${esc(d.name)}</strong> <span class="muted">· ${esc(d.matiere||"")}</span></span>${d.learnedOn?`<span class="pill ok">révisé</span>`:`<span class="pill">à réviser</span>`}</button>`).join("")}</div></div>`:""}
   <div class="section"><h2>Révisions J</h2>
-    ${jDue.length?jDue.map(d=>deckCard(d)).join(""):`<div class="empty">Aucun J prévu aujourd'hui.</div>`}</div>
+    ${jDue.length?`<div class="pins">${jDue.map(pinCard).join("")}</div>`:`<div class="empty">Aucun J prévu aujourd'hui.</div>`}</div>
   ${cardsDue&&!jDue.length?`<div class="section"><h2>Flashcards en attente</h2>${S.decks.filter(d=>dueCards(d).length).slice(0,6).map(d=>deckCard(d,false)).join("")}</div>`:""}`;
 }
 

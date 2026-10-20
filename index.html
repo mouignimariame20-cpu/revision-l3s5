@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261020154252";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261020160340";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions Mariame</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -688,10 +688,17 @@ function deckCard(d,showJ=true){
     <div class="help">${(d.cards||[]).length} flashcards${dc?` · <strong>${dc} à revoir</strong>`:""} · ${(d.qcm||[]).length} QCM${d.lastScore!=null?` · dernier score ${d.lastScore}%`:""}</div>
   </button>`;
 }
-function groupsByMat(){const g={};S.decks.forEach(d=>{(g[d.matiere||"Sans matière"]??=[]).push(d)});return g}
+const DEF_PER="L3 · S5";
+function perOf(d){return d.periode||DEF_PER}
+function curPer(){try{return (X.planning&&X.planning.per)||localStorage.getItem("revision-per")||DEF_PER}catch(e){return DEF_PER}}
+function perKey(p){const m=/S\s*(\d+)/i.exec(p);return m?+m[1]:99}
+function allPers(){let extra=[];try{extra=(X.planning&&X.planning.periodes)||[]}catch(e){}return [...new Set([DEF_PER,...S.decks.map(perOf),...extra,curPer()])].sort((a,b)=>perKey(a)-perKey(b)||a.localeCompare(b))}
+function perDecks(){const p=curPer();return S.decks.filter(d=>perOf(d)===p)}
+function groupsByMat(){const g={};perDecks().forEach(d=>{(g[d.matiere||"Sans matière"]??=[]).push(d)});return g}
 function viewMatieres(){
   const groups=groupsByMat(),keys=Object.keys(groups);
-  return topbar("Matières")+`<div class="row" style="justify-content:space-between;margin-bottom:14px"><h1>Mes matières · L3S5</h1><button class="btn" data-act="new">+ Chapitre</button></div>
+  return topbar("Matières")+`<div class="row" style="justify-content:space-between;margin-bottom:14px"><h1>Mes matières · ${esc(curPer())}</h1><button class="btn" data-act="new">+ Chapitre</button></div>
+  <div class="chips" style="margin-bottom:14px">${allPers().map(p=>`<button class="chip" data-act="perset" data-p="${esc(p)}" aria-pressed="${p===curPer()}">${esc(p)} <span style="opacity:.7">· ${S.decks.filter(d=>perOf(d)===p).length}</span></button>`).join("")}<button class="chip" data-act="peradd">+ Semestre</button></div>
   ${searchBox("hq","","Chercher dans toutes les matières…")}
   <button class="mini" data-act="synopen" data-m="" style="margin-bottom:14px"><span><strong>Syndromes et triades</strong> <span class="muted">· toutes les matières</span></span><span class="pill">→</span></button>
   ${keys.length?`<div class="mgrid pins">${keys.map(k=>{const list=groups[k],done=list.filter(d=>d.learnedOn).length,due=list.reduce((n,d)=>n+dueCards(d).length,0),src=list.filter(d=>S.src.has(d.id)).length;
@@ -875,6 +882,7 @@ function tabEdit(d){
   return `<div class="stack">
   <div class="panel stack"><div class="label">Infos</div>
     <label class="f">Matière<input type="text" id="e-mat" value="${esc(e.matiere)}"></label>
+    <label class="f">Année · semestre<select id="e-per">${allPers().map(p=>`<option ${perOf(e)===p?"selected":""}>${esc(p)}</option>`).join("")}</select></label>
     <label class="f">Chapitre<input type="text" id="e-name" value="${esc(e.name)}"></label>
     <label class="f">Appris le (J0)<input type="date" id="e-date" value="${esc(e.learnedOn||"")}"></label></div>
   <div class="panel stack"><div class="label">Fiche</div>
@@ -901,7 +909,7 @@ function tabEdit(d){
 function readEdit(){
   const e=S.editing; if(!e)return;
   const v=id=>{const el=document.getElementById(id);return el?el.value:null};
-  if(v("e-mat")!==null){e.matiere=v("e-mat").trim();e.name=v("e-name").trim()||e.name;e.learnedOn=v("e-date")||null;e.fiche=v("e-fiche");e._src=v("e-src");if(v("e-prof")!==null)e.profNotes=v("e-prof")}
+  if(v("e-per"))e.periode=v("e-per");if(v("e-mat")!==null){e.matiere=v("e-mat").trim();e.name=v("e-name").trim()||e.name;e.learnedOn=v("e-date")||null;e.fiche=v("e-fiche");e._src=v("e-src");if(v("e-prof")!==null)e.profNotes=v("e-prof")}
   e.cards.forEach((c,i)=>{if(v("cq-"+i)!==null){c.q=v("cq-"+i);c.a=v("ca-"+i)}});
   e.qcm.forEach((q,i)=>{if(v("qq-"+i)===null)return;q.q=v("qq-"+i);q.expl=v("qe-"+i);
     q.options=q.options.map((_,k)=>v(`qo-${i}-${k}`));q.correct=q.options.map((_,k)=>document.getElementById(`qc-${i}-${k}`).checked?k:-1).filter(k=>k>=0)});
@@ -925,7 +933,7 @@ function confirmSheet(msg,label,fn){
 /* Events */
 document.addEventListener("submit",e=>{
   if(e.target.id!=="newform")return;e.preventDefault();
-  const d={id:uid(),name:$("#nf-name").value.trim(),matiere:$("#nf-mat").value.trim(),learnedOn:$("#nf-date").value||null,jDone:[],fiche:"",cards:[],qcm:[],lastScore:null,createdAt:today()};
+  const d={id:uid(),periode:curPer(),name:$("#nf-name").value.trim(),matiere:$("#nf-mat").value.trim(),learnedOn:$("#nf-date").value||null,jDone:[],fiche:"",cards:[],qcm:[],lastScore:null,createdAt:today()};
   S.decks.push(d);sortDecks();markDirty(d.id);S.deckId=d.id;S.view="deck";S.tab="edit";S.editing=null;render();window.scrollTo(0,0);
 });
 document.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.classList?.contains("fcard")){e.preventDefault();e.target.click()}});
@@ -1354,7 +1362,7 @@ function readClasseForm(){
 function ensureDeck(f){
   let d=getDeck(f.deckId);if(d)return d;
   const name=(f.newName||"").trim();if(!name)return null;
-  d={id:uid(),name,matiere:f.matiere||"Sans matière",learnedOn:null,jDone:[],fiche:"",cards:[],qcm:[],lastScore:null,createdAt:today()};
+  d={id:uid(),periode:curPer(),name,matiere:f.matiere||"Sans matière",learnedOn:null,jDone:[],fiche:"",cards:[],qcm:[],lastScore:null,createdAt:today()};
   S.decks.push(d);sortDecks();markDirty(d.id);f.deckId=d.id;return d;
 }
 async function storeSupports(f){
@@ -1881,8 +1889,8 @@ function viewHome(){
   const todo=plan?plan.blocks.filter(b=>!b.done):[],fx=X.loaded&&X.planning?fixedFor(t):[],done=plan?[...plan.blocks.filter(b=>b.done),...fx.filter(f=>(plan.fdone||{})[f.ref]).map(f=>({title:f.title}))]:[];
   const fxTodo=fx.filter(f=>f.ref&&!(plan?.fdone||{})[f.ref]&&f.e>=nowMin()-60).slice(0,4);
   const st=X.stats[t]||{};
-  const semPct=S.decks.length?Math.round(S.decks.reduce((n,d)=>n+chapProgress(d),0)/S.decks.length):0;
-  const learned=S.decks.filter(d=>d.learnedOn).length;
+  const PD=perDecks(),semPct=PD.length?Math.round(PD.reduce((n,d)=>n+chapProgress(d),0)/PD.length):0;
+  const learned=PD.filter(d=>d.learnedOn).length;
   const week=[...Array(7)].map((_,i)=>addDays(t,i-6)).map(d=>({d,m:X.sessions.filter(s=>s.date===d&&!s.act).reduce((n,s)=>n+(s.activeMin||0),0)}));
   const wTot=week.reduce((n,x)=>n+x.m,0),wMax=Math.max(60,...week.map(x=>x.m));
   const errs=errItems().slice(0,5);
@@ -1894,7 +1902,7 @@ function viewHome(){
     <div class="stats">
       <div class="stat"><b>${jDue.length}</b><span>J à faire</span></div>
       <div class="stat"><b>${cardsDue}</b><span>cartes à revoir</span></div>
-      <div class="stat"><b>${semPct}%</b><span>semestre</span></div>
+      <div class="stat"><b>${semPct}%</b><span>${esc(curPer())}</span></div>
     </div></div>
   ${searchBox("hq","","Chercher un chapitre, une notion, un mot-clé…")}
   ${X.chrono?`<button class="mini" data-act="nav" data-v="timer" style="margin-bottom:14px;border-color:var(--scrub)"><span><strong>Séance en cours</strong> · ${esc(X.chrono.act?X.chrono.act.title:getDeck(X.chrono.deckId)?.name||"")}</span><span class="pill">${X.chrono.running?"en cours":"en pause"}</span></button>`:""}
@@ -1909,8 +1917,8 @@ function viewHome(){
     <div class="row" style="justify-content:space-between"><span><strong>${fmtMin(week[6].m)}</strong> aujourd'hui</span><span class="muted">${fmtMin(wTot)} sur 7 jours</span></div>
     <div class="bars" role="img" aria-label="Minutes de travail des 7 derniers jours">${week.map(x=>`<div class="bar"><i style="height:${Math.round(x.m/wMax*100)}%" title="${fmtMin(x.m)}"></i><span>${WD[wdOf(x.d)].slice(0,2)}</span></div>`).join("")}</div>
     ${coranLine()}<p class="help">Temps de révision compté par le chrono (pauses exclues). Le Coran est compté à part.</p></div></div>
-  <div class="section"><h2>Avancement du semestre</h2><div class="panel stack">
-    <div class="row" style="justify-content:space-between"><strong>${semPct}%</strong><span class="muted">${learned}/${S.decks.length} chapitres appris · ${X.classes.length} cours suivis</span></div>
+  <div class="section"><h2>Avancement · ${esc(curPer())}</h2><div class="panel stack">
+    <div class="row" style="justify-content:space-between"><strong>${semPct}%</strong><span class="muted">${learned}/${PD.length} chapitres appris · ${X.classes.length} cours suivis</span></div>
     <div class="progress"><i style="width:${semPct}%"></i></div>
     ${mats.map(x=>`<div class="mrow"><span>${esc(x.m)}</span><div class="progress"><i style="width:${x.p}%"></i></div><span class="muted">${x.p}%</span></div>`).join("")}
     <p class="help">Par chapitre : appris (20 %), révisions J faites (45 %), flashcards en boîte J7+ (20 %), dernier score QCM (15 %).</p></div></div>
@@ -2160,6 +2168,11 @@ document.addEventListener("click",async e=>{
       await savePlanning();toast("Ajouté");render();break}
     case "exadd":{const m=$("#ex-mat").value,dt=$("#ex-date").value;if(!m||!dt){toast("Choisis la matière et la date");break}(X.planning.exams??=[]).push({id:uid(),matiere:m,date:dt});await savePlanning();render();break}
     case "prio":{(X.planning.priorities??={})[b.dataset.m]=+b.dataset.n;await savePlanning();render();break}
+    case "perset":{const p=b.dataset.p;try{localStorage.setItem("revision-per",p)}catch(e){}if(X.planning){X.planning.per=p;await savePlanning()}S.mat=null;render();break}
+    case "peradd":{const cur=curPer(),m=/^([A-Za-z]+)\s*(\d+)\D+S\s*(\d+)/.exec(cur);let sug="";if(m){const s=+m[3]+1;sug=`${m[1].toUpperCase()}${Math.ceil(s/2)} · S${s}`}
+      const o=$("#overlay");o.innerHTML=`<div class="sheet"><div class="box"><h3>Nouveau semestre</h3><label class="f">Année · semestre<input type="text" id="per-in" value="${esc(sug)}" placeholder="ex. L3 · S6"></label><p class="help">Les chapitres que tu crées ensuite seront rangés dans ce semestre. Tes semestres passés restent accessibles en un clic.</p><div class="row"><button class="btn" id="per-ok">Créer</button><button class="btn ghost" id="per-no">Annuler</button></div></div></div>`;
+      $("#per-no").onclick=()=>{o.innerHTML=""};
+      $("#per-ok").onclick=async()=>{const v=$("#per-in").value.trim().replace(/\s*·\s*|\s+(?=S\d)/," · ");if(!v)return;o.innerHTML="";try{localStorage.setItem("revision-per",v)}catch(e){}if(X.planning){X.planning.periodes=[...new Set([...(X.planning.periodes||[]),v])];X.planning.per=v;await savePlanning()}S.mat=null;toast("Semestre "+v+" créé");render()};break}
     case "semsave":{const v=document.getElementById("sem-start").value;X.planning.semStart=v?mondayOf(v):null;await savePlanning();toast(v?"Semaine 1 = semaine du "+fmtDate(mondayOf(v)):"Numérotation retirée");render();break}
     case "prefsave":{const P=X.planning.prefs,g=id=>document.getElementById(id).value;const s=validT(g("pf-start")),en=validT(g("pf-end"));if(!s||!en||toMin(en)<=toMin(s)){toast("Heures invalides");break}
       Object.assign(P,{dayStart:s,dayEnd:en,maxStudyMin:Math.max(30,+g("pf-max")||240),block:Math.max(20,+g("pf-block")||50),pause:Math.max(0,+g("pf-pause")||0)});await savePlanning();toast("Réglages enregistrés");render();break}

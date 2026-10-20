@@ -51,7 +51,7 @@
   window.__STATIC=true;
   let AIKEY="",CKEY="",PROV="gemini";try{AIKEY=localStorage.getItem("revision-ai-key")||"";CKEY=localStorage.getItem("revision-claude-key")||"";PROV=localStorage.getItem("revision-ai-provider")||(CKEY&&!AIKEY?"claude":"gemini")}catch(e){}
   if(PROV==="claude"&&!CKEY)PROV="gemini";if(PROV==="gemini"&&!AIKEY&&CKEY)PROV="claude";
-  const MODELS=["gemini-flash-latest","gemini-3.6-flash","gemini-2.5-flash"];let MI=0;
+  const MODELS=["gemini-flash-latest","gemini-3.8-flash","gemini-3.6-flash","gemini-2.5-flash"];let MI=0;
   try{const m=localStorage.getItem("revision-ai-model");if(m)MODELS.unshift(m)}catch(e){}
   const b64=blob=>new Promise((ok,ko)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(",")[1]);r.onerror=ko;r.readAsDataURL(blob)});
   async function shrink(blob){try{if(blob.size<1.5e6)return blob;const bmp=await createImageBitmap(blob);const sc=Math.min(1,2000/Math.max(bmp.width,bmp.height));const cv=document.createElement("canvas");cv.width=Math.round(bmp.width*sc);cv.height=Math.round(bmp.height*sc);cv.getContext("2d").drawImage(bmp,0,0,cv.width,cv.height);return await new Promise(r=>cv.toBlob(r,"image/jpeg",.85))}catch(e){return blob}}

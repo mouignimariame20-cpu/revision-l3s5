@@ -1747,12 +1747,13 @@ function dayTimeline(date,p,fixed){
       <div class="row" style="margin-top:6px">${x.b.kind==="err"?`<button class="btn small" data-act="nav" data-v="revise">Commencer</button>`:x.b.deckId?`<button class="btn small" data-act="chpick" data-id="${x.b.deckId}" data-rev="${x.b.rev?1:""}" data-key="${esc(x.b.key)}" data-date="${date}">Chrono</button><button class="btn ghost small" data-act="open" data-id="${x.b.deckId}">Ouvrir</button>`:""}</div></div>
       <button class="iconbtn chk ${x.b.done?"on":""}" data-act="bdone" data-id="${x.b.id}" data-date="${date}" aria-label="${x.b.done?"Marquer non fait":"Marquer fait"}">✓</button></div>`).join(""):`<div class="empty">Rien de prévu ce jour.</div>`}</div>`;
 }
+function semWeek(date){const st=X.planning?.semStart;if(!st)return 0;const n=Math.floor((new Date(mondayOf(date)+"T12:00")-new Date(mondayOf(st)+"T12:00"))/(7*864e5))+1;return n>=1?n:0}
 function planDay(){
   const date=X.plDate,p=ensurePlan(date),fixed=fixedFor(date),cf=conflicts(fixed);
   const items=[...fixed.map(f=>({s:f.s,e:f.e,fixed:f})),...p.blocks.map(b=>({s:toMin(b.start),e:toMin(b.end),b}))].sort((a,b)=>a.s-b.s);
   const study=p.blocks.reduce((n,b)=>n+(toMin(b.end)-toMin(b.start)),0),done=p.blocks.filter(b=>b.done).length+fixed.filter(f=>(p.fdone||{})[f.ref]).length,totItems=p.blocks.length+fixed.length;
   const P=X.planning.prefs;
-  return `<div class="row" style="justify-content:space-between;margin-bottom:10px"><button class="iconbtn" data-act="plday" data-n="-1" aria-label="Jour précédent">${IC.back}</button><div style="text-align:center"><h2>${esc(new Date(date+"T12:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}))}</h2><div class="help">${fmtMin(study)} de travail prévu · ${done}/${totItems} fait${done>1?"s":""}${study>(+P.maxStudyMin)?" · ⚠ au-dessus de ta limite":""}</div></div><button class="iconbtn" data-act="plday" data-n="1" aria-label="Jour suivant" style="transform:scaleX(-1)">${IC.back}</button></div>
+  return `<div class="row" style="justify-content:space-between;margin-bottom:10px"><button class="iconbtn" data-act="plday" data-n="-1" aria-label="Jour précédent">${IC.back}</button><div style="text-align:center"><h2>${esc(new Date(date+"T12:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}))}</h2>${semWeek(date)?`<div class="label">Semaine ${semWeek(date)}</div>`:""}<div class="help">${fmtMin(study)} de travail prévu · ${done}/${totItems} fait${done>1?"s":""}${study>(+P.maxStudyMin)?" · ⚠ au-dessus de ta limite":""}</div></div><button class="iconbtn" data-act="plday" data-n="1" aria-label="Jour suivant" style="transform:scaleX(-1)">${IC.back}</button></div>
   ${cf.length?`<div class="callout">⚠ Chevauchement : ${cf.map(([a,b])=>`« ${esc(a.title)} » (${hm(a.s)}–${hm(a.e)}) et « ${esc(b.title)} » (${hm(b.s)}–${hm(b.e)})`).join(" ; ")}. Corrige l'un des deux (onglets ci-dessous ou phrase ci-dessus).</div>`:""}
   ${dayTimeline(date,p,fixed)}
   ${p.over?.length?`<div class="panel stack" style="margin-top:12px"><div class="label">Ne rentre pas aujourd'hui (reporté)</div>${p.over.map(o=>`<div class="help">• ${esc(o.title)} · ${fmtMin(o.min)}</div>`).join("")}<p class="help">Ces tâches restent dues : elles passent en priorité au prochain jour libre. Pour en caser plus, augmente ta limite quotidienne dans « Habitudes et réglages ».</p></div>`:""}
@@ -1761,7 +1762,7 @@ function planDay(){
 }
 function planWeek(){
   const mon=mondayOf(X.plDate||today());
-  return `<div class="row" style="justify-content:space-between;margin-bottom:10px"><button class="iconbtn" data-act="plweek" data-n="-7" aria-label="Semaine précédente">${IC.back}</button><h2>Semaine du ${esc(fmtDate(mon))}</h2><button class="iconbtn" data-act="plweek" data-n="7" aria-label="Semaine suivante" style="transform:scaleX(-1)">${IC.back}</button></div>
+  return `<div class="row" style="justify-content:space-between;margin-bottom:10px"><button class="iconbtn" data-act="plweek" data-n="-7" aria-label="Semaine précédente">${IC.back}</button><div style="text-align:center"><h2>${semWeek(mon)?"Semaine "+semWeek(mon):"Semaine du "+esc(fmtDate(mon))}</h2>${semWeek(mon)?`<div class="help">du ${esc(fmtDate(mon))} au ${esc(fmtDate(addDays(mon,6)))}</div>`:""}</div><button class="iconbtn" data-act="plweek" data-n="7" aria-label="Semaine suivante" style="transform:scaleX(-1)">${IC.back}</button></div>
   <div class="week">${[0,1,2,3,4,5,6].map(i=>{const date=addDays(mon,i);const fx=fixedFor(date);const p=X.plans[date]||(date>=today()?(()=>{const sv=X.plans[date];const r=schedule(date);if(!sv)delete X.plans[date];return r})():{blocks:[]});
     const st=p.blocks.reduce((n,b)=>n+(toMin(b.end)-toMin(b.start)),0),cl=fx.filter(f=>f.kind==="cours").reduce((n,f)=>n+f.e-f.s,0);
     return `<button class="wday ${date===today()?"today":""}" data-act="plgo" data-d="${date}"><div class="row" style="justify-content:space-between"><strong>${WD[wdOf(date)]} ${+date.slice(8)}</strong><span class="help">${cl?fmtMin(cl)+" de cours":""}</span></div>
@@ -1794,7 +1795,8 @@ function itemForm(list){
 function planRules(){
   const P=X.planning,pr=P.prefs,mats=Object.keys(groupsByMat());
   const row=(x,l)=>`<div class="mini"><span><strong>${esc(x.title)}</strong> <span class="muted">· ${x.date?esc(fmtDate(x.date)):(x.days||[]).map(d=>WD[d].slice(0,3)).join(", ")} · ${esc(x.start)}–${esc(x.end)}</span></span><button class="btn ghost small" data-act="pldel" data-l="${l}" data-id="${x.id}">Retirer</button></div>`;
-  return `<div class="section"><h2>Habitudes</h2>${(P.habits||[]).map(x=>row(x,"habits")).join("")||`<p class="help">Sommeil, repas, prière, sport, trajet… tout ce qui revient chaque semaine.</p>`}${itemForm("habits")}</div>
+  return `<div class="section"><h2>Semestre</h2><div class="panel stack"><label class="f">Lundi de la semaine 1<input type="date" id="sem-start" value="${esc(P.semStart||"")}"></label><button class="btn soft small" data-act="semsave" style="align-self:flex-start">Enregistrer</button><p class="help">Sert à numéroter tes semaines (Semaine 1, 2, 3…) dans l'accueil et le planning.</p></div></div>
+  <div class="section"><h2>Habitudes</h2>${(P.habits||[]).map(x=>row(x,"habits")).join("")||`<p class="help">Sommeil, repas, prière, sport, trajet… tout ce qui revient chaque semaine.</p>`}${itemForm("habits")}</div>
   <div class="section"><h2>Obligations</h2>${(P.obligations||[]).map(x=>row(x,"obligations")).join("")||`<p class="help">Rendez-vous et engagements ponctuels.</p>`}${itemForm("obligations")}</div>
   <div class="section"><h2>Partiels</h2>${(P.exams||[]).map(x=>`<div class="mini"><span><strong>${esc(x.matiere)}</strong> <span class="muted">· ${esc(fmtDate(x.date))}</span></span><button class="btn ghost small" data-act="pldel" data-l="exams" data-id="${x.id}">Retirer</button></div>`).join("")||`<p class="help">Aucun partiel enregistré.</p>`}
     <div class="filters"><select id="ex-mat"><option value="">Matière…</option>${mats.map(m=>`<option>${esc(m)}</option>`).join("")}</select><input type="date" id="ex-date"></div><button class="btn soft small" data-act="exadd" style="align-self:flex-start">Ajouter le partiel</button></div>
@@ -1887,7 +1889,7 @@ function viewHome(){
   const exams=(X.planning?.exams||[]).filter(e=>e.date>=t).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3);
   const cl=X.classes.filter(e=>e.date===t);
   return topbar("Révisions")+`
-  <div class="hero"><div class="label">${esc(date)}</div><h1>Bonjour Mariame</h1>
+  <div class="hero"><div class="label">${esc(date)}${X.planning&&semWeek(t)?" · semaine "+semWeek(t):""}</div><h1>Bonjour Mariame</h1>
     <div class="stats">
       <div class="stat"><b>${jDue.length}</b><span>J à faire</span></div>
       <div class="stat"><b>${cardsDue}</b><span>cartes à revoir</span></div>
@@ -2157,6 +2159,7 @@ document.addEventListener("click",async e=>{
       await savePlanning();toast("Ajouté");render();break}
     case "exadd":{const m=$("#ex-mat").value,dt=$("#ex-date").value;if(!m||!dt){toast("Choisis la matière et la date");break}(X.planning.exams??=[]).push({id:uid(),matiere:m,date:dt});await savePlanning();render();break}
     case "prio":{(X.planning.priorities??={})[b.dataset.m]=+b.dataset.n;await savePlanning();render();break}
+    case "semsave":{const v=document.getElementById("sem-start").value;X.planning.semStart=v?mondayOf(v):null;await savePlanning();toast(v?"Semaine 1 = semaine du "+fmtDate(mondayOf(v)):"Numérotation retirée");render();break}
     case "prefsave":{const P=X.planning.prefs,g=id=>document.getElementById(id).value;const s=validT(g("pf-start")),en=validT(g("pf-end"));if(!s||!en||toMin(en)<=toMin(s)){toast("Heures invalides");break}
       Object.assign(P,{dayStart:s,dayEnd:en,maxStudyMin:Math.max(30,+g("pf-max")||240),block:Math.max(20,+g("pf-block")||50),pause:Math.max(0,+g("pf-pause")||0)});await savePlanning();toast("Réglages enregistrés");render();break}
     case "edttext":{const t=$("#edt-text").value;if(t.trim())edtImport([],t);break}

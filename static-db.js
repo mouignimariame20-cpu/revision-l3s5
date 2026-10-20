@@ -8,7 +8,7 @@
   /* planning fourni avec le site : ajouté sans écraser ce que la visiteuse a déjà saisi */
   try{const bp=base.planning&&base.planning.main;if(bp){ov.planning=ov.planning||{};const cur=ov.planning.main;
     if(!cur){ov.planning.main=JSON.parse(JSON.stringify(bp))}
-    else{["edt","habits","obligations","exams"].forEach(k=>{const have=new Set((cur[k]||[]).map(x=>x.id));(bp[k]||[]).forEach(x=>{if(!have.has(x.id))(cur[k]=cur[k]||[]).push(x)})})}
+    else{["edt","habits","obligations","exams"].forEach(k=>{const have=new Set((cur[k]||[]).map(x=>x.id));(bp[k]||[]).forEach(x=>{if(!have.has(x.id))(cur[k]=cur[k]||[]).push(x)})});if(!cur.semStart&&bp.semStart)cur.semStart=bp.semStart}
     save()}}catch(e){}
   const clone=x=>JSON.parse(JSON.stringify(x));
   const content=d=>JSON.stringify({n:d.name,m:d.matiere,p:d.partie,s:d.source,f:d.fiche,c:(d.cards||[]).map(c=>[c.id,c.q,c.a,c.img||""]),q:d.qcm||[]});

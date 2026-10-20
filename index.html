@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261020163907";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261020164458";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions Mariame</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2174,13 +2174,21 @@ function auSpeak(){
   const u=new SpeechSynthesisUtterance(ch[a.j]);const v=auVoice();if(v){u.voice=v;u.lang=v.lang}else u.lang="fr-FR";
   u.rate=+(AU_PREF.rate||1);u.pitch=1;
   const tok=a.tok=Math.random();
-  u.onend=()=>{if(X.au!==a||a.tok!==tok||!a.playing)return;a.j++;auSpeak()};
-  u.onerror=e=>{if(X.au!==a||a.tok!==tok)return;if(e.error==="interrupted"||e.error==="canceled")return;a.j++;auSpeak()};
+  clearTimeout(a.wd);
+  const next=()=>{clearTimeout(a.wd);if(X.au!==a||a.tok!==tok||!a.playing)return;a.tok=0;a.j++;auSpeak()};
+  u.onend=next;
+  u.onerror=e=>{if(X.au!==a||a.tok!==tok)return;if(e.error==="interrupted"||e.error==="canceled")return;next()};
+  /* filet de sécurité : certains navigateurs n'envoient pas toujours la fin de phrase */
+  a.wd=setTimeout(()=>{if(X.au===a&&a.tok===tok&&a.playing){let sp=true;try{sp=TTS.speaking}catch(e){}if(!sp)next();else a.wd=setTimeout(()=>{if(X.au===a&&a.tok===tok&&a.playing){try{if(!TTS.speaking)next()}catch(e){next()}}},8000)}},Math.round(ch[a.j].length*120/(+(AU_PREF.rate||1)))+3000);
   a.waiting=false;auHilite();
   try{TTS.speak(u)}catch(e){a.playing=false;a.err="Lecture impossible sur cet appareil.";auBar()}
 }
-function auPlay(){const a=X.au;if(!a||!TTS)return;a.ended=false;a.playing=true;try{TTS.cancel()}catch(e){}auBar();setTimeout(auSpeak,60)}
-function auPause(){const a=X.au;if(!a)return;a.playing=false;a.tok=0;try{TTS.cancel()}catch(e){}auBar()}
+let AU_UNLOCKED=false;
+function auUnlock(){if(!TTS||AU_UNLOCKED)return;AU_UNLOCKED=true;try{const u=new SpeechSynthesisUtterance(" ");u.volume=0;u.lang="fr-FR";TTS.speak(u)}catch(e){}}
+function auPlay(){const a=X.au;if(!a||!TTS)return;a.ended=false;a.playing=true;auBar();
+  let busy=false;try{busy=TTS.speaking||TTS.pending;if(TTS.paused)TTS.resume()}catch(e){}
+  if(busy){try{TTS.cancel()}catch(e){}setTimeout(auSpeak,150)}else auSpeak()}
+function auPause(){const a=X.au;if(!a)return;a.playing=false;a.tok=0;clearTimeout(a.wd);try{TTS.cancel()}catch(e){}auBar()}
 function auStop(){if(TTS)try{TTS.cancel()}catch(e){}if(X.au){X.au.playing=false;X.au.tok=0;X.au.run=0}}
 function auSeek(di){const a=X.au;if(!a)return;const was=a.playing;auPause();a.i=Math.max(0,Math.min(a.parts.length-1,a.i+di));a.j=0;if(was)auPlay();else auBar()}
 function auBack(){const a=X.au;if(!a)return;const was=a.playing;auPause();if(a.j>0)a.j=Math.max(0,a.j-2);else if(a.i>0){a.i--;a.j=Math.max(0,auChunks().length-2)}if(was)auPlay();else auBar()}
@@ -2232,11 +2240,11 @@ document.addEventListener("click",async e=>{
   const b=e.target.closest("[data-act]");if(!b)return;
   const a=b.dataset.act,d=getDeck(S.deckId);
   switch(a){
-    case "auopen":auOpen(b.dataset.id);break;
-    case "aumode":auStart(b.dataset.m);break;
+    case "auopen":auUnlock();auOpen(b.dataset.id);break;
+    case "aumode":auUnlock();auStart(b.dataset.m);break;
     case "aumode0":auStop();if(X.au){X.au.mode=null;X.au.parts=[];X.au.err="";X.au.busy=false}auBar();break;
     case "auregen":{const dd=getDeck(X.au?.deckId);if(dd){dd.audio=null;markDirty(dd.id)}auStop();auStart("explain");break}
-    case "auplay":auPlay();break;
+    case "auplay":auUnlock();auPlay();break;
     case "aupause":auPause();break;
     case "auprev":auSeek(-1);break;
     case "aunext":auSeek(1);break;

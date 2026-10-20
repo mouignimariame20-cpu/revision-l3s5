@@ -68,13 +68,16 @@
     let imgs=opts.images?[...(opts.images.length!=null&&!(opts.images instanceof Blob)?opts.images:[opts.images])]:[];
     for(const im of imgs){const bl=await shrink(im);contents[contents.length-1].parts.push({inline_data:{mime_type:bl.type||"image/jpeg",data:await b64(bl)}})}
     const body={contents,generationConfig:{maxOutputTokens:32768,temperature:.4,...(json?{responseMimeType:"application/json"}:{})}};
+    let tries=0;const sleep=ms=>new Promise(ok=>setTimeout(ok,ms));
     for(;;){
       let r;try{r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODELS[MI]}:generateContent`,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":AIKEY},body:JSON.stringify(body),signal:opts.signal})}
       catch(e){if(opts.signal?.aborted)throw err("cancelled","stop");throw err("upstream_error","Connexion à Gemini impossible : vérifie ta connexion internet.")}
       if(r.status===404&&MI<MODELS.length-1){MI++;continue}
       const j=await r.json().catch(()=>({}));
       if(!r.ok){const m=j?.error?.message||("Erreur "+r.status);
-        if(r.status===429)throw err("rate_limited",m);
+        if([429,500,502,503,504].includes(r.status)&&tries<MODELS.length*2-1){tries++;MI=(MI+1)%MODELS.length;await sleep(Math.min(6000,1200*tries));if(opts.signal?.aborted)throw err("cancelled","stop");continue}
+        if(r.status===429)throw err("rate_limited","Limite gratuite de Gemini atteinte pour le moment. Réessaie dans quelques minutes (ou demain si la limite du jour est atteinte).");
+        if(r.status>=500)throw err("upstream_error","Gemini est surchargé en ce moment (forte demande). Réessaie dans quelques minutes.");
         if(r.status===400&&/api key/i.test(m))throw err("not_granted_key","Clé Gemini refusée par Google ("+m+"). Recopie la clé entière depuis aistudio.google.com (bouton copier), puis colle-la dans « IA active · changer ».");
         if(r.status===403)throw err("not_granted_key","Clé Gemini refusée ou service non disponible dans ton pays : "+m);
         throw err("upstream_error",m)}
@@ -90,12 +93,14 @@
     const messages=turns.map(t=>({role:t.role==="assistant"?"assistant":"user",content:[{type:"text",text:String(t.content)+(json&&t===turns[turns.length-1]?"\n\nRéponds uniquement avec du JSON valide.":"")}]}));
     let imgs=opts.images?[...(opts.images.length!=null&&!(opts.images instanceof Blob)?opts.images:[opts.images])]:[];
     for(const im of imgs){const bl=await shrink(im);messages[messages.length-1].content.unshift({type:"image",source:{type:"base64",media_type:/png|webp|gif/.test(bl.type)?bl.type:"image/jpeg",data:await b64(bl)}})}
-    let r;try{r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",signal:opts.signal,headers:{"content-type":"application/json","x-api-key":CKEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    let r,tries=0;for(;;){try{r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",signal:opts.signal,headers:{"content-type":"application/json","x-api-key":CKEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
       body:JSON.stringify({model:localStorage.getItem("revision-claude-model")||"claude-sonnet-5-5",max_tokens:16000,messages})})}
     catch(e){if(opts.signal?.aborted)throw err("cancelled","stop");throw err("upstream_error","Connexion à Claude impossible : vérifie ta connexion internet.")}
+    if([429,500,529,503].includes(r.status)&&tries<3){tries++;await new Promise(ok=>setTimeout(ok,2000*tries));continue}break}
     const j=await r.json().catch(()=>({}));
     if(!r.ok){const m=j?.error?.message||("Erreur "+r.status);
       if(r.status===429)throw err("rate_limited",m);
+      if(r.status===529||r.status>=500)throw err("upstream_error","Claude est surchargé en ce moment. Réessaie dans quelques minutes.");
       if(r.status===401)throw err("not_granted_key","Clé Claude invalide : vérifie-la dans l'Assistant.");
       if(r.status===400&&/credit|billing/i.test(m))throw err("not_granted_key","Crédit Anthropic insuffisant : ajoute du crédit sur console.anthropic.com.");
       throw err("upstream_error",m)}

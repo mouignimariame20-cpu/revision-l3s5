@@ -936,7 +936,7 @@ async function bootExtras(){
   try{SAMPLE=await window.claude?.use?.("sample")||null}catch(e){SAMPLE=null}
   if(SAMPLE){try{SLIM=await SAMPLE.limits()}catch(e){SLIM=null}}
   try{ASSETS=await window.claude?.use?.("assets")||null}catch(e){ASSETS=null}
-  try{const c=JSON.parse(localStorage.getItem(LS_CHRONO)||"null");if(c&&c.deckId)X.chrono=c}catch(e){}
+  try{const c=JSON.parse(localStorage.getItem(LS_CHRONO)||"null");if(c&&(c.deckId||c.act))X.chrono=c}catch(e){}
   if(db){
     const all=async c=>{try{const s=await db.collection(c).limit(1000).get();return s.docs.filter(x=>x.exists).map(x=>({...clone(x.data()),id:x.id}))}catch(e){return []}};
     const [cl,se,pl,st]=await Promise.all([all("classes"),all("sessions"),all("plans"),all("stats")]);
@@ -1473,8 +1473,8 @@ function gradeQcm(d,q,ok){
 const STEPS=[["read","Lire et apprendre la fiche"],["cards","Flashcards"],["qcm","QCM"],["err","Revoir mes erreurs"]];
 function chronoSave(){try{X.chrono?localStorage.setItem(LS_CHRONO,JSON.stringify(X.chrono)):localStorage.removeItem(LS_CHRONO)}catch(e){}}
 function chronoActive(c){return (c.activeMs||0)+(c.running?Date.now()-c.segStart:0)}
-function chronoProgress(c){const e=c.est;if(!e.total)return 0;return STEPS.reduce((n,[k])=>n+(c.steps[k]?e[k]:0),0)/e.total}
-function chronoRemain(c){const act=chronoActive(c)/60000,doneEst=STEPS.reduce((n,[k])=>n+(c.steps[k]?c.est[k]:0),0),left=c.est.total-doneEst;
+function chronoProgress(c){if(c.act)return Math.min(1,chronoActive(c)/60000/(c.act.min||1));const e=c.est;if(!e.total)return 0;return STEPS.reduce((n,[k])=>n+(c.steps[k]?e[k]:0),0)/e.total}
+function chronoRemain(c){if(c.act)return Math.max(0,Math.round(c.act.min-chronoActive(c)/60000));const act=chronoActive(c)/60000,doneEst=STEPS.reduce((n,[k])=>n+(c.steps[k]?c.est[k]:0),0),left=c.est.total-doneEst;
   let pace=1;if(act>=5&&doneEst>0)pace=Math.max(.5,Math.min(2,act/doneEst));
   return Math.max(0,Math.round(doneEst>0?left*pace:c.est.total-act))}
 function chronoStart(deckId,opts={}){
@@ -1483,9 +1483,31 @@ function chronoStart(deckId,opts={}){
   X.chrono={deckId,est,steps:{read:false,cards:!est.cards,qcm:!est.qcm,err:!est.err},startedAt:Date.now(),running:false,segStart:0,activeMs:0,pauses:[],blockKey:opts.blockKey||null,date:opts.date||today(),label:opts.label||""};
   chronoSave();S.view="timer";render();window.scrollTo(0,0);
 }
+const CORAN=[["memo","Coran · mémorisation",30],["lect","Coran · lecture et méditation",30]];
+function actStart(title,min,opts={}){
+  if(X.chrono&&chronoActive(X.chrono)>60000){toast("Termine d'abord la séance en cours");S.view="timer";render();return}
+  X.chrono={act:{title,min:+min||30,kind:opts.kind||"coran",ref:opts.ref||null},note:"",startedAt:Date.now(),running:true,segStart:Date.now(),activeMs:0,pauses:[],date:opts.date||today()};
+  chronoSave();S.view="timer";render();window.scrollTo(0,0);
+}
+function coranMin(from,to){return X.sessions.filter(s=>s.act&&s.kind==="coran"&&s.date>=from&&s.date<=to).reduce((n,s)=>n+(s.activeMin||0),0)}
+function coranLine(){const t=today(),d=coranMin(t,t),w=coranMin(addDays(t,-6),t);return d||w?`<div class="row" style="justify-content:space-between"><span>Coran : <strong>${fmtMin(d)}</strong> aujourd'hui</span><span class="muted">${fmtMin(w)} sur 7 jours</span></div>`:""}
+function viewAct(c){
+  const act=chronoActive(c)/60000,remain=chronoRemain(c),pauseMin=c.pauses.reduce((n,p)=>n+((p.e||Date.now())-p.s),0)/60000,prog=chronoProgress(c);
+  return topbar("Chrono")+`<div class="hero"><div class="label">${c.act.kind==="coran"?"Coran":"Activité"}</div><h1>${esc(c.act.title)}</h1></div>
+  <div class="panel stack" style="align-items:center;margin-bottom:14px">
+    <div class="label">Temps effectif</div><div class="timer" id="chrono-clock">--:--</div>
+    <div class="row"><button class="btn" data-act="chgo">${c.running?"Pause":act>0?"Reprendre":"Démarrer"}</button><button class="btn ghost" data-act="chend">Terminer</button></div>
+    <div class="stats" style="width:100%"><div class="stat"><b id="ch-rem">${fmtMin(remain)}</b><span>restant sur ${fmtMin(c.act.min)}</span></div><div class="stat"><b id="ch-pct">${Math.round(prog*100)}%</b><span>du temps prévu</span></div><div class="stat"><b>${c.pauses.length}</b><span>pause${c.pauses.length>1?"s":""} · ${fmtMin(pauseMin)}</span></div></div>
+    <div class="progress" style="width:100%"><i id="ch-bar" style="width:${Math.round(prog*100)}%"></i></div></div>
+  <div class="panel stack"><label class="label" for="ch-note">${c.act.kind==="coran"?"Ce que j'ai travaillé (sourate, versets…)":"Note"}</label>
+    <textarea id="ch-note" rows="2" placeholder="${c.act.kind==="coran"?"ex. Al-Mulk, versets 1 à 10":""}">${esc(c.note||"")}</textarea>
+    <p class="help">Le temps du Coran est enregistré à part : il ne compte pas dans tes heures de révision.${c.act.ref?" En terminant, l'activité est cochée dans ton planning.":""}</p>
+    <button class="btn ghost small" data-act="chcancel">Annuler la séance</button></div>`;
+}
 function viewTimer(){
   const c=X.chrono;
   if(!c)return topbar("Chrono")+chronoPicker()+pomodoroBlock();
+  if(c.act)return viewAct(c);
   const d=getDeck(c.deckId);if(!d){X.chrono=null;chronoSave();return viewTimer()}
   const act=chronoActive(c)/60000,prog=chronoProgress(c),remain=chronoRemain(c);
   const pauseMin=c.pauses.reduce((n,p)=>n+((p.e||Date.now())-p.s),0)/60000;
@@ -1507,11 +1529,12 @@ function chronoPicker(){
   const ds=m?S.decks.filter(d=>(d.matiere||"Sans matière")===m):[];
   const last=X.sessions.slice().sort((a,b)=>String(b.end||"").localeCompare(String(a.end||""))).slice(0,5);
   return `<div class="hero"><div class="label">Chronomètre</div><h1>Que travailles-tu ?</h1><p class="muted">Le chrono estime le temps nécessaire, compte le temps réel et tes pauses, et recalcule le temps restant.</p></div>
+  <div class="section"><h2>Coran</h2><div class="stack" style="gap:8px">${CORAN.map(([k,l,m])=>{const h=X.planning?fixedFor(today()).find(x=>x.title===l):null;const mm=h?h.e-h.s:m;return `<button class="mini" data-act="actgo" data-t="${esc(l)}" data-min="${mm}" data-ref="${h?esc(h.ref):""}"><span><strong>${esc(l.replace("Coran · ","").replace(/^./,x=>x.toUpperCase()))}</strong></span><span class="pill">${fmtMin(mm)}</span></button>`}).join("")}${coranLine()}</div></div>
   ${tasks.length?`<div class="section"><h2>Proposé aujourd'hui</h2>${tasks.map(t=>`<button class="mini" data-act="chpick" data-id="${t.deckId}" data-rev="${t.rev?1:""}" data-key="${esc(t.key)}"><span><strong>${esc(t.title)}</strong></span><span class="pill">${fmtMin(t.min)}</span></button>`).join("")}</div>`:""}
   <div class="panel stack"><div class="label">Choisir un chapitre</div>
     <select id="ch-mat"><option value="">Matière…</option>${mats.map(x=>`<option ${m===x?"selected":""}>${esc(x)}</option>`).join("")}</select>
     ${m?`<div class="stack" style="gap:6px">${ds.map(d=>{const e=estimate(d);return `<button class="mini" data-act="chpick" data-id="${d.id}"><span>${esc(d.name)}</span><span class="pill">${fmtMin(e.total)}</span></button>`}).join("")}</div>`:""}</div>
-  ${last.length?`<div class="section" style="margin-top:18px"><h2>Dernières séances</h2>${last.map(s=>{const d=getDeck(s.deckId);return `<div class="mini"><span>${esc(d?d.name:"Chapitre supprimé")} <span class="muted">· ${esc(fmtDate(s.date))}</span></span><span class="pill">${fmtMin(s.activeMin)} · ${Math.round((s.progress||0)*100)}%</span></div>`}).join("")}</div>`:""}`;
+  ${last.length?`<div class="section" style="margin-top:18px"><h2>Dernières séances</h2>${last.map(s=>{const d=getDeck(s.deckId);return `<div class="mini"><span>${esc(s.act?s.act+(s.note?" — "+s.note:""):d?d.name:"Chapitre supprimé")} <span class="muted">· ${esc(fmtDate(s.date))}</span></span><span class="pill">${fmtMin(s.activeMin)}${s.act?"":" · "+Math.round((s.progress||0)*100)+"%"}</span></div>`}).join("")}</div>`:""}`;
 }
 function pomodoroBlock(){
   return `<details class="item" id="pomo" style="margin-top:18px" ${X.ai.pomo||T.running?"open":""}><summary>Mode Pomodoro (25 min / 5 min)</summary><div class="stack" style="align-items:center">
@@ -1524,7 +1547,7 @@ let chIv=null;
 function tickChrono(){
   const c=X.chrono,el=$("#chrono-clock");if(!c||!el){return}
   const s=Math.floor(chronoActive(c)/1000);el.textContent=(s>=3600?Math.floor(s/3600)+":":"")+String(Math.floor(s/60)%60).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
-  const r=$("#ch-rem");if(r)r.textContent=fmtMin(chronoRemain(c));
+  const r=$("#ch-rem");if(r)r.textContent=fmtMin(chronoRemain(c));if(c.act){const q=Math.round(chronoProgress(c)*100),a=$("#ch-pct"),br=$("#ch-bar");if(a)a.textContent=q+"%";if(br)br.style.width=q+"%"}
 }
 function chronoToggle(){
   const c=X.chrono;if(!c)return;
@@ -1535,6 +1558,10 @@ function chronoToggle(){
 async function chronoEnd(){
   const c=X.chrono;if(!c)return;if(c.running){c.activeMs+=Date.now()-c.segStart;c.running=false}
   const p=c.pauses[c.pauses.length-1];if(p&&!p.e)p.e=Date.now();
+  if(c.act){const s={id:uid(),act:c.act.title,kind:c.act.kind,note:c.note||"",ref:c.act.ref,date:c.date||today(),start:new Date(c.startedAt).toISOString(),end:new Date().toISOString(),activeMin:Math.round(c.activeMs/60000),pauseMin:Math.round(c.pauses.reduce((n,x)=>n+(x.e-x.s),0)/60000),pauses:c.pauses.length,est:0,progress:0};
+    X.chrono=null;chronoSave();if(s.activeMin>0){X.sessions.push(s);putDoc("sessions/"+s.id,s)}
+    if(s.ref){const p=ensurePlan(s.date);if(p){p.fdone={...(p.fdone||{}),[s.ref]:true};await savePlan(s.date)}}
+    toast(`${s.act} : ${fmtMin(s.activeMin)} enregistrées`);S.view="home";render();return}
   const s={id:uid(),deckId:c.deckId,date:c.date||today(),start:new Date(c.startedAt).toISOString(),end:new Date().toISOString(),activeMin:Math.round(c.activeMs/60000),pauseMin:Math.round(c.pauses.reduce((n,x)=>n+(x.e-x.s),0)/60000),pauses:c.pauses.length,est:c.est.total,progress:Math.round(chronoProgress(c)*100)/100,steps:c.steps};
   X.chrono=null;chronoSave();
   if(s.activeMin>0){X.sessions.push(s);putDoc("sessions/"+s.id,s);bumpStat("min",s.activeMin)}
@@ -1627,7 +1654,7 @@ function nlBox(){
 const KIND_CLS={cours:"k-cours",habitude:"k-hab",obligation:"k-obl","imprévu":"k-imp"};
 function dayTimeline(date,p,fixed){
   const items=[...fixed.map(f=>({s:f.s,e:f.e,fixed:f})),...p.blocks.map(b=>({s:toMin(b.start),e:toMin(b.end),b}))].sort((a,b)=>a.s-b.s);
-  return `<div class="tl">${items.length?items.map(x=>x.fixed?(()=>{const fd=!!(p.fdone||{})[x.fixed.ref];return `<div class="tli ${KIND_CLS[x.fixed.kind]} ${fd?"done":""}"><span class="tlt">${hm(x.s)}<br>${hm(x.e)}</span><div style="min-width:0;flex:1"><div class="label">${esc(x.fixed.kind)}${x.fixed.type?" · "+esc(x.fixed.type):""}${x.fixed.lieu?" · "+esc(x.fixed.lieu):""}</div><strong>${esc(x.fixed.title)}</strong></div>${x.fixed.ref?`<button class="iconbtn chk ${fd?"on":""}" data-act="fdone" data-ref="${esc(x.fixed.ref)}" data-date="${date}" aria-label="${fd?"Marquer non fait":"Marquer fait"}">✓</button>`:""}</div>`})()
+  return `<div class="tl">${items.length?items.map(x=>x.fixed?(()=>{const fd=!!(p.fdone||{})[x.fixed.ref];return `<div class="tli ${KIND_CLS[x.fixed.kind]} ${fd?"done":""}"><span class="tlt">${hm(x.s)}<br>${hm(x.e)}</span><div style="min-width:0;flex:1"><div class="label">${esc(x.fixed.kind)}${x.fixed.type?" · "+esc(x.fixed.type):""}${x.fixed.lieu?" · "+esc(x.fixed.lieu):""}</div><strong>${esc(x.fixed.title)}</strong></div>${x.fixed.ref&&/^Coran ·/.test(x.fixed.title)&&!fd?`<button class="iconbtn" data-act="actgo" data-t="${esc(x.fixed.title)}" data-min="${x.e-x.s}" data-ref="${esc(x.fixed.ref)}" data-date="${date}" aria-label="Chronométrer">⏱</button>`:""}${x.fixed.ref?`<button class="iconbtn chk ${fd?"on":""}" data-act="fdone" data-ref="${esc(x.fixed.ref)}" data-date="${date}" aria-label="${fd?"Marquer non fait":"Marquer fait"}">✓</button>`:""}</div>`})()
     :`<div class="tli k-study ${x.b.done?"done":""}"><span class="tlt">${x.b.start}<br>${x.b.end}</span><div style="min-width:0;flex:1"><div class="label">${esc({learn:"Nouveau cours",J:"Révision J",exam:"Partiel",cards:"Flashcards",err:"Erreurs"}[x.b.kind]||"Travail")}</div><strong>${esc(x.b.title)}</strong>
       <div class="row" style="margin-top:6px">${x.b.kind==="err"?`<button class="btn small" data-act="nav" data-v="revise">Commencer</button>`:x.b.deckId?`<button class="btn small" data-act="chpick" data-id="${x.b.deckId}" data-rev="${x.b.rev?1:""}" data-key="${esc(x.b.key)}" data-date="${date}">Chrono</button><button class="btn ghost small" data-act="open" data-id="${x.b.deckId}">Ouvrir</button>`:""}</div></div>
       <button class="iconbtn chk ${x.b.done?"on":""}" data-act="bdone" data-id="${x.b.id}" data-date="${date}" aria-label="${x.b.done?"Marquer non fait":"Marquer fait"}">✓</button></div>`).join(""):`<div class="empty">Rien de prévu ce jour.</div>`}</div>`;
@@ -1765,7 +1792,7 @@ function viewHome(){
   const st=X.stats[t]||{};
   const semPct=S.decks.length?Math.round(S.decks.reduce((n,d)=>n+chapProgress(d),0)/S.decks.length):0;
   const learned=S.decks.filter(d=>d.learnedOn).length;
-  const week=[...Array(7)].map((_,i)=>addDays(t,i-6)).map(d=>({d,m:X.sessions.filter(s=>s.date===d).reduce((n,s)=>n+(s.activeMin||0),0)}));
+  const week=[...Array(7)].map((_,i)=>addDays(t,i-6)).map(d=>({d,m:X.sessions.filter(s=>s.date===d&&!s.act).reduce((n,s)=>n+(s.activeMin||0),0)}));
   const wTot=week.reduce((n,x)=>n+x.m,0),wMax=Math.max(60,...week.map(x=>x.m));
   const errs=errItems().slice(0,5);
   const mats=Object.entries(groupsByMat()).map(([m,l])=>({m,p:Math.round(l.reduce((n,d)=>n+chapProgress(d),0)/l.length),n:l.length})).sort((a,b)=>a.p-b.p);
@@ -1779,7 +1806,7 @@ function viewHome(){
       <div class="stat"><b>${semPct}%</b><span>semestre</span></div>
     </div></div>
   ${searchBox("hq","","Chercher un chapitre, une notion, un mot-clé…")}
-  ${X.chrono?`<button class="mini" data-act="nav" data-v="timer" style="margin-bottom:14px;border-color:var(--scrub)"><span><strong>Séance en cours</strong> · ${esc(getDeck(X.chrono.deckId)?.name||"")}</span><span class="pill">${X.chrono.running?"en cours":"en pause"}</span></button>`:""}
+  ${X.chrono?`<button class="mini" data-act="nav" data-v="timer" style="margin-bottom:14px;border-color:var(--scrub)"><span><strong>Séance en cours</strong> · ${esc(X.chrono.act?X.chrono.act.title:getDeck(X.chrono.deckId)?.name||"")}</span><span class="pill">${X.chrono.running?"en cours":"en pause"}</span></button>`:""}
   <div class="section"><div class="row" style="justify-content:space-between"><h2>Ma journée</h2><button class="btn ghost small" data-act="nav" data-v="plan">Planning</button></div>
     ${!X.loaded?`<div class="help">Chargement…</div>`:plan?`<p class="help">${done.length}/${plan.blocks.length+fx.length} fait${done.length>1?"s":""} · touche ✓ dès qu'une activité est faite.</p>${dayTimeline(t,plan,fx)}`:`<div class="empty">Ajoute ton emploi du temps dans Planning pour un programme sur mesure.</div>`}
     ${plan?.over?.length?`<p class="help">${plan.over.length} tâche(s) reportée(s) faute de temps libre aujourd'hui.</p>`:""}</div>
@@ -1790,7 +1817,7 @@ function viewHome(){
   <div class="section"><h2>Temps de travail</h2><div class="panel stack">
     <div class="row" style="justify-content:space-between"><span><strong>${fmtMin(week[6].m)}</strong> aujourd'hui</span><span class="muted">${fmtMin(wTot)} sur 7 jours</span></div>
     <div class="bars" role="img" aria-label="Minutes de travail des 7 derniers jours">${week.map(x=>`<div class="bar"><i style="height:${Math.round(x.m/wMax*100)}%" title="${fmtMin(x.m)}"></i><span>${WD[wdOf(x.d)].slice(0,2)}</span></div>`).join("")}</div>
-    <p class="help">Temps compté par le chrono (pauses exclues).</p></div></div>
+    ${coranLine()}<p class="help">Temps de révision compté par le chrono (pauses exclues). Le Coran est compté à part.</p></div></div>
   <div class="section"><h2>Avancement du semestre</h2><div class="panel stack">
     <div class="row" style="justify-content:space-between"><strong>${semPct}%</strong><span class="muted">${learned}/${S.decks.length} chapitres appris · ${X.classes.length} cours suivis</span></div>
     <div class="progress"><i style="width:${semPct}%"></i></div>
@@ -1996,6 +2023,7 @@ document.addEventListener("click",async e=>{
     /* Chrono */
     case "chpick":{if(X.chrono&&X.chrono.deckId!==b.dataset.id&&chronoActive(X.chrono)>60000){toast("Termine d'abord la séance en cours");S.view="timer";render();break}
       if(!X.chrono||X.chrono.deckId!==b.dataset.id)chronoStart(b.dataset.id,{rev:!!b.dataset.rev,blockKey:b.dataset.key||null,date:b.dataset.date||today()});else{S.view="timer";render()}break}
+    case "actgo":actStart(b.dataset.t,b.dataset.min,{ref:b.dataset.ref||null,date:b.dataset.date||today(),kind:"coran"});break;
     case "chgo":chronoToggle();break;
     case "chend":chronoEnd();break;
     case "chcancel":confirmSheet("Annuler cette séance sans l'enregistrer ?","Annuler la séance",()=>{X.chrono=null;chronoSave();render()});break;
@@ -2066,6 +2094,8 @@ setInterval(()=>{if(S.view==="timer"&&X.chrono?.running)tickChrono()},1000);
 function renderFab(){let f=document.getElementById("fab");if(!f){f=document.createElement("div");f.id="fab";document.body.appendChild(f)}
   const hide=S.view==="assist"||S.session||X.xs||(S.view==="classe"&&X.form)||(S.view==="deck"&&S.tab==="edit");
   f.innerHTML=hide?"":`<button class="fab" data-act="nav" data-v="assist" aria-label="Demander à l'assistant">✦ Demander</button>`}
+
+document.addEventListener("input",e=>{if(e.target.id==="ch-note"&&X.chrono){X.chrono.note=e.target.value;chronoSave()}});
 
 renderTabbar();
 boot().then(bootExtras);

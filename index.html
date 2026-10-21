@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261021140100";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261021151342";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -277,6 +277,14 @@ body.has-au .wrap{padding-bottom:62vh}
 .simp-img{font-size:.92rem;background:var(--surface);border-radius:12px;padding:8px 10px;border-left:3px solid #e9a2b6}
 .simp-ret{margin:0;padding-left:18px}
 .simp-ret li{margin:2px 0}
+.figx{display:flex;flex-direction:column;gap:8px;padding:10px;border-radius:18px;background:var(--scrub-soft)}
+.figx-img{border:0;padding:0;background:#fff;border-radius:14px;overflow:hidden}
+.figx-img img{width:100%;display:block;max-height:60vh;object-fit:contain;background:#fff}
+.figx-t{display:flex;flex-direction:column;gap:6px}
+.figx-t p{margin:0;line-height:1.55}
+.figx-r{background:var(--surface);border-radius:12px;padding:8px 12px}
+.figx-r ul{margin:4px 0 0;padding-left:18px}
+@media (min-width:700px){.figx{flex-direction:row}.figx-img{flex:0 0 46%}}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -2373,8 +2381,11 @@ function courseFigs(d){const out=[];for(const m of String(d.fiche||"").matchAll(
 function tabVisuel(d){
   const figs=courseFigs(d),sp=d.simple,busy=X.ai["simp-"+d.id];
   return `<div class="panel stack" style="margin-bottom:14px"><div class="label">Vue d'ensemble du chapitre</div>${mindMap(d)}</div>
-  ${figs.length?`<div class="panel stack" style="margin-bottom:14px"><div class="label">Les schémas du cours · ${figs.length}</div>
-    <div class="figgrid">${figs.map(f=>`<button class="figth" data-act="zoom" data-src="${esc(f.u)}"><img src="${esc(f.u)}" alt="${esc(f.alt)}" loading="lazy"><span>${esc(f.alt.replace(/^Diapo \d+ · /,""))}</span></button>`).join("")}</div></div>`:""}
+  ${figs.length?`<div class="panel stack" style="margin-bottom:14px"><div class="label">Les schémas du cours expliqués · ${figs.length}</div>
+    <p class="help" style="margin:0">Touche une image pour l'agrandir. L'explication décrit ce que montre le schéma, à partir du cours.</p>
+    ${figs.map(f=>{const k=figKey(f.u),x=(d.figExpl||{})[k],busy=X.ai["fx-"+k];return `<div class="figx"><button class="figx-img" data-act="zoom" data-src="${esc(f.u)}"><img src="${esc(f.u)}" alt="${esc(f.alt)}" loading="lazy"></button>
+      <div class="figx-t"><div class="label">${esc(f.alt)}</div>${x?`<p>${esc(x.texte)}</p>${(x.retenir||[]).length?`<div class="figx-r"><strong>À retenir</strong><ul>${x.retenir.map(r=>`<li>${esc(r)}</li>`).join("")}</ul></div>`:""}`
+        :aiOK()?`<button class="btn soft small" data-act="figx" data-k="${esc(k)}" data-u="${esc(f.u)}" data-alt="${esc(f.alt)}" ${busy?"disabled":""}>${busy?"J'analyse le schéma…":"Explique-moi ce schéma"}</button>`:""}</div></div>`}).join("")}</div>`:""}
   <div class="panel stack" style="margin-bottom:14px"><div class="label">Le cours en simple</div>
     ${sp?`<div class="stack">${(sp.sections||[]).map(s=>`<div class="simp"><h3>${esc(s.titre||"")}</h3><p>${esc(s.simple||"")}</p>${s.image?`<div class="simp-img"><strong>Pour se représenter :</strong> ${esc(s.image)}</div>`:""}${(s.retenir||[]).length?`<ul class="simp-ret">${s.retenir.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}</div>`).join("")}</div>
       <p class="help">Version simplifiée faite uniquement à partir de ta fiche. Les « pour se représenter » sont des images pour comprendre, pas des faits du cours. En cas de doute, la fiche fait foi.</p>
@@ -2399,6 +2410,24 @@ ${String(d.fiche||"").replace(/!\[[^\]]*\]\([^)]*\)/g,"").slice(0,60000)}`,{mode
   catch(e){toast(aiErr(e))}
   X.ai[k]=false;render()}
 
+function figKey(u){const m=/([0-9a-f]{32})/.exec(u);return m?m[1]:u}
+async function doFigExpl(d,k,u,alt){
+  X.ai["fx-"+k]=true;render();
+  try{const blob=await (await fetch(u)).blob();
+    const sec=ficheSections(d.fiche).find(s=>s.body&&String(d.fiche).indexOf(u)>-1&&false);
+    const ctx=String(d.fiche||"");const i=ctx.indexOf(u);const near=ctx.slice(Math.max(0,i-2500),i+600).replace(/!\[[^\]]*\]\([^)]*\)/g,"");
+    const o=await askJSON(`Tu aides une étudiante en L3 de médecine à comprendre un schéma de son cours « ${d.name} ». Le schéma est joint (légende : « ${alt} »).
+Explique comment LIRE ce schéma : ce qu'il représente, ce que montrent ses différentes parties et légendes, dans quel ordre le regarder, et le lien avec le cours ci-dessous.
+RÈGLES : décris uniquement ce qui est visible sur le schéma et ce qui est écrit dans le cours ; n'ajoute aucune connaissance médicale extérieure ; si une légende est illisible, ne l'invente pas.
+Réponds en JSON : {"texte":"explication en 4 à 7 phrases simples","retenir":["2 à 4 points clés"]}
+
+COURS (passage autour du schéma) :
+${near}`,{modelTier:"default",images:[blob]});
+    if(!o||!o.texte)throw {code:"invalid_json"};
+    const live=getDeck(d.id);live.figExpl={...(live.figExpl||{}),[k]:{titre:"Comment lire ce schéma",texte:String(o.texte),retenir:(o.retenir||[]).map(String).slice(0,5),ia:true}};markDirty(live.id)}
+  catch(e){toast(aiErr(e))}
+  X.ai["fx-"+k]=false;render()}
+
 /* ---------- Fiche : notes du prof, mémorisation, chrono ---------- */
 function ficheExtras(d){
   const e=estimate(d);const errs=errItems().filter(x=>x.deckId===d.id).length;
@@ -2418,6 +2447,7 @@ document.addEventListener("click",async e=>{
       const o={};["edt","prieres","coran","batch"].forEach(k=>o[k]=!!$("#ob-"+k)?.checked);o.perso=!!$("#ob-perso")?.checked;
       window.__seedPlanning&&window.__seedPlanning(o);location.reload();break}
     case "simple":if(d)doSimple(d);break;
+    case "figx":if(d)doFigExpl(d,b.dataset.k,b.dataset.u,b.dataset.alt);break;
     case "themeset":try{localStorage.setItem("revision-theme",b.dataset.t)}catch(e){}window.__applyTheme&&window.__applyTheme();render();break;
     case "themetog":try{localStorage.setItem("revision-theme",curTheme()==="dark"?"light":"dark")}catch(e){}window.__applyTheme&&window.__applyTheme();render();break;
     case "ntopen":notifSheet();break;

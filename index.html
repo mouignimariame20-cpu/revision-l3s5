@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261020171657";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261021003005";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1721,6 +1721,11 @@ function tasksFor(date){
   // 1. cours suivis récemment, pas encore appris
   X.classes.filter(e=>e.date<=date&&e.date>=addDays(date,-3)).forEach(e=>{const d=getDeck(e.deckId);if(!d||d.learnedOn)return;
     const est=estimate(d);push({key:"learn:"+d.id,deckId:d.id,mat:d.matiere,title:"Apprendre le cours : "+d.name,min:Math.max(25,Math.min(150,est.read+Math.min(est.cards,20))),prio:100,kind:"learn"})});
+  // 1 bis. le jour même : revoir chaque cours de l'emploi du temps juste après l'avoir eu
+  fixedFor(date).filter(f=>f.kind==="cours").forEach(f=>{
+    const cl=X.classes.find(e=>e.date===date&&e.deckId&&getDeck(e.deckId)&&fold(e.matiere||getDeck(e.deckId).matiere||"").includes(fold(f.title).slice(0,6)));
+    if(cl){const d=getDeck(cl.deckId);if(!d.learnedOn){const t=T.find(x=>x.key==="learn:"+d.id);if(t)t.after=f.e+10}return}
+    push({key:"post:"+f.ref+":"+date,deckId:null,mat:f.title,title:"Revoir le cours du jour : "+f.title,min:Math.max(45,Math.min(90,Math.round((f.e-f.s)*.5/5)*5)),prio:98,kind:"post",after:f.e+10})});
   // 2. révisions J dues ou en retard à cette date
   S.decks.forEach(d=>{if(!d.learnedOn)return;const n=J_STEPS.find(j=>!(d.jDone||[]).includes(j));if(!n)return;const dd=addDays(d.learnedOn,n);if(dd>date)return;
     push({key:`J${n}:${d.id}`,deckId:d.id,mat:d.matiere,title:`J${n} · ${d.name}`,min:revMin(d),prio:dd<date?95:90,kind:"J",rev:true,j:n})});
@@ -1748,7 +1753,8 @@ function schedule(date){
   let budget=(+P.maxStudyMin||240)-keep.reduce((n,b)=>n+(toMin(b.end)-toMin(b.start)),0);
   const slots=freeSlots(date,fixed,keep).map(x=>x.slice());const blocks=[],over=[];
   for(const t of tasksFor(date)){if(doneKeys.has(t.key))continue;let need=t.min;
-    while(need>0&&budget>=15){const sl=slots.find(([s,e])=>e-s>=Math.min(need,20));if(!sl)break;
+    while(need>0&&budget>=15){const af=t.after||0,ix=slots.findIndex(([s,e])=>e-Math.max(s,af)>=Math.min(need,20));if(ix<0)break;let sl=slots[ix];
+      if(sl[0]<af){const pre=[sl[0],af];sl[0]=af;if(pre[1]-pre[0]>=20)slots.splice(ix,0,pre)}
       let len=Math.min(need,+P.block||50,sl[1]-sl[0],budget);if(need-len>0&&need-len<10&&len+(need-len)<=sl[1]-sl[0]&&len+(need-len)<=budget)len=need;if(len<15&&len<need)break;
       blocks.push({id:uid(),key:t.key,deckId:t.deckId,title:t.title,kind:t.kind,rev:!!t.rev,start:hm(sl[0]),end:hm(sl[0]+len),done:false});
       sl[0]+=len+(+P.pause||10);need-=len;budget-=len}
@@ -1783,8 +1789,8 @@ const KIND_CLS={cours:"k-cours",habitude:"k-hab",obligation:"k-obl","imprévu":"
 function dayTimeline(date,p,fixed){
   const items=[...fixed.map(f=>({s:f.s,e:f.e,fixed:f})),...p.blocks.map(b=>({s:toMin(b.start),e:toMin(b.end),b}))].sort((a,b)=>a.s-b.s);
   return `<div class="tl">${items.length?items.map(x=>x.fixed?(()=>{const fd=!!(p.fdone||{})[x.fixed.ref];return `<div class="tli ${KIND_CLS[x.fixed.kind]} ${fd?"done":""}"><span class="tlt">${hm(x.s)}<br>${hm(x.e)}</span><div style="min-width:0;flex:1"><div class="label">${esc(x.fixed.kind)}${x.fixed.type?" · "+esc(x.fixed.type):""}${x.fixed.lieu?" · "+esc(x.fixed.lieu):""}</div><strong>${esc(x.fixed.title)}</strong></div>${x.fixed.ref&&/^Coran ·/.test(x.fixed.title)&&!fd?`<button class="iconbtn" data-act="actgo" data-t="${esc(x.fixed.title)}" data-min="${x.e-x.s}" data-ref="${esc(x.fixed.ref)}" data-date="${date}" aria-label="Chronométrer">⏱</button>`:""}${x.fixed.ref?`<button class="iconbtn chk ${fd?"on":""}" data-act="fdone" data-ref="${esc(x.fixed.ref)}" data-date="${date}" aria-label="${fd?"Marquer non fait":"Marquer fait"}">✓</button>`:""}</div>`})()
-    :`<div class="tli k-study ${x.b.done?"done":""}"><span class="tlt">${x.b.start}<br>${x.b.end}</span><div style="min-width:0;flex:1"><div class="label">${esc({learn:"Nouveau cours",J:"Révision J",exam:"Partiel",cards:"Flashcards",err:"Erreurs"}[x.b.kind]||"Travail")}</div><strong>${esc(x.b.title)}</strong>
-      <div class="row" style="margin-top:6px">${x.b.kind==="err"?`<button class="btn small" data-act="nav" data-v="revise">Commencer</button>`:x.b.deckId?`<button class="btn small" data-act="chpick" data-id="${x.b.deckId}" data-rev="${x.b.rev?1:""}" data-key="${esc(x.b.key)}" data-date="${date}">Chrono</button><button class="btn ghost small" data-act="open" data-id="${x.b.deckId}">Ouvrir</button>`:""}</div></div>
+    :`<div class="tli k-study ${x.b.done?"done":""}"><span class="tlt">${x.b.start}<br>${x.b.end}</span><div style="min-width:0;flex:1"><div class="label">${esc({learn:"Nouveau cours",post:"Après le cours",J:"Révision J",exam:"Partiel",cards:"Flashcards",err:"Erreurs"}[x.b.kind]||"Travail")}</div><strong>${esc(x.b.title)}</strong>
+      <div class="row" style="margin-top:6px">${x.b.kind==="post"?`<button class="btn small" data-act="cnew" data-m="${esc(x.b.title.replace(/^Revoir le cours du jour : /,""))}">Ajouter mes notes</button>`:x.b.kind==="err"?`<button class="btn small" data-act="nav" data-v="revise">Commencer</button>`:x.b.deckId?`<button class="btn small" data-act="chpick" data-id="${x.b.deckId}" data-rev="${x.b.rev?1:""}" data-key="${esc(x.b.key)}" data-date="${date}">Chrono</button><button class="btn ghost small" data-act="open" data-id="${x.b.deckId}">Ouvrir</button>`:""}</div></div>
       <button class="iconbtn chk ${x.b.done?"on":""}" data-act="bdone" data-id="${x.b.id}" data-date="${date}" aria-label="${x.b.done?"Marquer non fait":"Marquer fait"}">✓</button></div>`).join(""):`<div class="empty">Rien de prévu ce jour.</div>`}</div>`;
 }
 function semWeek(date){const st=X.planning?.semStart;if(!st)return 0;const n=Math.floor((new Date(mondayOf(date)+"T12:00")-new Date(mondayOf(st)+"T12:00"))/(7*864e5))+1;return n>=1?n:0}
@@ -2333,7 +2339,7 @@ document.addEventListener("click",async e=>{
     case "learned":if(d)markTaskDone(today(),"learn:"+d.id,true);break;
     case "endsession":break;
     /* En classe */
-    case "cnew":X.form={id:uid(),date:today(),type:"CM",matiere:"",deckId:"",newName:"",notes:"",comp:null,supports:[],merge:true};X.imp=null;S.view="classe";render();window.scrollTo(0,0);if(b.dataset.imp)setTimeout(()=>$("#cf-files")?.click(),50);break;
+    case "cnew":X.form={id:uid(),date:today(),type:"CM",matiere:b.dataset.m?(Object.keys(groupsByMat()).find(k=>fold(k).startsWith(fold(b.dataset.m)))||b.dataset.m):"",deckId:"",newName:"",notes:"",comp:null,supports:[],merge:true};X.imp=null;S.view="classe";render();window.scrollTo(0,0);if(b.dataset.imp)setTimeout(()=>$("#cf-files")?.click(),50);break;
     case "cedit":{const x=X.classes.find(y=>y.id===b.dataset.id);if(x){X.form={...clone(x),newName:"",merge:false};X.imp=null;render();window.scrollTo(0,0)}break}
     case "ccancel":X.form=null;X.imp=null;render();window.scrollTo(0,0);break;
     case "csave":saveClasse();break;

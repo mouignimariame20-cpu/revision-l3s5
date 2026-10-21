@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261021135322";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261021135710";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -252,6 +252,31 @@ input[type=time],input[type=number]{width:100%;padding:10px 12px;border:1px soli
 body.has-au .fab{display:none}
 .au-btn{align-self:flex-start;margin-top:6px}
 body.has-au .wrap{padding-bottom:62vh}
+/* Visuel : carte mentale */
+.mm{display:flex;flex-direction:column;gap:12px}
+.mmroot{align-self:center;text-align:center;font-family:var(--f-display);font-style:italic;font-weight:700;font-size:1.25rem;padding:12px 22px;border-radius:999px;background:var(--scrub);color:var(--scrub-ink);box-shadow:var(--sh)}
+.mmbranches{display:grid;grid-template-columns:1fr;gap:10px;position:relative}
+@media (min-width:640px){.mmbranches{grid-template-columns:1fr 1fr}}
+.mmbr{border-radius:20px;background:color-mix(in srgb,var(--c) 38%,var(--surface));border:1.5px solid var(--c);padding:10px;display:flex;flex-direction:column;gap:8px}
+.mmhead{border:0;background:var(--c);color:#3b2630;border-radius:14px;padding:8px 12px;font-weight:800;text-align:left;display:flex;gap:8px;align-items:center}
+.mmn{flex:none;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.7);display:grid;place-items:center;font-size:.8rem}
+.mmkids{display:flex;flex-direction:column;gap:6px;padding-left:10px;border-left:2px dashed var(--c);margin-left:12px}
+.mmkid{display:flex;flex-direction:column;gap:4px}
+.mmchip{border:1px solid var(--c);background:var(--surface);border-radius:12px;padding:6px 10px;text-align:left;font-weight:700;font-size:.9rem;color:var(--ink)}
+.mmchip.s{font-weight:600;font-size:.82rem;padding:4px 9px;border-style:dashed}
+.mmsub{display:flex;flex-wrap:wrap;gap:5px;padding-left:12px}
+.mmhl{display:flex;flex-wrap:wrap;gap:5px;padding-left:8px}
+.mmhl span{font-size:.78rem;background:var(--hl);color:var(--hl-ink);border-radius:8px;padding:2px 7px}
+.figgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.figth{border:1px solid var(--line);background:#fff;border-radius:14px;padding:0;overflow:hidden;display:flex;flex-direction:column;text-align:left}
+.figth img{width:100%;aspect-ratio:4/3;object-fit:contain;background:#fff}
+.figth span{font-size:.76rem;padding:6px 8px;color:#3b2630;background:var(--scrub-soft)}
+.simp{border-radius:18px;padding:12px 14px;background:var(--scrub-soft);display:flex;flex-direction:column;gap:6px}
+.simp h3{font-style:italic;color:var(--scrub)}
+.simp p{margin:0}
+.simp-img{font-size:.92rem;background:var(--surface);border-radius:12px;padding:8px 10px;border-left:3px solid #e9a2b6}
+.simp-ret{margin:0;padding-left:18px}
+.simp-ret li{margin:2px 0}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -774,7 +799,7 @@ function viewNew(){
 }
 function viewDeck(){
   const d=getDeck(S.deckId); if(!d){S.view="matieres";return viewMatieres()}
-  const tabs=[["source","Cours source"],["fiche","Fiche synthétique"],["explain","Comprendre"],["cards","Flashcards"],["qcm","QCM"],["cov","Couverture"],["edit","Modifier"]];
+  const tabs=[["source","Cours source"],["fiche","Fiche synthétique"],["visuel","Visuel"],["explain","Comprendre"],["cards","Flashcards"],["qcm","QCM"],["cov","Couverture"],["edit","Modifier"]];
   let body="";
   if(S.tab==="fiche")body=tabFiche(d);
   else if(S.tab==="cards")body=tabCards(d);
@@ -782,6 +807,7 @@ function viewDeck(){
   else if(S.tab==="source")body=tabSource(d);
   else if(S.tab==="cov")body=tabCov(d);
   else if(S.tab==="explain")body=tabExplain(d);
+  else if(S.tab==="visuel")body=tabVisuel(d);
   else body=tabEdit(d);
   return topbar(d.name,true)+`<div class="hero"><div class="label">${esc(d.matiere||"")}${d.partie?" · "+esc(d.partie):""}${d.example?" · exemple":""}</div><h1>${esc(d.name)}</h1>${(d.fiche||"").trim()?`<button class="btn soft au-btn" data-act="auopen" data-id="${d.id}">🎧 Écouter le cours</button>`:""}</div>
   <div class="seg" role="tablist">${tabs.map(([k,l])=>`<button role="tab" data-act="tab" data-t="${k}" aria-selected="${S.tab===k}">${l}</button>`).join("")}</div>${body}`;
@@ -2316,6 +2342,58 @@ function ntTick(){
   }catch(e){}}
 setInterval(ntTick,30000);
 
+/* ---------- Visuel : carte globale du chapitre, schémas du cours, version simplifiée, astuces (sur demande) ---------- */
+function ficheTree(f){
+  const root={t:"",kids:[],hl:[]},stack=[{lvl:0,n:root}];let k=0,cur=root;
+  for(const l of String(f||"").split("\n")){
+    const m=l.match(/^(#{1,4})\s+(.*)/);
+    if(m){const lvl=m[1].length,n={t:m[2].replace(/[*=_`]/g,"").trim(),k:k++,kids:[],hl:[],lvl};
+      if(lvl===1&&!root.t){root.t=n.t;root.k=n.k;cur=root;stack.length=1;continue}
+      while(stack.length>1&&stack[stack.length-1].lvl>=lvl)stack.pop();
+      stack[stack.length-1].n.kids.push(n);stack.push({lvl,n});cur=n;continue}
+    for(const h of l.matchAll(/==([^=]{2,60})==/g)){const v=h[1].replace(/[*_`]/g,"").trim();if(v&&cur.hl.length<6&&!cur.hl.includes(v))cur.hl.push(v)}
+  }
+  return root}
+const MAPC=["#f6c4d3","#dcc9f0","#c9e2cf","#f9cfbd","#c8daee","#f2dfba"];
+function mindMap(d){
+  const r=ficheTree(d.fiche);const br=r.kids.filter(b=>!/^objectifs?$/i.test(b.t));
+  if(!br.length)return `<div class="empty">La fiche n'a pas encore de titres pour construire la carte.</div>`;
+  const chip=(n,small)=>`<button class="mmchip${small?" s":""}" data-act="goto" data-id="${d.id}" data-tab="fiche" data-anchor="fs-${n.k}">${esc(n.t)}</button>`;
+  return `<div class="mm"><div class="mmroot">${esc(r.t||d.name)}</div><div class="mmbranches">${br.map((b,i)=>`<div class="mmbr" style="--c:${MAPC[i%MAPC.length]}">
+    <button class="mmhead" data-act="goto" data-id="${d.id}" data-tab="fiche" data-anchor="fs-${b.k}"><span class="mmn">${i+1}</span>${esc(b.t)}</button>
+    ${b.kids.length?`<div class="mmkids">${b.kids.map(c=>`<div class="mmkid">${chip(c)}${c.kids.length?`<div class="mmsub">${c.kids.map(x=>chip(x,true)).join("")}</div>`:""}${!c.kids.length&&c.hl.length?`<div class="mmhl">${c.hl.slice(0,3).map(h=>`<span>${esc(h)}</span>`).join("")}</div>`:""}</div>`).join("")}</div>`
+      :b.hl.length?`<div class="mmhl">${b.hl.slice(0,4).map(h=>`<span>${esc(h)}</span>`).join("")}</div>`:""}</div>`).join("")}</div></div>
+  <p class="help">Carte construite à partir des titres et des points surlignés de ta fiche. Touche une case pour ouvrir la fiche à cet endroit.</p>`}
+function courseFigs(d){const out=[];for(const m of String(d.fiche||"").matchAll(/!\[([^\]]*)\]\(([^)\s]+)\)/g)){const u=safeUrl(m[2]);if(u)out.push({alt:m[1],u})}return out}
+function tabVisuel(d){
+  const figs=courseFigs(d),sp=d.simple,busy=X.ai["simp-"+d.id];
+  return `<div class="panel stack" style="margin-bottom:14px"><div class="label">Vue d'ensemble du chapitre</div>${mindMap(d)}</div>
+  ${figs.length?`<div class="panel stack" style="margin-bottom:14px"><div class="label">Les schémas du cours · ${figs.length}</div>
+    <div class="figgrid">${figs.map(f=>`<button class="figth" data-act="zoom" data-src="${esc(f.u)}"><img src="${esc(f.u)}" alt="${esc(f.alt)}" loading="lazy"><span>${esc(f.alt.replace(/^Diapo \d+ · /,""))}</span></button>`).join("")}</div></div>`:""}
+  <div class="panel stack" style="margin-bottom:14px"><div class="label">Le cours en simple</div>
+    ${sp?`<div class="stack">${(sp.sections||[]).map(s=>`<div class="simp"><h3>${esc(s.titre||"")}</h3><p>${esc(s.simple||"")}</p>${s.image?`<div class="simp-img"><strong>Pour se représenter :</strong> ${esc(s.image)}</div>`:""}${(s.retenir||[]).length?`<ul class="simp-ret">${s.retenir.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}</div>`).join("")}</div>
+      <p class="help">Version simplifiée faite uniquement à partir de ta fiche. Les « pour se représenter » sont des images pour comprendre, pas des faits du cours. En cas de doute, la fiche fait foi.</p>
+      ${aiOK()?`<button class="btn ghost small" data-act="simple" data-re="1" ${busy?"disabled":""} style="align-self:flex-start">${busy?"Je simplifie…":"Refaire la version simple"}</button>`:""}`
+    :aiOK()?`<p class="help">Chaque partie du chapitre expliquée avec des mots simples, l'essentiel à retenir et une image pour se représenter les notions compliquées.</p><button class="btn" data-act="simple" ${busy?"disabled":""} style="align-self:flex-start">${busy?"Je simplifie le chapitre…":"Simplifie-moi ce chapitre"}</button>`:noAI}</div>
+  ${ficheMnemo(d)}`}
+async function doSimple(d){
+  const k="simp-"+d.id;X.ai[k]=true;render();
+  try{const o=await askJSON(`Tu es un professeur de médecine très pédagogue. Rends le chapitre « ${d.name} » (${d.matiere||""}) facile à comprendre pour une étudiante de L3.
+Pour CHAQUE grande partie de la fiche (titres ## dans l'ordre), donne :
+- "titre" : le titre exact de la partie
+- "simple" : 2 à 4 phrases avec des mots simples qui expliquent l'idée de la partie (sans jargon inutile, mais en gardant les termes médicaux à connaître)
+- "retenir" : 2 à 4 points essentiels à retenir, courts, tirés du cours (garde les chiffres exacts)
+- "image" : une comparaison ou image de la vie courante pour se représenter la notion SI elle est compliquée, sinon null
+RÈGLES : n'utilise QUE les informations de la fiche ; n'ajoute aucun fait, chiffre, exemple clinique, cause ou traitement absent. L'image est une comparaison, jamais un fait médical. Ignore la partie Objectifs.
+Réponds uniquement en JSON : {"sections":[{"titre":"…","simple":"…","retenir":["…"],"image":"…"|null}]}
+
+FICHE :
+${String(d.fiche||"").replace(/!\[[^\]]*\]\([^)]*\)/g,"").slice(0,60000)}`,{modelTier:"default"});
+    if(!o||!Array.isArray(o.sections))throw {code:"invalid_json"};
+    const live=getDeck(d.id);live.simple={at:today(),sections:o.sections.slice(0,30).map(s=>({titre:String(s.titre||""),simple:String(s.simple||""),retenir:(s.retenir||[]).map(String).slice(0,5),image:s.image?String(s.image):null}))};markDirty(live.id)}
+  catch(e){toast(aiErr(e))}
+  X.ai[k]=false;render()}
+
 /* ---------- Fiche : notes du prof, mémorisation, chrono ---------- */
 function ficheExtras(d){
   const e=estimate(d);const errs=errItems().filter(x=>x.deckId===d.id).length;
@@ -2334,6 +2412,7 @@ document.addEventListener("click",async e=>{
     case "obgo":{const v=$("#ob-name").value.trim();if(!v){toast("Écris ton prénom");break}try{localStorage.setItem("revision-prenom",v)}catch(e){}
       const o={};["edt","prieres","coran","batch"].forEach(k=>o[k]=!!$("#ob-"+k)?.checked);o.perso=!!$("#ob-perso")?.checked;
       window.__seedPlanning&&window.__seedPlanning(o);location.reload();break}
+    case "simple":if(d)doSimple(d);break;
     case "ntopen":notifSheet();break;
     case "ntclose":if(e.target===b||b.tagName==="BUTTON")$("#overlay").innerHTML="";break;
     case "icsgo":{const v=$("#nt-alarm");if(v){NT.alarm=+v.value;ntSave()}icsDownload(b.dataset.s);break}

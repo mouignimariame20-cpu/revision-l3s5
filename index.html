@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261021135941";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261021140100";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -349,9 +349,8 @@ input[type=text],input[type=date],input[type=time],textarea,select{border-radius
 .mgrid.pins{display:block}
 body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:6;pointer-events:none}
 
-:root{color-scheme:light}
 </style>
-<script>(function(){var r=document.documentElement;function f(){if(r.getAttribute("data-theme")!=="light")r.setAttribute("data-theme","light")}f();try{new MutationObserver(f).observe(r,{attributes:true,attributeFilter:["data-theme"]})}catch(e){}})()</script>
+<script>(function(){var r=document.documentElement;function m(){try{return localStorage.getItem("revision-theme")||"light"}catch(e){return "light"}}function f(){var t=m();if(t==="auto"){if(r.hasAttribute("data-theme"))r.removeAttribute("data-theme")}else if(r.getAttribute("data-theme")!==t)r.setAttribute("data-theme",t)}window.__applyTheme=f;f();try{new MutationObserver(f).observe(r,{attributes:true,attributeFilter:["data-theme"]})}catch(e){}})()</script>
 
 <div class="wrap" id="app">
   <div class="topbar"><div class="grow"><div class="t">Révisions</div></div><span class="sync">Chargement…</span></div>
@@ -1211,6 +1210,9 @@ function onboard(){const o=$("#overlay");if(!o)return;
   <button class="btn" data-act="obgo">C'est parti</button></div></div>`}
 if(window.__STATIC&&window.__ONBOARD)setTimeout(onboard,900);
 
+function themePref(){try{return localStorage.getItem("revision-theme")||"light"}catch(e){return "light"}}
+function curTheme(){const p=themePref();return p==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):p}
+
 /* ---------- Importation : PDF, PowerPoint, Word, photos, texte (+ OCR par Claude) ---------- */
 const PDFJS="https://cdn.jsdelivr.net/npm/pdfjs-dist@6.2.108/legacy/build/pdf.min.mjs",PDFW="https://cdn.jsdelivr.net/npm/pdfjs-dist@6.2.108/legacy/build/pdf.worker.min.mjs",JSZIP="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";
 let PDFL=null;
@@ -1885,7 +1887,8 @@ function itemForm(list){
 function planRules(){
   const P=X.planning,pr=P.prefs,mats=Object.keys(groupsByMat());
   const row=(x,l)=>`<div class="mini"><span><strong>${esc(x.title)}</strong> <span class="muted">· ${x.date?esc(fmtDate(x.date)):(x.days||[]).map(d=>WD[d].slice(0,3)).join(", ")} · ${esc(x.start)}–${esc(x.end)}</span></span><button class="btn ghost small" data-act="pldel" data-l="${l}" data-id="${x.id}">Retirer</button></div>`;
-  return `<div class="section"><h2>Profil</h2><div class="panel stack"><label class="f">Ton prénom<input type="text" id="pf-name" value="${esc(prenom())}" autocomplete="given-name"></label><button class="btn soft small" data-act="namesave" style="align-self:flex-start">Enregistrer</button><p class="help">${window.__STATIC?"Ta progression, tes coches et ton planning restent sur ton appareil : chaque personne qui utilise le lien a son propre suivi.":"Affiché sur l'accueil."}</p></div></div>
+  return `<div class="section"><h2>Apparence</h2><div class="panel stack"><div class="chips">${[["light","☀️ Clair"],["dark","🌙 Sombre"],["auto","Comme mon téléphone"]].map(([k,l])=>`<button class="chip" data-act="themeset" data-t="${k}" aria-pressed="${themePref()===k}">${l}</button>`).join("")}</div></div></div>
+  <div class="section"><h2>Profil</h2><div class="panel stack"><label class="f">Ton prénom<input type="text" id="pf-name" value="${esc(prenom())}" autocomplete="given-name"></label><button class="btn soft small" data-act="namesave" style="align-self:flex-start">Enregistrer</button><p class="help">${window.__STATIC?"Ta progression, tes coches et ton planning restent sur ton appareil : chaque personne qui utilise le lien a son propre suivi.":"Affiché sur l'accueil."}</p></div></div>
   <div class="section"><h2>Semestre</h2><div class="panel stack"><label class="f">Lundi de la semaine 1<input type="date" id="sem-start" value="${esc(P.semStart||"")}"></label><button class="btn soft small" data-act="semsave" style="align-self:flex-start">Enregistrer</button><p class="help">Sert à numéroter tes semaines (Semaine 1, 2, 3…) dans l'accueil et le planning.</p></div></div>
   <div class="section"><h2>Habitudes</h2>${(P.habits||[]).map(x=>row(x,"habits")).join("")||`<p class="help">Sommeil, repas, prière, sport, trajet… tout ce qui revient chaque semaine.</p>`}${itemForm("habits")}</div>
   <div class="section"><h2>Obligations</h2>${(P.obligations||[]).map(x=>row(x,"obligations")).join("")||`<p class="help">Rendez-vous et engagements ponctuels.</p>`}${itemForm("obligations")}</div>
@@ -1988,7 +1991,7 @@ function viewHome(){
     </div></div>
   ${searchBox("hq","","Chercher un chapitre, une notion, un mot-clé…")}
   ${X.chrono?`<button class="mini" data-act="nav" data-v="timer" style="margin-bottom:14px;border-color:var(--scrub)"><span><strong>Séance en cours</strong> · ${esc(X.chrono.act?X.chrono.act.title:getDeck(X.chrono.deckId)?.name||"")}</span><span class="pill">${X.chrono.running?"en cours":"en pause"}</span></button>`:""}
-  <div class="section"><div class="row" style="justify-content:space-between"><h2>Ma journée</h2><span class="row" style="gap:6px;flex-wrap:nowrap"><button class="iconbtn" data-act="ntopen" aria-label="Rappels">🔔</button><button class="btn ghost small" data-act="nav" data-v="plan">Planning</button></span></div>
+  <div class="section"><div class="row" style="justify-content:space-between"><h2>Ma journée</h2><span class="row" style="gap:6px;flex-wrap:nowrap"><button class="iconbtn" data-act="themetog" aria-label="Changer de thème">${curTheme()==="dark"?"☀️":"🌙"}</button><button class="iconbtn" data-act="ntopen" aria-label="Rappels">🔔</button><button class="btn ghost small" data-act="nav" data-v="plan">Planning</button></span></div>
     ${!X.loaded?`<div class="help">Chargement…</div>`:plan?`<p class="help">${done.length}/${plan.blocks.length+fx.length} fait${done.length>1?"s":""} · touche ✓ dès qu'une activité est faite.</p>${dayTimeline(t,plan,fx)}`:`<div class="empty">Ajoute ton emploi du temps dans Planning pour un programme sur mesure.</div>`}
     ${plan?.over?.length?`<p class="help">${plan.over.length} tâche(s) reportée(s) faute de temps libre aujourd'hui.</p>`:""}</div>
   <div class="section"><h2>Fait aujourd'hui</h2>
@@ -2415,6 +2418,8 @@ document.addEventListener("click",async e=>{
       const o={};["edt","prieres","coran","batch"].forEach(k=>o[k]=!!$("#ob-"+k)?.checked);o.perso=!!$("#ob-perso")?.checked;
       window.__seedPlanning&&window.__seedPlanning(o);location.reload();break}
     case "simple":if(d)doSimple(d);break;
+    case "themeset":try{localStorage.setItem("revision-theme",b.dataset.t)}catch(e){}window.__applyTheme&&window.__applyTheme();render();break;
+    case "themetog":try{localStorage.setItem("revision-theme",curTheme()==="dark"?"light":"dark")}catch(e){}window.__applyTheme&&window.__applyTheme();render();break;
     case "ntopen":notifSheet();break;
     case "ntclose":if(e.target===b||b.tagName==="BUTTON")$("#overlay").innerHTML="";break;
     case "icsgo":{const v=$("#nt-alarm");if(v){NT.alarm=+v.value;ntSave()}icsDownload(b.dataset.s);break}

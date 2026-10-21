@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261021151342";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261021191603";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -285,6 +285,17 @@ body.has-au .wrap{padding-bottom:62vh}
 .figx-r{background:var(--surface);border-radius:12px;padding:8px 12px}
 .figx-r ul{margin:4px 0 0;padding-left:18px}
 @media (min-width:700px){.figx{flex-direction:row}.figx-img{flex:0 0 46%}}
+/* À mémoriser */
+.memog{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.memog h3{font-style:italic;color:var(--scrub);font-size:1.02rem}
+.memoi{background:var(--surface);border-radius:16px;padding:12px 14px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:6px;border-left:4px solid #efc3d0}
+.memoi.ok{border-left-color:var(--ok)}
+.memoq{font-weight:800}
+.memoa{line-height:1.5}
+.memoa.hid{border:1.5px dashed var(--line);background:var(--scrub-soft);border-radius:12px;padding:10px;color:var(--muted);font-weight:700;text-align:center}
+.memob{gap:6px}
+.memoimg{border:0;padding:0;background:#fff;border-radius:12px;overflow:hidden}
+.memoimg img{width:100%;max-height:220px;object-fit:contain;display:block;background:#fff}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -808,7 +819,7 @@ function viewNew(){
 }
 function viewDeck(){
   const d=getDeck(S.deckId); if(!d){S.view="matieres";return viewMatieres()}
-  const tabs=[["source","Cours source"],["fiche","Fiche synthétique"],["visuel","Visuel"],["explain","Comprendre"],["cards","Flashcards"],["qcm","QCM"],["cov","Couverture"],["edit","Modifier"]];
+  const tabs=[["source","Cours source"],["fiche","Fiche synthétique"],["visuel","Visuel"],["memo","Mémoriser"],["explain","Comprendre"],["cards","Flashcards"],["qcm","QCM"],["cov","Couverture"],["edit","Modifier"]];
   let body="";
   if(S.tab==="fiche")body=tabFiche(d);
   else if(S.tab==="cards")body=tabCards(d);
@@ -817,6 +828,7 @@ function viewDeck(){
   else if(S.tab==="cov")body=tabCov(d);
   else if(S.tab==="explain")body=tabExplain(d);
   else if(S.tab==="visuel")body=tabVisuel(d);
+  else if(S.tab==="memo")body=viewMemo(d);
   else body=tabEdit(d);
   return topbar(d.name,true)+`<div class="hero"><div class="label">${esc(d.matiere||"")}${d.partie?" · "+esc(d.partie):""}${d.example?" · exemple":""}</div><h1>${esc(d.name)}</h1>${(d.fiche||"").trim()?`<button class="btn soft au-btn" data-act="auopen" data-id="${d.id}">🎧 Écouter le cours</button>`:""}</div>
   <div class="seg" role="tablist">${tabs.map(([k,l])=>`<button role="tab" data-act="tab" data-t="${k}" aria-selected="${S.tab===k}">${l}</button>`).join("")}</div>${body}`;
@@ -2428,6 +2440,33 @@ ${near}`,{modelTier:"default",images:[blob]});
   catch(e){toast(aiErr(e))}
   X.ai["fx-"+k]=false;render()}
 
+/* ---------- À mémoriser : tout l'essentiel du chapitre, dans l'ordre du cours, avec mode « cache-cache » ---------- */
+function memoItems(d){
+  const heads=[];for(const l of String(d.fiche||"").split("\n")){const m=l.match(/^#{1,4}\s+(.*)/);if(m)heads.push(m[1].replace(/[*=_`]/g,"").trim())}
+  const nz=t=>fold(String(t||"").replace(/[*=_`]/g,"")).replace(/\s+/g," ").trim();const pos=t=>{const i=heads.findIndex(h=>nz(h)===nz(t));return i<0?999:i};
+  const groups=new Map();
+  (d.cards||[]).forEach((c,n)=>{const g=c.src||"Points clés";if(!groups.has(g))groups.set(g,{titre:g,ord:pos(g),items:[]});groups.get(g).items.push({id:"c:"+c.id,q:c.q,a:c.a,n})});
+  const out=[...groups.values()].sort((a,b)=>a.ord-b.ord||a.items[0].n-b.items[0].n);
+  const figs=courseFigs(d).map(f=>({f,x:(d.figExpl||{})[figKey(f.u)]})).filter(o=>o.x&&(o.x.retenir||[]).length);
+  if(figs.length)out.push({titre:"Les schémas à connaître",fig:true,items:figs.map(o=>({id:"f:"+figKey(o.f.u),q:o.f.alt.replace(/^Diapo \d+ · /,""),a:o.x.retenir.join(" · "),img:o.f.u}))});
+  return out}
+function viewMemo(d){
+  const G=memoItems(d),all=G.flatMap(g=>g.items),ok=d.memoOk||{},nOk=all.filter(i=>ok[i.id]).length,hide=!!X.memoHide,only=!!X.memoTodo;
+  if(!all.length)return `<div class="empty">Pas encore de points à mémoriser pour ce chapitre.</div>`;
+  const pct=Math.round(nOk/all.length*100);
+  return `<div class="panel stack" style="margin-bottom:12px"><div class="row" style="justify-content:space-between"><div class="label">À mémoriser · ${all.length} points</div><span class="pill ${pct===100?"ok":""}">${nOk}/${all.length} sus</span></div>
+    <div class="progress"><i style="width:${pct}%"></i></div>
+    <div class="chips"><button class="chip" data-act="memomode" data-m="lire" aria-pressed="${!hide}">📖 Lire</button><button class="chip" data-act="memomode" data-m="test" aria-pressed="${hide}">🙈 Me tester</button><button class="chip" data-act="memotodo" aria-pressed="${only}">Seulement ceux à revoir</button></div>
+    <p class="help" style="margin:0">${hide?"Les réponses sont cachées : récite dans ta tête, touche pour vérifier, puis dis-moi si tu savais.":"Tout l'essentiel du cours, partie par partie, dans l'ordre de la fiche, y compris ce qu'il faut retenir des schémas. Passe en « Me tester » quand tu penses savoir."}</p></div>
+  ${ficheMnemo(d)}
+  ${G.map(g=>{const it=g.items.filter(i=>!only||!ok[i.id]);if(!it.length)return "";const gOk=g.items.filter(i=>ok[i.id]).length;
+    return `<div class="memog"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><h3>${g.fig?"🖼️ ":""}${esc(g.titre)}</h3><span class="pill ${gOk===g.items.length?"ok":""}">${gOk}/${g.items.length}</span></div>
+    ${it.map(i=>{const shown=!hide||X.memoShow?.[i.id];return `<div class="memoi ${ok[i.id]?"ok":""}">${i.img?`<button class="memoimg" data-act="zoom" data-src="${esc(i.img)}"><img src="${esc(i.img)}" alt="" loading="lazy"></button>`:""}
+      <div class="memoq">${esc(i.q)}</div>
+      ${shown?`<div class="memoa">${esc(i.a)}</div>`:`<button class="memoa hid" data-act="memoshow" data-i="${esc(i.id)}">Toucher pour voir la réponse</button>`}
+      ${shown?`<div class="row memob"><button class="btn small ${ok[i.id]?"":"soft"}" data-act="memook" data-i="${esc(i.id)}" data-v="1">${ok[i.id]?"✓ Je sais":"Je sais"}</button>${hide||ok[i.id]?`<button class="btn ghost small" data-act="memook" data-i="${esc(i.id)}" data-v="0">À revoir</button>`:""}</div>`:""}</div>`}).join("")}</div>`}).join("")||`<div class="empty">Tout est su dans ce chapitre 🎉</div>`}
+  <p class="help">Les points viennent des flashcards du cours et des explications des schémas. Ce que tu marques « Je sais » est retenu ; les flashcards continuent de revenir selon les J.</p>`}
+
 /* ---------- Fiche : notes du prof, mémorisation, chrono ---------- */
 function ficheExtras(d){
   const e=estimate(d);const errs=errItems().filter(x=>x.deckId===d.id).length;
@@ -2447,6 +2486,10 @@ document.addEventListener("click",async e=>{
       const o={};["edt","prieres","coran","batch"].forEach(k=>o[k]=!!$("#ob-"+k)?.checked);o.perso=!!$("#ob-perso")?.checked;
       window.__seedPlanning&&window.__seedPlanning(o);location.reload();break}
     case "simple":if(d)doSimple(d);break;
+    case "memomode":X.memoHide=b.dataset.m==="test";X.memoShow={};render();break;
+    case "memotodo":X.memoTodo=!X.memoTodo;render();break;
+    case "memoshow":X.memoShow={...(X.memoShow||{}),[b.dataset.i]:true};render();break;
+    case "memook":if(d){d.memoOk={...(d.memoOk||{})};if(b.dataset.v==="1")d.memoOk[b.dataset.i]=true;else delete d.memoOk[b.dataset.i];markDirty(d.id);render()}break;
     case "figx":if(d)doFigExpl(d,b.dataset.k,b.dataset.u,b.dataset.alt);break;
     case "themeset":try{localStorage.setItem("revision-theme",b.dataset.t)}catch(e){}window.__applyTheme&&window.__applyTheme();render();break;
     case "themetog":try{localStorage.setItem("revision-theme",curTheme()==="dark"?"light":"dark")}catch(e){}window.__applyTheme&&window.__applyTheme();render();break;

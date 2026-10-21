@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261021003457";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261021003943";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1725,7 +1725,7 @@ function tasksFor(date){
   fixedFor(date).filter(f=>f.kind==="cours").forEach(f=>{
     const cl=X.classes.find(e=>e.date===date&&e.deckId&&getDeck(e.deckId)&&fold(e.matiere||getDeck(e.deckId).matiere||"").includes(fold(f.title).slice(0,6)));
     if(cl){const d=getDeck(cl.deckId);if(!d.learnedOn){const t=T.find(x=>x.key==="learn:"+d.id);if(t)t.after=f.e+10}return}
-    push({key:"post:"+f.ref+":"+date,deckId:null,mat:f.title,title:"Revoir le cours du jour : "+f.title,min:Math.max(45,Math.min(90,Math.round((f.e-f.s)*.5/5)*5)),prio:98,kind:"post",after:f.e+10})});
+    push({key:"post:"+f.ref+":"+date,deckId:null,mat:f.title,title:"Revoir le cours du jour : "+f.title,min:f.e>=18*60?45:Math.max(45,Math.min(90,Math.round((f.e-f.s)*.5/5)*5)),prio:98,kind:"post",after:f.e+10})});
   // 2. révisions J dues ou en retard à cette date
   S.decks.forEach(d=>{if(!d.learnedOn)return;const n=J_STEPS.find(j=>!(d.jDone||[]).includes(j));if(!n)return;const dd=addDays(d.learnedOn,n);if(dd>date)return;
     push({key:`J${n}:${d.id}`,deckId:d.id,mat:d.matiere,title:`J${n} · ${d.name}`,min:revMin(d),prio:dd<date?95:90,kind:"J",rev:true,j:n})});
@@ -1737,8 +1737,24 @@ function tasksFor(date){
   S.decks.forEach(d=>{const n=(d.cards||[]).filter(c=>!c.due||c.due<=date).filter(c=>c.due||((c.box||0)>0)).length;if(n>=3)push({key:"cards:"+d.id,deckId:d.id,mat:d.matiere,title:`Flashcards · ${d.name} (${n})`,min:Math.max(10,Math.min(40,Math.ceil(n*.5))),prio:60,kind:"cards"})});
   // 5. erreurs
   const er=errItems();if(er.length)push({key:"err",deckId:er[0].deckId,mat:"",title:`Exercice ciblé : ${Math.min(er.length,30)} notions ratées`,min:Math.min(30,Math.max(10,er.length)),prio:55,kind:"err"});
+  // 6. nouveaux chapitres à commencer (dans l'ordre des cours), pour remplir le temps de travail restant
+  const fresh=learnQueue(date);
+  fresh.forEach((d,k)=>{const e=estimate(d);push({key:"start:"+d.id,deckId:d.id,mat:d.matiere,title:"Apprendre : "+d.name,min:Math.max(60,Math.min(120,Math.round((e.read*2+Math.min(e.cards,30))/5)*5)),prio:45-k,kind:"learn"})});
   return T.sort((a,b)=>b.prio-a.prio);
 }
+/* File d'apprentissage : chapitres pas encore appris du semestre en cours, matière par matière dans l'ordre du cours.
+   Le jour d'un cours, la matière du cours passe en premier ; chaque jour futur prend les chapitres suivants. */
+function learnQueue(date){
+  const mats={};perDecks().forEach(d=>{if(d.example)return;(mats[d.matiere||"Sans matière"]??=[]).push(d)});
+  const P=X.planning||{},pr=m=>+(P.priorities?.[m]||2);
+  const todayMat=fixedFor(date).filter(f=>f.kind==="cours").map(f=>fold(f.title).slice(0,6));
+  const list=Object.entries(mats).map(([m,l])=>({m,l:l.filter(d=>!d.learnedOn)})).filter(x=>x.l.length)
+    .sort((a,b)=>(todayMat.some(t=>fold(b.m).startsWith(t))-todayMat.some(t=>fold(a.m).startsWith(t)))||pr(b.m)-pr(a.m)||a.l.length/(mats[a.m].length)-b.l.length/(mats[b.m].length)||a.m.localeCompare(b.m));
+  const n=Math.max(0,Math.round((new Date(date+"T12:00")-new Date(today()+"T12:00"))/864e5));
+  const out=[];
+  // pour le jour J+n, on décale de n chapitres dans chaque matière (aperçu des jours suivants sans doublon)
+  for(const x of list){const d=x.l[n]||null;if(d)out.push(d);if(out.length>=2)break}
+  return out}
 function freeSlots(date,fixed,keep){
   const P=X.planning.prefs;let a=toMin(P.dayStart)??420,b=toMin(P.dayEnd)??1320;
   if(date===today())a=Math.max(a,Math.ceil((nowMin()+5)/5)*5);
@@ -1753,9 +1769,9 @@ function schedule(date){
   let budget=(+P.maxStudyMin||240)-keep.reduce((n,b)=>n+(toMin(b.end)-toMin(b.start)),0);
   const slots=freeSlots(date,fixed,keep).map(x=>x.slice());const blocks=[],over=[];
   for(const t of tasksFor(date)){if(doneKeys.has(t.key))continue;let need=t.min;
-    while(need>0&&budget>=15){const af=t.after||0,ix=slots.findIndex(([s,e])=>e-Math.max(s,af)>=Math.min(need,20));if(ix<0)break;let sl=slots[ix];
+    while(need>0&&budget>=15){if(need<20&&need<t.min)break;const af=t.after||0,ix=slots.findIndex(([s,e])=>e-Math.max(s,af)>=Math.min(need,20));if(ix<0)break;let sl=slots[ix];
       if(sl[0]<af){const pre=[sl[0],af];sl[0]=af;if(pre[1]-pre[0]>=20)slots.splice(ix,0,pre)}
-      let len=Math.min(need,+P.block||50,sl[1]-sl[0],budget);if(need-len>0&&need-len<10&&len+(need-len)<=sl[1]-sl[0]&&len+(need-len)<=budget)len=need;if(len<15&&len<need)break;
+      let len=Math.min(need,+P.block||50,sl[1]-sl[0],budget);if(need-len>0&&need-len<20&&need<=sl[1]-sl[0]&&need<=budget&&need<=(+P.block||50)+20)len=need;if(len<20&&len<need){slots.splice(slots.indexOf(sl),1);continue}
       blocks.push({id:uid(),key:t.key,deckId:t.deckId,title:t.title,kind:t.kind,rev:!!t.rev,start:hm(sl[0]),end:hm(sl[0]+len),done:false});
       sl[0]+=len+(+P.pause||10);need-=len;budget-=len}
     if(need>=10)over.push({key:t.key,title:t.title,min:need})}

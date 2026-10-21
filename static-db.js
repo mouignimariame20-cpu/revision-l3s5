@@ -10,7 +10,10 @@
   const SEEDCAT=(k,x)=>k!=="habits"?"edt":/^hab-(fajr|dhuhr|asr|maghrib|icha)/.test(x.id)?"prieres":/^hab-coran/.test(x.id)?"coran":x.id==="hab-batch"?"batch":"perso";
   function seed(opts){try{const bp=base.planning&&base.planning.main;if(!bp)return;ov.planning=ov.planning||{};
     const cur=ov.planning.main=ov.planning.main||{edt:[],habits:[],obligations:[],exams:[]};const o=opts||ov.seedOpts||null,rm=new Set(cur.removed||[]);
-    ["edt","habits","obligations","exams"].forEach(k=>{const have=new Set((cur[k]||[]).map(x=>x.id));(bp[k]||[]).forEach(x=>{if(have.has(x.id)||rm.has(x.id))return;if(o&&!o[SEEDCAT(k,x)])return;(cur[k]=cur[k]||[]).push(JSON.parse(JSON.stringify(x)))})});
+    const sv=cur._seedv=cur._seedv||{},J=x=>JSON.stringify(x);
+    ["edt","habits","obligations","exams"].forEach(k=>{cur[k]=cur[k]||[];(bp[k]||[]).forEach(x=>{if(rm.has(x.id))return;const i=cur[k].findIndex(y=>y.id===x.id);
+      if(i>=0){/* mise à jour du site (ex. nouvelles heures de prière) si la personne n'a pas modifié cet élément */if(J(cur[k][i])!==J(x)&&(sv[x.id]===undefined||sv[x.id]===J(cur[k][i])))cur[k][i]=JSON.parse(J(x));sv[x.id]=J(x);return}
+      if(o&&!o[SEEDCAT(k,x)])return;cur[k].push(JSON.parse(J(x)));sv[x.id]=J(x)})});
     if(!cur.semStart&&bp.semStart)cur.semStart=bp.semStart;
     if(!cur.prefs&&bp.prefs)cur.prefs=JSON.parse(JSON.stringify(bp.prefs));save()}catch(e){}}
   if(FRESH){ov.pending=true;save()}

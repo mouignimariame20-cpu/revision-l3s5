@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261022202810";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261022205719";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -300,6 +300,10 @@ body.has-au .wrap{padding-bottom:62vh}
 .lesson h2{margin-top:22px;color:var(--ink)}
 .lesson h3{margin-top:16px}
 .lesson blockquote,.lesson .callout{margin:10px 0}
+.objc{border-left-color:#c9a0e6}
+.objr{background:var(--scrub-soft);border-radius:12px;padding:10px 12px}
+.objr ul{margin:4px 0;padding-left:18px}
+.objk{font-size:.85rem;font-weight:700;color:var(--scrub)}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -823,7 +827,7 @@ function viewNew(){
 }
 function viewDeck(){
   const d=getDeck(S.deckId); if(!d){S.view="matieres";return viewMatieres()}
-  const tabs=[["source","Cours source"],["fiche","Fiche synthétique"],["lesson","Cours expliqué"],["visuel","Visuel"],["memo","Mémoriser"],["explain","Comprendre"],["cards","Flashcards"],["qcm","QCM"],["cov","Couverture"],["edit","Modifier"]];
+  const tabs=[["source","Cours source"],["fiche","Fiche synthétique"],["obj","Objectifs"],["lesson","Cours expliqué"],["visuel","Visuel"],["memo","Mémoriser"],["explain","Comprendre"],["cards","Flashcards"],["qcm","QCM"],["cov","Couverture"],["edit","Modifier"]];
   let body="";
   if(S.tab==="fiche")body=tabFiche(d);
   else if(S.tab==="cards")body=tabCards(d);
@@ -833,6 +837,7 @@ function viewDeck(){
   else if(S.tab==="explain")body=tabExplain(d);
   else if(S.tab==="visuel")body=tabVisuel(d);
   else if(S.tab==="lesson")body=tabLesson(d);
+  else if(S.tab==="obj")body=tabObjectifs(d);
   else if(S.tab==="memo")body=viewMemo(d);
   else body=tabEdit(d);
   return topbar(d.name,true)+`<div class="hero"><div class="label">${esc(d.matiere||"")}${d.partie?" · "+esc(d.partie):""}${d.example?" · exemple":""}</div><h1>${esc(d.name)}</h1>${(d.fiche||"").trim()?`<button class="btn soft au-btn" data-act="auopen" data-id="${d.id}">🎧 Écouter le cours</button>`:""}</div>
@@ -2503,6 +2508,42 @@ ${src}
   catch(e){toast(aiErr(e))}
   X.ai[k]=false;X.ai["lest-"+d.id]="";render()}
 
+/* ---------- Objectifs : chaque objectif du cours avec sa réponse type, à mémoriser ---------- */
+function ficheObjectifs(d){
+  const out=[];let on=false;
+  for(const l of String(d.fiche||"").split("\n")){
+    if(/^#{1,4}\s+/.test(l)){if(on)break;if(/objectif/i.test(l))on=true;continue}
+    if(on){const m=l.match(/^\s*(?:[-•]|\d+[.)])\s+(.*)/);if(m)out.push(m[1].replace(/\*\*|==/g,"").replace(/^\d+\s*[-.)]\s*/,"").trim())}}
+  return out}
+function tabObjectifs(d){
+  const O=(d.objectifs&&d.objectifs.length)?d.objectifs:ficheObjectifs(d).map(t=>({obj:t,reponse:"",cle:[]}));
+  const ok=d.memoOk||{},hide=!!X.objHide,busy=X.ai["obj-"+d.id];
+  if(!O.length)return `<div class="empty">Ce support ne contient pas d'objectifs. Utilise l'onglet Mémoriser.</div>`;
+  const has=O.some(o=>o.reponse),nOk=O.filter((o,i)=>ok["o:"+i]).length;
+  return `<div class="panel stack" style="margin-bottom:12px"><div class="row" style="justify-content:space-between"><div class="label">Objectifs du cours · ${O.length}</div><span class="pill ${nOk===O.length?"ok":""}">${nOk}/${O.length} sus</span></div>
+    <p class="help" style="margin:0">À l'examen, les questions reprennent souvent les objectifs mot pour mot. Pour chacun : la réponse type, construite uniquement avec ton cours.</p>
+    ${has?`<div class="chips"><button class="chip" data-act="objmode" data-m="lire" aria-pressed="${!hide}">📖 Lire</button><button class="chip" data-act="objmode" data-m="test" aria-pressed="${hide}">🙈 Me tester</button></div>`
+      :aiOK()?`<button class="btn" data-act="objgen" ${busy?"disabled":""} style="align-self:flex-start">${busy?"Je prépare les réponses…":"Prépare les réponses aux objectifs"}</button>`:noAI}</div>
+  ${O.map((o,i)=>{const id="o:"+i,shown=!hide||X.objShow?.[id];return `<div class="memoi objc ${ok[id]?"ok":""}"><div class="label">Objectif ${i+1}</div><div class="memoq">${esc(o.obj)}</div>
+    ${o.reponse?(shown?`<div class="fiche objr">${md(o.reponse)}</div>${(o.cle||[]).length?`<div class="objk">🔑 ${o.cle.map(esc).join(" · ")}</div>`:""}<div class="row memob"><button class="btn small ${ok[id]?"":"soft"}" data-act="memook" data-i="${id}" data-v="1">${ok[id]?"✓ Je sais":"Je sais"}</button>${hide||ok[id]?`<button class="btn ghost small" data-act="memook" data-i="${id}" data-v="0">À revoir</button>`:""}</div>`
+      :`<button class="memoa hid" data-act="objshow" data-i="${id}">Récite ta réponse, puis touche pour vérifier</button>`):""}</div>`}).join("")}
+  ${has&&aiOK()&&d.objectifs?.[0]?.ia?`<button class="linkbtn" data-act="objgen">Refaire les réponses</button>`:""}`}
+async function doObjectifs(d){
+  const k="obj-"+d.id;X.ai[k]=true;render();
+  try{const list=ficheObjectifs(d);
+    const o=await askJSON(`Voici les objectifs du chapitre de médecine « ${d.name} » et sa fiche. Pour CHAQUE objectif, rédige la réponse type attendue à l'examen, construite UNIQUEMENT avec la fiche (mêmes termes, chiffres exacts, listes complètes ; si l'objectif demande « citer 5… », donne-en au moins 5 si la fiche les contient). Format markdown simple (listes « - », **gras**). Ajoute "cle" : 2 à 4 mots-clés indispensables.
+Réponds en JSON : {"objectifs":[{"obj":"…","reponse":"…","cle":["…"]}]}
+
+OBJECTIFS :
+${list.map((x,i)=>(i+1)+". "+x).join("\n")}
+
+FICHE :
+${String(d.fiche||"").replace(/!\[[^\]]*\]\([^)]*\)/g,"").slice(0,60000)}`,{modelTier:"default"});
+    if(!o||!Array.isArray(o.objectifs))throw {code:"invalid_json"};
+    const live=getDeck(d.id);live.objectifs=o.objectifs.map(x=>({obj:String(x.obj||""),reponse:String(x.reponse||""),cle:(x.cle||[]).map(String),ia:true}));markDirty(live.id)}
+  catch(e){toast(aiErr(e))}
+  X.ai[k]=false;render()}
+
 /* ---------- Fiche : notes du prof, mémorisation, chrono ---------- */
 function ficheExtras(d){
   const e=estimate(d);const errs=errItems().filter(x=>x.deckId===d.id).length;
@@ -2523,6 +2564,9 @@ document.addEventListener("click",async e=>{
       window.__seedPlanning&&window.__seedPlanning(o);location.reload();break}
     case "simple":if(d)doSimple(d);break;
     case "lesson":if(d){if(b.dataset.re){d.lesson=null;markDirty(d.id)}doLesson(d)}break;
+    case "objmode":X.objHide=b.dataset.m==="test";X.objShow={};render();break;
+    case "objshow":X.objShow={...(X.objShow||{}),[b.dataset.i]:true};render();break;
+    case "objgen":if(d)doObjectifs(d);break;
     case "memomode":X.memoHide=b.dataset.m==="test";X.memoShow={};render();break;
     case "memotodo":X.memoTodo=!X.memoTodo;render();break;
     case "memoshow":X.memoShow={...(X.memoShow||{}),[b.dataset.i]:true};render();break;

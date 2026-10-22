@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261021191603";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261022151622";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -296,6 +296,10 @@ body.has-au .wrap{padding-bottom:62vh}
 .memob{gap:6px}
 .memoimg{border:0;padding:0;background:#fff;border-radius:12px;overflow:hidden}
 .memoimg img{width:100%;max-height:220px;object-fit:contain;display:block;background:#fff}
+.lesson{line-height:1.7;font-size:1.02rem}
+.lesson h2{margin-top:22px;color:var(--ink)}
+.lesson h3{margin-top:16px}
+.lesson blockquote,.lesson .callout{margin:10px 0}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -819,7 +823,7 @@ function viewNew(){
 }
 function viewDeck(){
   const d=getDeck(S.deckId); if(!d){S.view="matieres";return viewMatieres()}
-  const tabs=[["source","Cours source"],["fiche","Fiche synthétique"],["visuel","Visuel"],["memo","Mémoriser"],["explain","Comprendre"],["cards","Flashcards"],["qcm","QCM"],["cov","Couverture"],["edit","Modifier"]];
+  const tabs=[["source","Cours source"],["fiche","Fiche synthétique"],["lesson","Cours expliqué"],["visuel","Visuel"],["memo","Mémoriser"],["explain","Comprendre"],["cards","Flashcards"],["qcm","QCM"],["cov","Couverture"],["edit","Modifier"]];
   let body="";
   if(S.tab==="fiche")body=tabFiche(d);
   else if(S.tab==="cards")body=tabCards(d);
@@ -828,6 +832,7 @@ function viewDeck(){
   else if(S.tab==="cov")body=tabCov(d);
   else if(S.tab==="explain")body=tabExplain(d);
   else if(S.tab==="visuel")body=tabVisuel(d);
+  else if(S.tab==="lesson")body=tabLesson(d);
   else if(S.tab==="memo")body=viewMemo(d);
   else body=tabEdit(d);
   return topbar(d.name,true)+`<div class="hero"><div class="label">${esc(d.matiere||"")}${d.partie?" · "+esc(d.partie):""}${d.example?" · exemple":""}</div><h1>${esc(d.name)}</h1>${(d.fiche||"").trim()?`<button class="btn soft au-btn" data-act="auopen" data-id="${d.id}">🎧 Écouter le cours</button>`:""}</div>
@@ -2467,6 +2472,35 @@ function viewMemo(d){
       ${shown?`<div class="row memob"><button class="btn small ${ok[i.id]?"":"soft"}" data-act="memook" data-i="${esc(i.id)}" data-v="1">${ok[i.id]?"✓ Je sais":"Je sais"}</button>${hide||ok[i.id]?`<button class="btn ghost small" data-act="memook" data-i="${esc(i.id)}" data-v="0">À revoir</button>`:""}</div>`:""}</div>`}).join("")}</div>`}).join("")||`<div class="empty">Tout est su dans ce chapitre 🎉</div>`}
   <p class="help">Les points viennent des flashcards du cours et des explications des schémas. Ce que tu marques « Je sais » est retenu ; les flashcards continuent de revenir selon les J.</p>`}
 
+/* ---------- Cours expliqué : le chapitre réexpliqué comme un nouveau cours, uniquement à partir de la fiche ---------- */
+function tabLesson(d){
+  const L=d.lesson,busy=X.ai["les-"+d.id];
+  return `<div class="panel stack" style="margin-bottom:14px"><div class="label">Le cours expliqué</div>
+    <p class="help" style="margin:0">Le chapitre raconté comme par un prof, dans l'ordre du cours : le pourquoi, les liens entre les notions, les images pour comprendre et les pièges. Tout vient de ta fiche ; les comparaisons sont des images pour comprendre, pas des faits du cours.</p>
+    ${!L&&aiOK()?`<button class="btn" data-act="lesson" ${busy?"disabled":""} style="align-self:flex-start">${busy?`Rédaction en cours… ${X.ai["lesp-"+d.id]||""}`:"Explique-moi ce cours comme un nouveau cours"}</button>`:!L?noAI:""}</div>
+  ${L?`<article class="panel fiche lesson">${md(L.text||"")}</article><p class="help">Rédigé le ${esc(fmtDate(L.at||today()))}${L.by?" · "+esc(L.by):""}. En cas de doute, c'est ta fiche et le cours du prof qui font foi.${aiOK()?` <button class="linkbtn" data-act="lesson" data-re="1">Refaire</button>`:""}</p>`:busy&&X.ai["lest-"+d.id]?`<article class="panel fiche lesson">${md(X.ai["lest-"+d.id])}</article>`:""}`}
+async function doLesson(d){
+  const k="les-"+d.id;if(X.ai[k])return;X.ai[k]=true;X.ai["lest-"+d.id]="";render();
+  try{const groups=auGroups(d);let all="";
+    for(let i=0;i<groups.length;i++){X.ai["lesp-"+d.id]=`(${i+1}/${groups.length})`;render();
+      const src=groups[i].items.map(s=>(s.h?"## "+s.h+"\n":"")+s.body).join("\n\n");
+      const {text}=await ask(`Tu es un excellent professeur de médecine. Réexplique à une étudiante de L3 cette partie du chapitre « ${d.name} » (${d.matiere||""}) COMME UN NOUVEAU COURS que tu ferais en amphi : clair, vivant, logique.
+- Garde les titres de l'extrait (## / ###) dans le même ordre.
+- Sous chaque titre : explique en paragraphes le POURQUOI et les liens entre les notions (mécanismes, logique, comparaison), puis reprends toutes les informations à connaître (listes, chiffres exacts).
+- Ajoute quand c'est utile une ligne « > 💡 Pour te représenter : … » (comparaison de la vie courante, clairement une image) et « > ⚠️ Piège : … » (confusion fréquente entre notions du cours).
+- Termine chaque grande partie par « **À retenir :** » et 2 à 4 points.
+RÈGLES : utilise UNIQUEMENT les informations de l'extrait ; n'ajoute aucun fait médical, chiffre, cause, signe, examen ou traitement absent ; ne corrige pas le cours. Markdown simple (##, ###, paragraphes, listes « - », **gras**, > ).
+${i>0?"Ne réintroduis pas le chapitre, enchaîne.":"Commence par 2 phrases qui présentent le chapitre."}
+
+EXTRAIT DE LA FICHE :
+<<<
+${src}
+>>>`,{modelTier:"default"});
+      all+=(all?"\n\n":"")+text.trim();X.ai["lest-"+d.id]=all;render()}
+    const live=getDeck(d.id);live.lesson={at:today(),text:all,by:"IA d'après ta fiche"};markDirty(live.id)}
+  catch(e){toast(aiErr(e))}
+  X.ai[k]=false;X.ai["lest-"+d.id]="";render()}
+
 /* ---------- Fiche : notes du prof, mémorisation, chrono ---------- */
 function ficheExtras(d){
   const e=estimate(d);const errs=errItems().filter(x=>x.deckId===d.id).length;
@@ -2486,6 +2520,7 @@ document.addEventListener("click",async e=>{
       const o={};["edt","prieres","coran","batch"].forEach(k=>o[k]=!!$("#ob-"+k)?.checked);o.perso=!!$("#ob-perso")?.checked;
       window.__seedPlanning&&window.__seedPlanning(o);location.reload();break}
     case "simple":if(d)doSimple(d);break;
+    case "lesson":if(d){if(b.dataset.re){d.lesson=null;markDirty(d.id)}doLesson(d)}break;
     case "memomode":X.memoHide=b.dataset.m==="test";X.memoShow={};render();break;
     case "memotodo":X.memoTodo=!X.memoTodo;render();break;
     case "memoshow":X.memoShow={...(X.memoShow||{}),[b.dataset.i]:true};render();break;

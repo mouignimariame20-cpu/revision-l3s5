@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261023125820";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261023140742";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -329,6 +329,8 @@ body.has-au .wrap{padding-bottom:62vh}
 .calj{font-family:"Playfair Display",Georgia,serif;font-size:1.7rem;font-weight:700;color:var(--scrub);white-space:nowrap}
 .mini.past{opacity:.5}
 :root[data-theme="dark"] .calb{color:#2b1f24}
+.rcnav{justify-content:space-between;flex-wrap:nowrap}
+.rcnav .btn{white-space:nowrap}.rcnav .help{text-align:center}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -2628,12 +2630,13 @@ function ficheParts(d){const out=[];let cur=null;
   for(const l of String(d.fiche||"").split("\n")){const m=l.match(/^##\s+(.*)/);if(m){cur={h:m[1].replace(/[*=_`]/g,"").trim(),lines:[]};out.push(cur);continue}if(cur)cur.lines.push(l)}
   return out.filter(p=>!/objectif/i.test(p.h)&&p.lines.join("").trim())}
 function tabRecite(d){
-  const P=ficheParts(d),mode=X.rcMode||"blurt",sec=X.rcSec?.[d.id]??"",r=X.rcRes?.[d.id],busy=X.ai["rc-"+d.id],H=(d.blurts||[]).slice(-6).reverse();
+  const P=recParts(d),mode=X.rcMode||"blurt",sec=X.rcSec?.[d.id]??"",r=X.rcRes?.[d.id],busy=X.ai["rc-"+d.id],H=(d.blurts||[]).slice(-6).reverse();
   const draft=X.rcDraft?.[d.id+"|"+mode+"|"+sec]||"";
   return `<div class="panel stack" style="margin-bottom:12px"><div class="label">Réciter · on le fait ensemble</div>
     <div class="chips"><button class="chip" data-act="rcmode" data-m="blurt" aria-pressed="${mode==="blurt"}">📝 Blurting</button><button class="chip" data-act="rcmode" data-m="feyn" aria-pressed="${mode==="feyn"}">👩‍🏫 Explique comme un prof</button></div>
     <p class="help" style="margin:0">${mode==="blurt"?"Sans regarder le cours, écris (ou dicte avec le micro du clavier) tout ce dont tu te souviens : listes, chiffres, mots-clés. Ensuite je compare avec ta fiche et je te montre ce que tu as oublié.":"Explique la partie avec tes mots, comme si tu l'apprenais à une camarade qui ne connaît rien : définitions, mécanismes, le pourquoi. Je te corrige comme un prof, à partir de ta fiche."}</p>
-    <label class="f">Partie<select id="rc-sec" data-rcsec="${d.id}"><option value="">Tout le chapitre</option>${P.map((p,i)=>`<option value="${i}" ${String(i)===String(sec)?"selected":""}>${esc(p.h)}</option>`).join("")}</select></label>
+    <label class="f">Morceau à réciter<select id="rc-sec" data-rcsec="${d.id}"><option value="">Tout le chapitre</option>${[...new Set(P.map(p=>p.g))].map(g=>`<optgroup label="${esc(g)}">${P.map((p,i)=>p.g!==g?"":`<option value="${i}" ${String(i)===String(sec)?"selected":""}>${esc(p.h===g?p.h:p.h)}</option>`).join("")}</optgroup>`).join("")}</select></label>
+    ${sec!==""&&P[+sec]?`<div class="row rcnav"><button class="btn ghost small" data-act="rcstep" data-v="-1" ${+sec<=0?"disabled":""}>‹ Préc.</button><span class="help">Morceau ${+sec+1} / ${P.length} · ${P[+sec].lines.filter(l=>/^\s*-|^\|/.test(l)).length} points</span><button class="btn ghost small" data-act="rcstep" data-v="1" ${+sec>=P.length-1?"disabled":""}>Suiv. ›</button></div>`:`<p class="help" style="margin:0">Conseil : choisis un morceau à la fois (8 points maximum), c'est plus efficace que tout le chapitre d'un coup.</p>`}
     <textarea id="rc-text" data-rcd="${esc(d.id+"|"+mode+"|"+sec)}" rows="9" placeholder="${mode==="blurt"?"Écris tout ce que tu as retenu…":"Explique comme au tableau…"}">${esc(draft)}</textarea>
     ${aiOK()?`<button class="btn" data-act="rcgo" ${busy?"disabled":""} style="align-self:flex-start">${busy?"Je corrige…":"Corriger avec mon cours"}</button>`:`<button class="btn soft" data-act="rcshow" style="align-self:flex-start">Afficher la fiche pour me corriger seule</button>${noAI}`}</div>
   ${r?`<div class="panel stack rcres"><div class="row" style="justify-content:space-between"><div class="label">Correction${r.sec?" · "+esc(r.sec):""}</div><span class="pill ${r.score>=85?"ok":r.score<50?"late":""}">${r.score} %</span></div>
@@ -2641,14 +2644,14 @@ function tabRecite(d){
     ${(r.oublie||[]).length?`<div><strong>❌ Ce que tu as oublié</strong><ul>${r.oublie.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}
     ${(r.erreurs||[]).length?`<div><strong>⚠️ À corriger</strong><ul>${r.erreurs.map(x=>`<li>Tu as écrit « ${esc(x.dit||"")} » → d'après ton cours : <strong>${esc(x.correct||"")}</strong></li>`).join("")}</ul></div>`:""}
     ${r.conseil?`<div class="expl">${esc(r.conseil)}</div>`:""}
-    <div class="row"><button class="btn soft small" data-act="rcagain">Recommencer cette partie</button><button class="btn ghost small" data-act="tab" data-t="fiche">Relire la fiche</button></div></div>`:""}
+    <div class="row">${sec!==""&&+sec<P.length-1?`<button class="btn small" data-act="rcstep" data-v="1">Morceau suivant →</button>`:""}<button class="btn soft small" data-act="rcagain">Recommencer ce morceau</button><button class="btn ghost small" data-act="tab" data-t="fiche">Relire la fiche</button></div></div>`:""}
   ${X.rcShow?.[d.id]?`<article class="panel fiche">${md(sec===""?String(d.fiche||""):"## "+P[+sec].h+"\n"+P[+sec].lines.join("\n"))}</article>`:""}
   ${H.length?`<div class="section"><h2>Mes récitations</h2>${H.map(h=>`<div class="mini"><span>${h.mode==="feyn"?"👩‍🏫":"📝"} ${esc(h.sec||"Tout le chapitre")} <span class="muted">· ${esc(fmtDate(h.at))}</span></span><span class="pill ${h.score>=85?"ok":h.score<50?"late":""}">${h.score} %</span></div>`).join("")}</div>`:""}`}
 async function doRecite(d){
   const k="rc-"+d.id;if(X.ai[k])return;const ta=document.getElementById("rc-text"),txt=(ta?.value||"").trim();
   if(txt.length<15){toast("Écris un peu plus avant de corriger");return}
-  const mode=X.rcMode||"blurt",sec=X.rcSec?.[d.id]??"",P=ficheParts(d),part=sec===""?null:P[+sec];
-  const ref=(part?"## "+part.h+"\n"+part.lines.join("\n"):String(d.fiche||"")).replace(/!\[[^\]]*\]\([^)]*\)/g,"").slice(0,40000);
+  const mode=X.rcMode||"blurt",sec=X.rcSec?.[d.id]??"",P=recParts(d),part=sec===""?null:P[+sec];
+  const ref=(part?"## "+part.g+(part.hh!==part.g?"\n### "+part.hh:"")+"\n"+part.lines.join("\n"):String(d.fiche||"")).replace(/!\[[^\]]*\]\([^)]*\)/g,"").slice(0,40000);
   X.ai[k]=true;render();
   try{const o=await askJSON(`Tu es le professeur de médecine d'une étudiante de L3. Elle vient de faire ${mode==="blurt"?"un BLURTING : elle a écrit de mémoire, sans regarder, tout ce qu'elle a retenu":"un exercice FEYNMAN : elle explique le cours avec ses mots comme à une camarade"} sur « ${part?part.h:d.name} » (chapitre « ${d.name} »).
 Compare son texte à l'EXTRAIT DE COURS (seule référence). Règles :
@@ -2693,6 +2696,26 @@ function tabFlyer(d){
     <div class="flyg">${parts.map((p,i)=>`<div class="flyc c${i%4}"><h3>${esc(p.h)}</h3>${p.pts.length?`<div class="fiche">${md(p.pts.map(x=>"- "+x).join("\n"))}</div>`:""}${p.table?`<div class="fiche">${md(p.table)}</div>`:""}</div>`).join("")}
     ${figs.length?`<div class="flyc flyfig"><h3>🖼️ ${esc(figs[0].alt.replace(/^Diapo \d+ · /,""))}</h3><img src="${esc(figs[0].u)}" alt="">${fx&&(fx.retenir||[]).length?`<ul>${fx.retenir.slice(0,4).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}</div>`:""}</div>
   </section>`}
+/* découpe pour réciter : par sous-partie (### puis ####), petits morceaux regroupés, longs morceaux coupés en parts égales (8 points max, tableaux entiers) */
+function recParts(d){
+  const units=[];let h2="",h3="",h4="",cur=null;const cl=t=>t.replace(/[*=_`]/g,"").trim();
+  const start=()=>{cur={g:h2,h:h4?(h3?h3+" › ":"")+h4:(h3||h2),lines:[]};units.push(cur)};
+  for(const raw of String(d.fiche||"").split("\n")){const l=raw.trimEnd();let m;
+    if((m=l.match(/^##\s+(.*)/))){h2=cl(m[1]);h3=h4="";cur=null;continue}
+    if((m=l.match(/^###\s+(.*)/))){h3=cl(m[1]);h4="";cur=null;continue}
+    if((m=l.match(/^####\s+(.*)/))){h4=cl(m[1]);cur=null;continue}
+    if(/^#\s/.test(l)||IMG_RE.test(l)||!l.trim())continue;
+    if(!cur)start();cur.lines.push(l)}
+  const pts=ls=>ls.reduce((n,l)=>n+(/^\|/.test(l)?(/^\|\s*:?-{3}/.test(l)?0:1):/^\s*-/.test(l)?1:0),0);
+  const U=units.filter(u=>!/objectif/i.test(u.g)&&pts(u.lines));
+  const M=[];U.forEach(u=>{const last=M[M.length-1];
+    if(last&&last.g===u.g&&pts(last.lines)<=3&&pts(last.lines)+pts(u.lines)<=8){last.h+=" · "+u.h.replace(/^.* › /,"");last.lines.push(...u.lines);last.parts.push(u.h)}else M.push({...u,lines:[...u.lines],parts:[u.h]})});
+  const out=[];
+  M.forEach(u=>{const blocks=[];let tb=null;u.lines.forEach(l=>{if(/^\|/.test(l)){if(!tb){tb=[];blocks.push(tb)}tb.push(l)}else{tb=null;blocks.push([l])}});
+    const n=pts(u.lines),k=Math.max(1,Math.ceil(n/8)),cap=Math.ceil(n/k);
+    const pieces=[];let p=[],c=0;blocks.forEach(b=>{const sz=pts(b);if(c&&c+sz>cap&&pieces.length<k-1){pieces.push(p);p=[];c=0}p.push(...b);c+=sz});if(p.length)pieces.push(p);
+    pieces.forEach((ls,i)=>out.push({g:u.g,h:u.h+(pieces.length>1?` (${i+1}/${pieces.length})`:""),hh:u.parts.join(" · "),lines:ls}))});
+  return out}
 
 /* ---------- Calendrier universitaire : partiels, périodes de révision, vacances, jours fériés ---------- */
 const CAL_K={exam:["📝","Examens"],revision:["📚","Révisions"],vacances:["🌴","Vacances"],ferie:["🎉","Férié"],event:["📌","Événement"]};
@@ -2736,6 +2759,7 @@ document.addEventListener("click",async e=>{
       window.__seedPlanning&&window.__seedPlanning(o);location.reload();break}
     case "simple":if(d)doSimple(d);break;
     case "lesson":if(d){if(b.dataset.re){d.lesson=null;markDirty(d.id)}doLesson(d)}break;
+    case "rcstep":if(d){const n=recParts(d).length,c=+(X.rcSec?.[d.id]||0),v=Math.max(0,Math.min(n-1,c+ +b.dataset.v));(X.rcSec??={})[d.id]=String(v);(X.rcRes??={})[d.id]=null;render();window.scrollTo(0,0)}break;
     case "rcmode":X.rcMode=b.dataset.m;render();break;
     case "rcgo":if(d)doRecite(d);break;
     case "rcagain":if(d){(X.rcRes??={})[d.id]=null;const sec=X.rcSec?.[d.id]??"";(X.rcDraft??={})[d.id+"|"+(X.rcMode||"blurt")+"|"+sec]="";render()}break;

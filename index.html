@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261023224137";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261023224422";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -344,6 +344,10 @@ body.has-au .wrap{padding-bottom:62vh}
 .chbar.over{background:#e08a2e}
 .rcmic{align-items:center;gap:10px}.recdot{color:#d23c5a;font-weight:700;animation:recp 1.2s infinite}
 @keyframes recp{50%{opacity:.35}}
+.qprof{border:2px solid #e8b4c4;background:linear-gradient(135deg,#fff,#fdeef3)}
+:root[data-theme="dark"] .qprof{background:var(--surface)}
+.pill.prof{background:#fdeef3;color:#b34b72;font-weight:700;margin-bottom:6px;display:inline-block}
+.qans{font-size:1rem;margin-bottom:6px;color:var(--scrub)}.qok{font-weight:700}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -986,12 +990,14 @@ function tabQcm(d){
       return `<button class="${cls}" data-act="pick" data-k="${k}" aria-pressed="${s.sel.includes(k)}" ${s.checked?"disabled":""}><span class="k">${L[k]}</span><span>${esc(o)}</span></button>`}).join("");
     return `<div class="stack"><div class="row" style="justify-content:space-between"><span class="label">Question ${s.i+1} / ${s.order.length}</span><button class="btn ghost small" data-act="endsession">Arrêter</button></div>
       <div class="progress"><i style="width:${Math.round(s.i/s.order.length*100)}%"></i></div>
-      <h3 style="font-size:1.15rem">${esc(q.q)}</h3><div class="stack" style="gap:8px">${opts}</div>
+      ${isProfQ(q)?`<span class="pill prof">📝 QCM du prof</span>`:""}<h3 style="font-size:1.15rem">${esc(qTxt(q))}</h3><div class="stack" style="gap:8px">${opts}</div>
       ${s.checked?`<div class="expl"><strong>${s.lastOk?"Juste":"Réponse attendue : "+q.correct.map(k=>L[k]).join(", ")}</strong>${q.expl?`<div>${esc(q.expl)}</div>`:""}</div>${qDetailBlock(d,q)}<button class="btn" data-act="nextq">${s.i+1<s.order.length?"Question suivante":"Voir le résultat"}</button>`:`<button class="btn" data-act="checkq" ${s.sel.length?"":"disabled"}>Valider</button>`}
     </div>`;
   }
   const n=(d.qcm||[]).length;
   if(!n)return `<div class="empty"><h3>Aucun QCM</h3><p>Ajoute des questions à plusieurs réponses justes dans l'onglet Modifier.</p><button class="btn soft small" data-act="tab" data-t="edit">Ajouter un QCM</button></div>`;
+  const PQ=d.qcm.filter(isProfQ),MQ=d.qcm.filter(q=>!isProfQ(q));
+  if(PQ.length)return qcmSplit(d,PQ,MQ);
   return `<div class="panel stack"><div class="label">Entraînement</div><h2>${n} question${n>1?"s":""}</h2>
     <p class="help">Plusieurs réponses peuvent être justes. Une question compte comme juste seulement si toutes les bonnes propositions sont cochées, et aucune fausse.</p>
     ${d.lastScore!=null?`<p>Dernier score : <strong>${d.lastScore}%</strong></p>`:""}
@@ -1086,7 +1092,7 @@ document.addEventListener("click",e=>{
       if(b.dataset.g==="1"){if(!s.missed.has(c.id))s.known++;gradeCard(d,c,true,!s.missed.has(c.id))}
       else{gradeCard(d,c,false,first);s.missed.add(c.id);s.queue.push(c.id)}
       s.i++;s.flipped=false;if(s.i>=s.queue.length)markTaskDone(today(),"cards:"+d.id,true);go();break}
-    case "startqcm":{const o=d.qcm.map(q=>q.id).sort(()=>Math.random()-.5);S.session={type:"qcm",deckId:d.id,order:o,i:0,sel:[],checked:false,score:0};go();break}
+    case "startqcm":{const set=b.dataset.set||S.qset||"";S.qset=set;const pool=d.qcm.filter(q=>set==="prof"?isProfQ(q):set==="mine"?!isProfQ(q):true);const o=set==="prof"?pool.map(q=>q.id):pool.map(q=>q.id).sort(()=>Math.random()-.5);S.session={type:"qcm",deckId:d.id,order:o,i:0,sel:[],checked:false,score:0};go();break}
     case "pick":{const s=S.session,k=+b.dataset.k;s.sel=s.sel.includes(k)?s.sel.filter(x=>x!==k):[...s.sel,k];go();break}
     case "checkq":{const s=S.session,q=d.qcm.find(x=>x.id===s.order[s.i]);const A=[...s.sel].sort().join(),B=[...q.correct].sort().join();s.lastOk=A===B;if(s.lastOk)s.score++;gradeQcm(d,q,s.lastOk);s.checked=true;go();break}
     case "nextq":{const s=S.session;s.i++;s.sel=[];s.checked=false;if(s.i>=s.order.length){d.lastScore=Math.round(s.score/s.order.length*100);markDirty(d.id)}go();break}
@@ -2584,6 +2590,20 @@ function guessSrc(d,c){
   const w=[...new Set(tok(c.q+" "+c.a).filter(x=>x.length>3&&!STOP.has(x)))];let best=null,bs=0;
   P.forEach(p=>{let sc=0;w.forEach(x=>{if(p.t.has(x))sc+=1;if(p.ht.has(x))sc+=2});sc=sc/Math.sqrt(Math.max(8,p.t.size));if(sc>bs){bs=sc;best=p}});
   return best?best.h:""}
+/* ---------- QCM du prof : à part, avec leur correction ---------- */
+const isProfQ=q=>!!q.prof||/^\[QCM du prof\]/.test(q.q||"");
+const qTxt=q=>String(q.q||"").replace(/^\[QCM du prof\]\s*/,"");
+function qCorr(d,q,i,open){const L="ABCDEFGH";return `<details class="item qcorr" id="q-${q.id}" ${open?"open":""}><summary>${i+1}. ${esc(qTxt(q))}</summary><div>
+  <div class="qans">Réponse : <strong>${q.correct.map(k=>L[k]).join(", ")}</strong></div>
+  ${q.options.map((o,k)=>`<div class="${q.correct.includes(k)?"qok":"muted"}">${q.correct.includes(k)?"✓":"✗"} ${L[k]}. ${esc(o)}</div>`).join("")}
+  ${q.expl?`<div class="expl" style="margin-top:6px"><strong>Correction : </strong>${esc(q.expl)}</div>`:""}${(q.errs||0)>0?`<div class="label" style="margin-top:4px;color:var(--late)">Ratée ${q.errs} fois</div>`:""}</div></details>`}
+function qcmSplit(d,PQ,MQ){const all=!!X.profOpen;
+  return `<div class="panel stack qprof"><div class="row" style="justify-content:space-between"><div class="label">📝 QCM du prof</div><span class="pill">${PQ.length} questions</span></div>
+    <p class="help" style="margin:0">Les questions données par le prof dans son support, dans son ordre. Plusieurs réponses peuvent être justes.</p>
+    <div class="row"><button class="btn" data-act="startqcm" data-set="prof">Faire les QCM du prof</button><button class="btn soft" data-act="profcorr">${all?"Masquer la correction":"Voir toute la correction"}</button></div></div>
+  <div class="section" style="margin-top:14px"><h2>Correction des QCM du prof</h2><p class="help">${all?"Toutes les réponses sont affichées.":"Touche une question pour voir sa réponse et sa correction."}</p>${PQ.map((q,i)=>qCorr(d,q,i,all)).join("")}</div>
+  ${MQ.length?`<div class="panel stack" style="margin-top:18px"><div class="label">Mes QCM d'entraînement</div><h2>${MQ.length} question${MQ.length>1?"s":""}</h2><p class="help" style="margin:0">Préparés à partir de ta fiche. Une question est juste seulement si toutes les bonnes propositions sont cochées et aucune fausse.</p>${d.lastScore!=null?`<p style="margin:0">Dernier score : <strong>${d.lastScore}%</strong></p>`:""}<div class="row"><button class="btn" data-act="startqcm" data-set="mine">Commencer</button><button class="btn ghost" data-act="startqcm" data-set="">Tout mélanger (${PQ.length+MQ.length})</button></div></div>
+  <div class="section" style="margin-top:18px"><h2>Mes QCM : questions et corrections</h2>${MQ.map((q,i)=>qCorr(d,q,i,false)).join("")}</div>`:""}`}
 
 /* ---------- Cours expliqué : le chapitre réexpliqué comme un nouveau cours, uniquement à partir de la fiche ---------- */
 function tabLesson(d){
@@ -2877,6 +2897,7 @@ document.addEventListener("click",async e=>{
     case "simple":if(d)doSimple(d);break;
     case "lesson":if(d){if(b.dataset.re){d.lesson=null;markDirty(d.id)}doLesson(d)}break;
     case "rcstep":if(d){const n=recParts(d).length,c=+(X.rcSec?.[d.id]||0),v=Math.max(0,Math.min(n-1,c+ +b.dataset.v));(X.rcSec??={})[d.id]=String(v);(X.rcRes??={})[d.id]=null;render();window.scrollTo(0,0)}break;
+    case "profcorr":X.profOpen=!X.profOpen;render();break;
     case "cardmix":X.cardMix=b.dataset.v==="1";render();break;
     case "avonly":X.avOnly=b.dataset.v==="1";render();break;
     case "autest":auTest();break;

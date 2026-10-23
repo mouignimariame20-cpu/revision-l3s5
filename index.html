@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261023140742";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261023164711";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -331,6 +331,13 @@ body.has-au .wrap{padding-bottom:62vh}
 :root[data-theme="dark"] .calb{color:#2b1f24}
 .rcnav{justify-content:space-between;flex-wrap:nowrap}
 .rcnav .btn{white-space:nowrap}.rcnav .help{text-align:center}
+.avhome{margin-bottom:12px;text-align:left}
+.avm{margin-bottom:12px}.avm summary{cursor:pointer;list-style:none;display:grid;gap:8px}.avm summary::-webkit-details-marker{display:none}
+.avl{display:grid;gap:6px;margin-top:10px}
+.avc{display:flex;align-items:center;gap:10px;text-align:left;width:100%;padding:10px 12px;border-radius:14px;border:1px solid var(--line,#f0d6df);background:var(--surface,#fff);font:inherit;color:inherit;cursor:pointer}
+.avc.todo{opacity:.6}.avc.part{border-color:#f3c98b}.avc.done{border-color:#bfe3d1}
+.avi{font-size:1.1rem}.avt{flex:1;min-width:0}.avc .pill{white-space:nowrap}
+.avtodo{margin-top:10px}.avtodo>summary{cursor:pointer;font-weight:700;font-size:.92rem;color:var(--muted,#8a6b76);padding:6px 0}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -732,6 +739,7 @@ function render(){
   else if(S.view==="classe")h=viewClasse();
   else if(S.view==="plan")h=viewPlan();
   else if(S.view==="methode")h=viewMethode();
+  else if(S.view==="avance")h=viewAvance();
   else if(S.view==="revise")h=viewRevise();
   else if(S.view==="assist")h=viewAssist();
   else if(S.view==="synd")h=viewSynd();
@@ -2061,7 +2069,7 @@ function viewHome(){
     </div></div>
   ${searchBox("hq","","Chercher un chapitre, une notion, un mot-clé…")}
   ${X.chrono?`<button class="mini" data-act="nav" data-v="timer" style="margin-bottom:14px;border-color:var(--scrub)"><span><strong>Séance en cours</strong> · ${esc(X.chrono.act?X.chrono.act.title:getDeck(X.chrono.deckId)?.name||"")}</span><span class="pill">${X.chrono.running?"en cours":"en pause"}</span></button>`:""}
-  ${calHome(t)}${loadLine(t)}<div class="section"><div class="row" style="justify-content:space-between"><h2>Ma journée</h2><span class="row" style="gap:6px;flex-wrap:nowrap"><button class="iconbtn" data-act="themetog" aria-label="Changer de thème">${curTheme()==="dark"?"☀️":"🌙"}</button><button class="iconbtn" data-act="ntopen" aria-label="Rappels">🔔</button><button class="btn ghost small" data-act="nav" data-v="plan">Planning</button></span></div>
+  ${calHome(t)}${avHome()}${loadLine(t)}<div class="section"><div class="row" style="justify-content:space-between"><h2>Ma journée</h2><span class="row" style="gap:6px;flex-wrap:nowrap"><button class="iconbtn" data-act="themetog" aria-label="Changer de thème">${curTheme()==="dark"?"☀️":"🌙"}</button><button class="iconbtn" data-act="ntopen" aria-label="Rappels">🔔</button><button class="btn ghost small" data-act="nav" data-v="plan">Planning</button></span></div>
     ${!X.loaded?`<div class="help">Chargement…</div>`:plan?`<p class="help">${done.length}/${plan.blocks.length+fx.length} fait${done.length>1?"s":""} · touche ✓ dès qu'une activité est faite.</p>${dayTimeline(t,plan,fx)}`:`<div class="empty">Ajoute ton emploi du temps dans Planning pour un programme sur mesure.</div>`}
     ${plan?.over?.length?`<p class="help">${plan.over.length} tâche(s) reportée(s) faute de temps libre aujourd'hui.</p>`:""}</div>
   <div class="section"><h2>Fait aujourd'hui</h2>
@@ -2739,6 +2747,40 @@ function calRules(){const L=calList(),t=today();
   return `<div class="section"><h2>Calendrier universitaire</h2>${L.length?L.map(c=>`<div class="mini ${(c.to||c.from)<t?"past":""}"><span>${CAL_K[c.kind][0]} <strong>${esc(c.title)}</strong> <span class="muted">· ${esc(fmtDate(c.from))}${c.to&&c.to!==c.from?" → "+esc(fmtDate(c.to)):""}</span></span><button class="btn ghost small" data-act="pldel" data-l="calendar" data-id="${c.id}">Retirer</button></div>`).join(""):`<p class="help">Aucun calendrier enregistré.</p>`}
   <p class="help">Les jours fériés, les vacances et les semaines d'examens n'ont pas de cours. À l'approche des examens (3 semaines avant), le planning donne la priorité aux chapitres les moins maîtrisés de chaque matière.</p></div>`}
 
+/* ---------- Avancement des cours : ce qui a été fait en classe, matière par matière ---------- */
+const isAlt=d=>/^[a-z]+\d+b-/.test(d.id)||/\b20(2[0-5])\b/.test(d.name||"")&&!/2026/.test(d.name||"");
+function chapState(d){
+  const cls=X.classes.filter(c=>c.deckId===d.id).sort((a,b)=>a.date.localeCompare(b.date));
+  if(!cls.length)return {st:"todo",cls};
+  const partial=/⏳/.test(String(d.fiche||""));
+  return {st:partial?"part":"done",cls,last:cls[cls.length-1],first:cls[0]}}
+function matAvance(m,list){
+  const ch=list.filter(d=>!d.example&&!isAlt(d)).map(d=>({d,...chapState(d)}));
+  const seen=ch.filter(x=>x.st!=="todo"),done=ch.filter(x=>x.st==="done").length,part=ch.filter(x=>x.st==="part").length;
+  const rev=seen.filter(x=>x.d.learnedOn).length;
+  return {m,ch,seen,done,part,rev,n:ch.length,last:seen.map(x=>x.last).sort((a,b)=>b.date.localeCompare(a.date))[0]}}
+function viewAvance(){
+  const G=groupsByMat(),A=Object.entries(G).map(([m,l])=>matAvance(m,l)).sort((a,b)=>(b.seen.length>0)-(a.seen.length>0)||(b.last?.date||"").localeCompare(a.last?.date||"")||a.m.localeCompare(b.m));
+  const tot=A.reduce((n,a)=>n+a.n,0),seen=A.reduce((n,a)=>n+a.seen.length,0),rev=A.reduce((n,a)=>n+a.rev,0);
+  const only=X.avOnly!==false;
+  return topbar("Avancement",true)+`<div class="hero"><div class="label">${esc(curPer())}${semWeek(today())?" · semaine "+semWeek(today()):""}</div><h1>Avancement des cours</h1>
+    <div class="stats"><div class="stat"><b>${seen}</b><span>chapitres vus en cours</span></div><div class="stat"><b>${rev}</b><span>déjà révisés (J0)</span></div><div class="stat"><b>${A.filter(a=>a.seen.length).length}</b><span>matières commencées</span></div></div></div>
+  <div class="chips" style="margin-bottom:12px"><button class="chip" data-act="avonly" data-v="1" aria-pressed="${only}">Matières commencées</button><button class="chip" data-act="avonly" data-v="0" aria-pressed="${!only}">Toutes (${A.length})</button></div>
+  <p class="help">Un chapitre est « vu » dès que tu l'enregistres dans <strong>En classe</strong>. ⏳ = commencé, la suite au prochain cours. Les chapitres à venir viennent des anciens supports : la liste peut changer avec les nouveaux cours.</p>
+  ${A.filter(a=>!only||a.seen.length).map(a=>{const pct=a.n?Math.round(a.seen.length/a.n*100):0;
+    return `<details class="panel avm" ${a.seen.length?"open":""}><summary><div class="row" style="justify-content:space-between;flex-wrap:nowrap;gap:10px"><span><strong>${esc(a.m)}</strong><br><span class="muted">${a.seen.length} / ${a.n} chapitres vus${a.part?` · ${a.part} en cours`:""}${a.last?` · dernier cours ${esc(fmtDate(a.last.date))}`:""}</span></span><span class="pill ${a.seen.length?"ok":""}">${pct}%</span></div><div class="progress"><i style="width:${pct}%"></i></div></summary>
+      ${(()=>{const row=x=>{const d=x.d,ji=d.learnedOn?jInfo(d):null;
+        const ic=x.st==="done"?"✅":x.st==="part"?"⏳":"⬜";
+        const where=x.st==="todo"?"":x.cls.map(c=>`${esc(fmtDate(c.date).replace(/^\S+\s/,""))}${c.titre&&c.titre!==d.name?" · "+esc(c.titre):""}`).join(" · ");
+        const rv=x.st==="todo"?"":d.learnedOn?(ji&&ji.finished?`<span class="pill ok">cycle J fini</span>`:`<span class="pill">${(d.jDone||[]).length?"J"+Math.max(...d.jDone)+" fait":"J0 fait"}${ji&&ji.next?` · J${ji.next} ${esc(fmtDate(ji.date).replace(/^\S+\s/,""))}`:""}</span>`):`<span class="pill late">à réviser</span>`;
+        return `<button class="avc ${x.st}" data-act="open" data-id="${d.id}"><span class="avi">${ic}</span><span class="avt"><strong>${esc(d.name)}</strong>${where?`<br><span class="muted">${where}</span>`:""}</span>${rv}</button>`};
+        const seen=a.ch.filter(x=>x.st!=="todo"),todo=a.ch.filter(x=>x.st==="todo");
+        return `${seen.length?`<div class="avl">${seen.map(row).join("")}</div>`:""}${todo.length?`<details class="avtodo"><summary>⬜ À venir · ${todo.length} chapitre${todo.length>1?"s":""}</summary><div class="avl">${todo.map(row).join("")}</div></details>`:""}`})()}
+      <button class="btn soft small" data-act="nav" data-v="classe" style="margin-top:8px">+ Noter un nouveau cours</button></details>`}).join("")||`<div class="empty">Aucun cours enregistré pour l'instant. Note tes cours dans « En classe ».</div>`}`}
+function avHome(){const A=Object.entries(groupsByMat()).map(([m,l])=>matAvance(m,l)).filter(a=>a.seen.length);if(!A.length)return "";
+  const seen=A.reduce((n,a)=>n+a.seen.length,0),todo=A.reduce((n,a)=>n+a.seen.filter(x=>!x.d.learnedOn).length,0);
+  return `<button class="mini avhome" data-act="nav" data-v="avance"><span>📈 <strong>Avancement des cours</strong><br><span class="muted">${seen} chapitre${seen>1?"s":""} vu${seen>1?"s":""} dans ${A.length} matière${A.length>1?"s":""}${todo?` · ${todo} à réviser`:" · tout est révisé"}</span></span><span class="pill">Voir</span></button>`}
+
 /* ---------- Fiche : notes du prof, mémorisation, chrono ---------- */
 function ficheExtras(d){
   const e=estimate(d);const errs=errItems().filter(x=>x.deckId===d.id).length;
@@ -2760,6 +2802,7 @@ document.addEventListener("click",async e=>{
     case "simple":if(d)doSimple(d);break;
     case "lesson":if(d){if(b.dataset.re){d.lesson=null;markDirty(d.id)}doLesson(d)}break;
     case "rcstep":if(d){const n=recParts(d).length,c=+(X.rcSec?.[d.id]||0),v=Math.max(0,Math.min(n-1,c+ +b.dataset.v));(X.rcSec??={})[d.id]=String(v);(X.rcRes??={})[d.id]=null;render();window.scrollTo(0,0)}break;
+    case "avonly":X.avOnly=b.dataset.v==="1";render();break;
     case "rcmode":X.rcMode=b.dataset.m;render();break;
     case "rcgo":if(d)doRecite(d);break;
     case "rcagain":if(d){(X.rcRes??={})[d.id]=null;const sec=X.rcSec?.[d.id]??"";(X.rcDraft??={})[d.id+"|"+(X.rcMode||"blurt")+"|"+sec]="";render()}break;

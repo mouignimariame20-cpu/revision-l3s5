@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261023195651";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261023200331";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -338,6 +338,12 @@ body.has-au .wrap{padding-bottom:62vh}
 .avc.todo{opacity:.6}.avc.part{border-color:#f3c98b}.avc.done{border-color:#bfe3d1}
 .avi{font-size:1.1rem}.avt{flex:1;min-width:0}.avc .pill{white-space:nowrap}
 .avtodo{margin-top:10px}.avtodo>summary{cursor:pointer;font-weight:700;font-size:.92rem;color:var(--muted,#8a6b76);padding:6px 0}
+.nextt{border-radius:14px;padding:10px 12px;background:var(--scrub-soft,#fdeef3);display:grid;gap:2px}
+.nextt.over{background:#fff2e6;border:2px solid #f3b36b}
+.chbar{position:sticky;top:6px;z-index:30;display:block;width:100%;margin:0 0 10px;padding:9px 14px;border-radius:999px;border:0;background:var(--scrub,#b34b72);color:#fff;font:inherit;font-weight:700;font-size:.9rem;text-align:left;box-shadow:0 4px 14px rgba(179,75,114,.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chbar.over{background:#e08a2e}
+.rcmic{align-items:center;gap:10px}.recdot{color:#d23c5a;font-weight:700;animation:recp 1.2s infinite}
+@keyframes recp{50%{opacity:.35}}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -743,7 +749,7 @@ function render(){
   else if(S.view==="revise")h=viewRevise();
   else if(S.view==="assist")h=viewAssist();
   else if(S.view==="synd")h=viewSynd();
-  app.innerHTML=h;renderFab();
+  app.innerHTML=chronoBar()+h;renderFab();
   renderTabbar();
   if(S.view==="timer"){tickTimer();tickChrono()}
   if(S.view==="search")renderResults();
@@ -1705,19 +1711,19 @@ const STEPS=[["read","Lire et apprendre la fiche"],["cards","Flashcards"],["qcm"
 function chronoSave(){try{X.chrono?localStorage.setItem(LS_CHRONO,JSON.stringify(X.chrono)):localStorage.removeItem(LS_CHRONO)}catch(e){}}
 function chronoActive(c){return (c.activeMs||0)+(c.running?Date.now()-c.segStart:0)}
 function chronoProgress(c){if(c.act)return Math.min(1,chronoActive(c)/60000/(c.act.min||1));const e=c.est;if(!e.total)return 0;return STEPS.reduce((n,[k])=>n+(c.steps[k]?e[k]:0),0)/e.total}
-function chronoRemain(c){if(c.act)return Math.max(0,Math.round(c.act.min-chronoActive(c)/60000));const act=chronoActive(c)/60000,doneEst=STEPS.reduce((n,[k])=>n+(c.steps[k]?c.est[k]:0),0),left=c.est.total-doneEst;
+function chronoRemain(c){if(c.target&&!c.act)return Math.max(0,Math.round(c.target-chronoActive(c)/60000));if(c.act)return Math.max(0,Math.round(c.act.min-chronoActive(c)/60000));const act=chronoActive(c)/60000,doneEst=STEPS.reduce((n,[k])=>n+(c.steps[k]?c.est[k]:0),0),left=c.est.total-doneEst;
   let pace=1;if(act>=5&&doneEst>0)pace=Math.max(.5,Math.min(2,act/doneEst));
   return Math.max(0,Math.round(doneEst>0?left*pace:c.est.total-act))}
 function chronoStart(deckId,opts={}){
   const d=getDeck(deckId);if(!d)return;
   const est=estimate(d);if(opts.rev){const r=revMin(d);const k=r/est.total;["read","cards","qcm","err"].forEach(x=>est[x]=Math.round(est[x]*k));est.total=est.read+est.cards+est.qcm+est.err}
-  X.chrono={deckId,est,steps:{read:false,cards:!est.cards,qcm:!est.qcm,err:!est.err},startedAt:Date.now(),running:false,segStart:0,activeMs:0,pauses:[],blockKey:opts.blockKey||null,date:opts.date||today(),label:opts.label||""};
+  X.chrono={deckId,est,steps:{read:false,cards:!est.cards,qcm:!est.qcm,err:!est.err},startedAt:Date.now(),running:false,segStart:0,activeMs:0,pauses:[],blockKey:opts.blockKey||null,date:opts.date||today(),label:opts.label||"",target:+opts.min||0,running:!!opts.auto,segStart:opts.auto?Date.now():0};
   chronoSave();S.view="timer";render();window.scrollTo(0,0);
 }
 const CORAN=[["memo","Coran · mémorisation",30],["lect","Coran · lecture et méditation",30]];
 function actStart(title,min,opts={}){
   if(X.chrono&&chronoActive(X.chrono)>60000){toast("Termine d'abord la séance en cours");S.view="timer";render();return}
-  X.chrono={act:{title,min:+min||30,kind:opts.kind||"coran",ref:opts.ref||null},note:"",startedAt:Date.now(),running:true,segStart:Date.now(),activeMs:0,pauses:[],date:opts.date||today()};
+  X.chrono={blockKey:opts.blockKey||null,act:{title,min:+min||30,kind:opts.kind||"coran",ref:opts.ref||null},note:"",startedAt:Date.now(),running:true,segStart:Date.now(),activeMs:0,pauses:[],date:opts.date||today()};
   chronoSave();S.view="timer";render();window.scrollTo(0,0);
 }
 function coranMin(from,to){return X.sessions.filter(s=>s.act&&s.kind==="coran"&&s.date>=from&&s.date<=to).reduce((n,s)=>n+(s.activeMin||0),0)}
@@ -1733,8 +1739,11 @@ function viewAct(c){
   <div class="panel stack"><label class="label" for="ch-note">${c.act.kind==="coran"?"Ce que j'ai travaillé (sourate, versets…)":"Note"}</label>
     <textarea id="ch-note" rows="2" placeholder="${c.act.kind==="coran"?"ex. Al-Mulk, versets 1 à 10":""}">${esc(c.note||"")}</textarea>
     <p class="help">Le temps du Coran est enregistré à part : il ne compte pas dans tes heures de révision.${c.act.ref?" En terminant, l'activité est cochée dans ton planning.":""}</p>
-    <button class="btn ghost small" data-act="chcancel">Annuler la séance</button></div>`;
+    ${nextUI(c)}<button class="btn ghost small" data-act="chcancel">Annuler la séance</button></div>`;
 }
+function curBlockTab(c){const p=X.plans[c.date||today()];const b=p&&(p.blocks||[]).find(x=>x.key===c.blockKey);return (b&&b.tab)||"fiche"}
+function nextUI(c){if(!c.blockKey)return "";const nb=nextBlock(c);const over=c.rang;
+  return `<div class="nextt ${over?"over":""}">${over?"⏰ <strong>Temps écoulé.</strong> ":""}${nb?`Ensuite : <strong>${esc(nb.title)}</strong> <span class="muted">· ${esc(nb.start)}–${esc(nb.end)}</span><button class="btn small" data-act="chnext" style="margin-top:8px">Terminer et passer à la suite →</button>`:`C'est la dernière tâche de la journée 🎉`}</div>`}
 function viewTimer(){
   const c=X.chrono;
   if(!c)return topbar("Chrono")+chronoPicker()+pomodoroBlock();
@@ -1746,13 +1755,14 @@ function viewTimer(){
   <div class="panel stack" style="align-items:center;margin-bottom:14px">
     <div class="label">Temps de travail effectif</div><div class="timer" id="chrono-clock">--:--</div>
     <div class="row"><button class="btn" data-act="chgo">${c.running?"Pause":act>0?"Reprendre":"Démarrer"}</button><button class="btn ghost" data-act="chend">Terminer</button></div>
-    <div class="stats" style="width:100%"><div class="stat"><b id="ch-rem">${fmtMin(remain)}</b><span>restant estimé</span></div><div class="stat"><b>${fmtMin(c.est.total)}</b><span>estimation de départ</span></div><div class="stat"><b>${c.pauses.length}</b><span>pause${c.pauses.length>1?"s":""} · ${fmtMin(pauseMin)}</span></div></div>
+    <div class="stats" style="width:100%"><div class="stat"><b id="ch-rem">${fmtMin(remain)}</b><span>${c.target?"restant sur "+fmtMin(c.target):"restant estimé"}</span></div><div class="stat"><b>${fmtMin(c.est.total)}</b><span>estimation de départ</span></div><div class="stat"><b>${c.pauses.length}</b><span>pause${c.pauses.length>1?"s":""} · ${fmtMin(pauseMin)}</span></div></div>
   </div>
   <div class="panel stack"><div class="row" style="justify-content:space-between"><div class="label">Progression</div><span class="pill">${Math.round(prog*100)}%</span></div>
     <div class="progress"><i style="width:${Math.round(prog*100)}%"></i></div>
     ${STEPS.filter(([k])=>c.est[k]>0).map(([k,l])=>`<label class="step"><input type="checkbox" data-act="chstep" data-k="${k}" ${c.steps[k]?"checked":""}><span>${l}</span><span class="muted">${fmtMin(c.est[k])}</span></label>`).join("")}
     <p class="help">Estimation : longueur de la fiche (${words(plain(d.fiche))} mots), ${(d.cards||[]).length} cartes, ${(d.qcm||[]).length} QCM, difficulté ×${c.est.f.toFixed(2)} (ta compréhension en cours, tes erreurs et ton rythme réel des séances passées). Le temps restant = étapes non cochées, ajustées à ton rythme réel de la séance.</p>
-    <div class="row"><button class="btn soft small" data-act="open" data-id="${d.id}">Ouvrir le chapitre</button><button class="btn ghost small" data-act="chcancel">Annuler la séance</button></div></div>`;
+    ${nextUI(c)}
+    <div class="row"><button class="btn soft small" data-act="goto" data-id="${d.id}" data-tab="${esc(curBlockTab(c))}">Ouvrir le chapitre</button><button class="btn ghost small" data-act="chcancel">Annuler la séance</button></div></div>`;
 }
 function chronoPicker(){
   const tasks=dayTasksPreview().slice(0,6);
@@ -1778,9 +1788,21 @@ let chIv=null;
 function tickChrono(){
   const c=X.chrono,el=$("#chrono-clock");if(!c||!el){return}
   const s=Math.floor(chronoActive(c)/1000);el.textContent=(s>=3600?Math.floor(s/3600)+":":"")+String(Math.floor(s/60)%60).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
-  const r=$("#ch-rem");if(r)r.textContent=fmtMin(chronoRemain(c));if(c.act){const q=Math.round(chronoProgress(c)*100),a=$("#ch-pct"),br=$("#ch-bar");if(a)a.textContent=q+"%";if(br)br.style.width=q+"%"}
+  const r=$("#ch-rem");if(r)r.textContent=fmtMin(chronoRemain(c));
+  const tgt=c.target||(c.act&&c.act.min)||0;if(tgt&&!c.rang&&c.running&&chronoActive(c)>=tgt*60000){c.rang=true;chronoSave();ring();toast("⏰ Temps écoulé : passe à la tâche suivante !");render()}if(c.act){const q=Math.round(chronoProgress(c)*100),a=$("#ch-pct"),br=$("#ch-bar");if(a)a.textContent=q+"%";if(br)br.style.width=q+"%"}
 }
-function chronoToggle(){
+/* alarme : 3 bips + vibration */
+function ring(){try{navigator.vibrate&&navigator.vibrate([300,150,300,150,300])}catch(e){}
+  try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;const ctx=window.__actx||(window.__actx=new A());if(ctx.state==="suspended")ctx.resume();
+    [0,.45,.9].forEach(t=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type="sine";o.frequency.value=880;g.gain.setValueAtTime(.0001,ctx.currentTime+t);g.gain.exponentialRampToValueAtTime(.4,ctx.currentTime+t+.02);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+t+.35);o.connect(g).connect(ctx.destination);o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+.4)})}catch(e){}}
+function unlockAudio(){try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;const ctx=window.__actx||(window.__actx=new A());if(ctx.state==="suspended")ctx.resume()}catch(e){}}
+/* tâche suivante du planning (même jour, non faite, après la tâche en cours) */
+function nextBlock(c){const p=X.plans[c.date||today()];if(!p)return null;const bl=(p.blocks||[]).slice().sort((a,b)=>a.start.localeCompare(b.start));const i=bl.findIndex(b=>b.key===c.blockKey);return bl.slice(i+1).find(b=>!b.done&&b.key!==c.blockKey)||null}
+function startBlock(b,date){unlockAudio();const min=toMin(b.end)-toMin(b.start);
+  if(b.deckId)chronoStart(b.deckId,{rev:!!b.rev,blockKey:b.key,date,min,label:b.title,auto:true});
+  else actStart(b.title,min,{kind:"etude",date,blockKey:b.key})}
+async function chronoNext(){const c=X.chrono;if(!c)return;const nb=nextBlock(c),date=c.date||today();await chronoEnd();document.getElementById("overlay").innerHTML="";if(nb){startBlock(nb,date);if(nb.deckId&&nb.tab){}}}
+function chronoToggle(){unlockAudio();
   const c=X.chrono;if(!c)return;
   if(c.running){c.activeMs+=Date.now()-c.segStart;c.running=false;c.pauses.push({s:Date.now(),e:null})}
   else{const p=c.pauses[c.pauses.length-1];if(p&&!p.e)p.e=Date.now();c.running=true;c.segStart=Date.now()}
@@ -1791,6 +1813,7 @@ async function chronoEnd(){
   const p=c.pauses[c.pauses.length-1];if(p&&!p.e)p.e=Date.now();
   if(c.act){const s={id:uid(),act:c.act.title,kind:c.act.kind,note:c.note||"",ref:c.act.ref,date:c.date||today(),start:new Date(c.startedAt).toISOString(),end:new Date().toISOString(),activeMin:Math.round(c.activeMs/60000),pauseMin:Math.round(c.pauses.reduce((n,x)=>n+(x.e-x.s),0)/60000),pauses:c.pauses.length,est:0,progress:0};
     X.chrono=null;chronoSave();if(s.activeMin>0){X.sessions.push(s);putDoc("sessions/"+s.id,s)}
+    if(c.blockKey)markTaskDone(s.date,c.blockKey,true);
     if(s.ref){const p=ensurePlan(s.date);if(p){p.fdone={...(p.fdone||{}),[s.ref]:true};await savePlan(s.date)}}
     toast(`${s.act} : ${fmtMin(s.activeMin)} enregistrées`);S.view="home";render();return}
   const s={id:uid(),deckId:c.deckId,date:c.date||today(),start:new Date(c.startedAt).toISOString(),end:new Date().toISOString(),activeMin:Math.round(c.activeMs/60000),pauseMin:Math.round(c.pauses.reduce((n,x)=>n+(x.e-x.s),0)/60000),pauses:c.pauses.length,est:c.est.total,progress:Math.round(chronoProgress(c)*100)/100,steps:c.steps};
@@ -1806,6 +1829,13 @@ function confirmSheet2(msg,label,fn){
   const o=$("#overlay");o.innerHTML=`<div class="sheet"><div class="box"><h3>${esc(msg)}</h3><div class="row"><button class="btn" id="cf2-ok">${esc(label)}</button><button class="btn ghost" id="cf2-no">Plus tard</button></div></div></div>`;
   $("#cf2-ok").onclick=()=>{o.innerHTML="";fn()};$("#cf2-no").onclick=()=>{o.innerHTML=""};
 }
+/* alarme même quand on n'est pas sur l'écran du chrono (on travaille dans le chapitre) */
+setInterval(()=>{const c=X.chrono;if(!c||!c.running||c.rang)return;const tgt=c.target||(c.act&&c.act.min)||0;
+  if(tgt&&chronoActive(c)>=tgt*60000){c.rang=true;chronoSave();ring();if(S.view!=="timer"){const o=$("#overlay");o.innerHTML=`<div class="sheet"><div class="box"><h3>⏰ Temps écoulé</h3><p>${esc(c.label||(c.act&&c.act.title)||"Tâche")} : ${fmtMin(tgt)} faites.</p><div class="row"><button class="btn" id="al-next">Voir la suite</button><button class="btn ghost" id="al-more">Encore 5 min</button></div></div></div>`;
+    $("#al-next").onclick=()=>{o.innerHTML="";S.view="timer";render();window.scrollTo(0,0)};$("#al-more").onclick=()=>{o.innerHTML="";if(c.target)c.target+=5;else c.act.min+=5;c.rang=false;chronoSave();render()}}else render()}},3000);
+/* bandeau chrono visible partout pendant une tâche */
+function chronoBar(){const c=X.chrono;if(!c||S.view==="timer")return "";const tgt=c.target||(c.act&&c.act.min)||0;const r=tgt?Math.max(0,Math.ceil(tgt-chronoActive(c)/60000)):0;
+  return `<button class="chbar ${c.rang?"over":""}" data-act="nav" data-v="timer">⏱ ${esc(c.label||(c.act&&c.act.title)||getDeck(c.deckId)?.name||"")} · ${c.running?(tgt?(c.rang?"temps écoulé":r+" min restantes"):"en cours"):"en pause"}</button>`}
 
 /* ---------- Planning : emploi du temps, habitudes, obligations, programme du jour ---------- */
 function fixedFor(date){
@@ -1891,7 +1921,7 @@ function dayTasksPreview(){const p=X.plans[today()];if(p)return p.blocks.filter(
 function markTaskDone(date,key,val){const p=X.plans[date];if(!p)return;let ch=false;p.blocks.forEach(b=>{if(b.key===key&&b.done!==val){b.done=val;ch=true}});if(ch)savePlan(date)}
 function taskSig(date){return tasksFor(date).map(t=>t.key+"/"+t.min).join(",")+"|"+JSON.stringify(fixedFor(date).map(f=>[f.s,f.e]))+"|"+JSON.stringify(X.planning.prefs)}
 function ensurePlan(date){if(!X.planning)return null;const p=X.plans[date];
-  if(!p||!p.gen||(date>=today()&&p.tk!==taskSig(date))){schedule(date);savePlan(date)}
+  if(!p||!p.gen||(!p.lock&&date>=today()&&p.tk!==taskSig(date))){schedule(date);savePlan(date)}
   return X.plans[date]}
 
 function viewPlan(){
@@ -1915,7 +1945,7 @@ function dayTimeline(date,p,fixed){
   const items=[...fixed.map(f=>({s:f.s,e:f.e,fixed:f})),...p.blocks.map(b=>({s:toMin(b.start),e:toMin(b.end),b}))].sort((a,b)=>a.s-b.s);
   return calBanner(date)+`<div class="tl">${items.length?items.map(x=>x.fixed?(()=>{const fd=!!(p.fdone||{})[x.fixed.ref];return `<div class="tli ${KIND_CLS[x.fixed.kind]} ${fd?"done":""}"><span class="tlt">${hm(x.s)}<br>${hm(x.e)}</span><div style="min-width:0;flex:1"><div class="label">${esc(x.fixed.kind)}${x.fixed.type?" · "+esc(x.fixed.type):""}${x.fixed.lieu?" · "+esc(x.fixed.lieu):""}</div><strong>${esc(x.fixed.title)}</strong></div>${x.fixed.ref&&/^Coran ·/.test(x.fixed.title)&&!fd?`<button class="iconbtn" data-act="actgo" data-t="${esc(x.fixed.title)}" data-min="${x.e-x.s}" data-ref="${esc(x.fixed.ref)}" data-date="${date}" aria-label="Chronométrer">⏱</button>`:""}${x.fixed.ref?`<button class="iconbtn chk ${fd?"on":""}" data-act="fdone" data-ref="${esc(x.fixed.ref)}" data-date="${date}" aria-label="${fd?"Marquer non fait":"Marquer fait"}">✓</button>`:""}</div>`})()
     :`<div class="tli k-study ${x.b.done?"done":""}"><span class="tlt">${x.b.start}<br>${x.b.end}</span><div style="min-width:0;flex:1"><div class="label">${esc({learn:"Nouveau cours",post:"Après le cours",J:"Révision J",bilan:"Bilan",exam:"Partiel",cards:"Flashcards",err:"Erreurs"}[x.b.kind]||"Travail")}</div><strong>${esc(x.b.title)}</strong>
-      <div class="row" style="margin-top:6px">${x.b.kind==="post"?`<button class="btn small" data-act="cnew" data-m="${esc(x.b.title.replace(/^Revoir le cours du jour : /,""))}">Ajouter mes notes</button>`:(x.b.kind==="err"||x.b.kind==="bilan")?`<button class="btn small" data-act="nav" data-v="revise">Commencer</button>`:x.b.deckId?`<button class="btn small" data-act="chpick" data-id="${x.b.deckId}" data-rev="${x.b.rev?1:""}" data-key="${esc(x.b.key)}" data-date="${date}">Chrono</button><button class="btn ghost small" data-act="goto" data-id="${x.b.deckId}" data-tab="${esc(x.b.tab||"fiche")}">Ouvrir</button>`:""}</div></div>
+      <div class="row" style="margin-top:6px">${x.b.kind==="post"?`<button class="btn small" data-act="cnew" data-m="${esc(x.b.title.replace(/^Revoir le cours du jour : /,""))}">Ajouter mes notes</button>`:(x.b.kind==="err"||x.b.kind==="bilan")?`<button class="btn small" data-act="nav" data-v="revise">Commencer</button>`:x.b.deckId?`<button class="btn small" data-act="chpick" data-id="${x.b.deckId}" data-rev="${x.b.rev?1:""}" data-key="${esc(x.b.key)}" data-date="${date}" data-min="${toMin(x.b.end)-toMin(x.b.start)}" data-label="${esc(x.b.title)}">⏱ ${toMin(x.b.end)-toMin(x.b.start)} min</button><button class="btn ghost small" data-act="goto" data-id="${x.b.deckId}" data-tab="${esc(x.b.tab||"fiche")}">Ouvrir</button>`:""}</div></div>
       <button class="iconbtn chk ${x.b.done?"on":""}" data-act="bdone" data-id="${x.b.id}" data-date="${date}" aria-label="${x.b.done?"Marquer non fait":"Marquer fait"}">✓</button></div>`).join(""):`<div class="empty">Rien de prévu ce jour.</div>`}</div>`;
 }
 function semWeek(date){const st=X.planning?.semStart;if(!st)return 0;const n=Math.floor((new Date(mondayOf(date)+"T12:00")-new Date(mondayOf(st)+"T12:00"))/(7*864e5))+1;return n>=1?n:0}
@@ -2661,6 +2691,7 @@ function tabRecite(d){
     <p class="help" style="margin:0">${mode==="blurt"?"Sans regarder le cours, écris (ou dicte avec le micro du clavier) tout ce dont tu te souviens : listes, chiffres, mots-clés. Ensuite je compare avec ta fiche et je te montre ce que tu as oublié.":"Explique la partie avec tes mots, comme si tu l'apprenais à une camarade qui ne connaît rien : définitions, mécanismes, le pourquoi. Je te corrige comme un prof, à partir de ta fiche."}</p>
     <label class="f">Morceau à réciter<select id="rc-sec" data-rcsec="${d.id}"><option value="">Tout le chapitre</option>${[...new Set(P.map(p=>p.g))].map(g=>`<optgroup label="${esc(g)}">${P.map((p,i)=>p.g!==g?"":`<option value="${i}" ${String(i)===String(sec)?"selected":""}>${esc(p.h===g?p.h:p.h)}</option>`).join("")}</optgroup>`).join("")}</select></label>
     ${sec!==""&&P[+sec]?`<div class="row rcnav"><button class="btn ghost small" data-act="rcstep" data-v="-1" ${+sec<=0?"disabled":""}>‹ Préc.</button><span class="help">Morceau ${+sec+1} / ${P.length} · ${P[+sec].lines.filter(l=>/^\s*-|^\|/.test(l)).length} points</span><button class="btn ghost small" data-act="rcstep" data-v="1" ${+sec>=P.length-1?"disabled":""}>Suiv. ›</button></div>`:`<p class="help" style="margin:0">Conseil : choisis un morceau à la fois (8 points maximum), c'est plus efficace que tout le chapitre d'un coup.</p>`}
+    <div class="row rcmic"><button class="btn ${X.mic?"danger":"soft"} small" data-act="rcmic">${X.mic?"⏹ Arrêter l'enregistrement":"🎙️ Réciter à voix haute"}</button>${X.mic?`<span class="recdot">● j'écoute…</span>`:`<span class="help">Je transcris ce que tu dis dans la case.</span>`}</div>
     <textarea id="rc-text" data-rcd="${esc(d.id+"|"+mode+"|"+sec)}" rows="9" placeholder="${mode==="blurt"?"Écris tout ce que tu as retenu…":"Explique comme au tableau…"}">${esc(draft)}</textarea>
     ${aiOK()?`<button class="btn" data-act="rcgo" ${busy?"disabled":""} style="align-self:flex-start">${busy?"Je corrige…":"Corriger avec mon cours"}</button>`:`<button class="btn soft" data-act="rcshow" style="align-self:flex-start">Afficher la fiche pour me corriger seule</button>${noAI}`}</div>
   ${r?`<div class="panel stack rcres"><div class="row" style="justify-content:space-between"><div class="label">Correction${r.sec?" · "+esc(r.sec):""}</div><span class="pill ${r.score>=85?"ok":r.score<50?"late":""}">${r.score} %</span></div>
@@ -2741,6 +2772,20 @@ function recParts(d){
     pieces.forEach((ls,i)=>out.push({g:u.g,h:u.h+(pieces.length>1?` (${i+1}/${pieces.length})`:""),hh:u.parts.join(" · "),lines:ls}))});
   return out}
 
+/* 🎙️ récitation à voix haute : reconnaissance vocale du navigateur (fr-FR) écrite dans la case */
+function micToggle(d){
+  if(X.mic){try{X.mic.stop()}catch(e){}X.mic=null;render();return}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const help="Ici, l'enregistrement n'est pas disponible. Touche la case puis le 🎤 de ton clavier (iPhone : en bas à droite ; Android : en haut du clavier) pour dicter.";
+  if(!SR){toast(help);document.getElementById("rc-text")?.focus();return}
+  const r=new SR();r.lang="fr-FR";r.continuous=true;r.interimResults=true;
+  const ta0=document.getElementById("rc-text");let base=(ta0?.value||"").trim();if(base)base+=" ";
+  r.onresult=e=>{let fin="",tmp="";for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)fin+=t+" ";else tmp+=t}
+    base+=fin;const ta=document.getElementById("rc-text");if(ta){ta.value=base+tmp;(X.rcDraft??={})[ta.dataset.rcd]=ta.value}};
+  r.onerror=e=>{X.mic=null;render();toast(e.error==="not-allowed"||e.error==="service-not-allowed"?help:e.error==="no-speech"?"Je n'ai rien entendu : réessaie plus près du micro.":"Micro interrompu : réessaie.")};
+  r.onend=()=>{if(X.mic===r){try{r.start()}catch(e){X.mic=null;render()}}};
+  try{r.start();X.mic=r;render()}catch(e){toast(help)}}
+
 /* ---------- Calendrier universitaire : partiels, périodes de révision, vacances, jours fériés ---------- */
 const CAL_K={exam:["📝","Examens"],revision:["📚","Révisions"],vacances:["🌴","Vacances"],ferie:["🎉","Férié"],event:["📌","Événement"]};
 const calList=()=>((X.planning||{}).calendar||[]).slice().sort((a,b)=>a.from.localeCompare(b.from));
@@ -2820,6 +2865,7 @@ document.addEventListener("click",async e=>{
     case "rcstep":if(d){const n=recParts(d).length,c=+(X.rcSec?.[d.id]||0),v=Math.max(0,Math.min(n-1,c+ +b.dataset.v));(X.rcSec??={})[d.id]=String(v);(X.rcRes??={})[d.id]=null;render();window.scrollTo(0,0)}break;
     case "cardmix":X.cardMix=b.dataset.v==="1";render();break;
     case "avonly":X.avOnly=b.dataset.v==="1";render();break;
+    case "rcmic":if(d)micToggle(d);break;
     case "rcmode":X.rcMode=b.dataset.m;render();break;
     case "rcgo":if(d)doRecite(d);break;
     case "rcagain":if(d){(X.rcRes??={})[d.id]=null;const sec=X.rcSec?.[d.id]??"";(X.rcDraft??={})[d.id+"|"+(X.rcMode||"blurt")+"|"+sec]="";render()}break;
@@ -2895,10 +2941,11 @@ document.addEventListener("click",async e=>{
     case "xsend":{const s=X.xs;if(s&&s.kind==="err"&&s.i>=s.items.length)markTaskDone(today(),"err",true);X.xs=null;render();break}
     /* Chrono */
     case "chpick":{if(X.chrono&&X.chrono.deckId!==b.dataset.id&&chronoActive(X.chrono)>60000){toast("Termine d'abord la séance en cours");S.view="timer";render();break}
-      if(!X.chrono||X.chrono.deckId!==b.dataset.id)chronoStart(b.dataset.id,{rev:!!b.dataset.rev,blockKey:b.dataset.key||null,date:b.dataset.date||today()});else{S.view="timer";render()}break}
+      unlockAudio();if(!X.chrono||X.chrono.deckId!==b.dataset.id)chronoStart(b.dataset.id,{rev:!!b.dataset.rev,blockKey:b.dataset.key||null,date:b.dataset.date||today(),min:+b.dataset.min||0,label:b.dataset.label||"",auto:!!b.dataset.min});else{S.view="timer";render()}break}
     case "actgo":actStart(b.dataset.t,b.dataset.min,{ref:b.dataset.ref||null,date:b.dataset.date||today(),kind:"coran"});break;
     case "chgo":chronoToggle();break;
     case "chend":chronoEnd();break;
+    case "chnext":chronoNext();break;
     case "chcancel":confirmSheet("Annuler cette séance sans l'enregistrer ?","Annuler la séance",()=>{X.chrono=null;chronoSave();render()});break;
     case "chstep":{const c=X.chrono;if(c){c.steps[b.dataset.k]=b.checked;chronoSave();render()}break}
     /* Cocher J et étapes */

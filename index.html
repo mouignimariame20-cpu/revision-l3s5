@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261023094647";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261023115915";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -304,6 +304,25 @@ body.has-au .wrap{padding-bottom:62vh}
 .objr{background:var(--scrub-soft);border-radius:12px;padding:10px 12px}
 .objr ul{margin:4px 0;padding-left:18px}
 .objk{font-size:.85rem;font-weight:700;color:var(--scrub)}
+.loadl{margin-bottom:12px;text-align:left}
+.mlist{margin:0;padding-left:18px;display:grid;gap:6px}
+.mstep{margin-bottom:8px}
+.rcres ul{margin:6px 0 0;padding-left:18px;display:grid;gap:4px}
+#rc-text{width:100%;min-height:180px;font:inherit;line-height:1.5}
+.flyer{background:var(--surface,#fff);border-radius:22px;padding:18px;box-shadow:0 6px 24px rgba(180,90,120,.12);display:grid;gap:12px}
+.flyh{text-align:center;border-bottom:2px dashed #e8b4c4;padding-bottom:10px}
+.flyh h2{font-family:"Playfair Display",Georgia,serif;font-size:1.6rem;margin:4px 0}
+.flyg{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.flyc{border-radius:16px;padding:12px 14px;background:#fdeef3;color:#3b2a30}
+.flyc.c1{background:#f1eafb}.flyc.c2{background:#e9f6f0}.flyc.c3{background:#fff2e6}
+.flyobj{background:#fbe3ec}.flyfig{background:#fff}.flyfig img{width:100%;border-radius:10px}
+.flyc h3{font-family:"Playfair Display",Georgia,serif;font-size:1.05rem;margin:0 0 6px}
+.flyc ul{margin:0;padding-left:18px;display:grid;gap:4px}.flyc .fiche{font-size:.92rem}.flyc .fiche table{font-size:.82rem}
+.flyk{display:inline-block;font-size:.78rem;font-weight:700;color:#b34b72}
+:root[data-theme="dark"] .flyc{filter:brightness(.92)}
+@media print{body.pflyer *{visibility:hidden}body.pflyer #flyer,body.pflyer #flyer *{visibility:visible}body.pflyer #flyer{position:absolute;left:0;top:0;width:100%;box-shadow:none;padding:0}body.pflyer .flyc{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.fiche hr{border:0;border-top:2px dashed #e8b4c4;margin:18px 0}
+.fiche ul.olist{list-style:none;padding-left:4px}.oln{color:var(--scrub);margin-right:2px}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -538,6 +557,8 @@ function md(src){
   for(const raw of lines){const l=raw.trimEnd();
     if(/^\s*\|/.test(l)){closeList();(tbl??=[]).push(l);continue}
     flushT();
+    if(/^\s*-{3,}\s*$/.test(l)){closeList();out+="<hr>";continue}
+    if(/^\s*\d{1,2}[.)]\s+/.test(l)){if(!inList){out+='<ul class="olist">';inList=true}const n=l.match(/^\s*(\d{1,2})/)[1];out+='<li><b class="oln">'+n+'.</b> '+inline(l.replace(/^\s*\d{1,2}[.)]\s+/,""))+"</li>";continue}
     if(/^\s*[-•]\s+/.test(l)){if(!inList){out+="<ul>";inList=true}out+="<li>"+inline(l.replace(/^\s*[-•]\s+/,""))+"</li>";continue}
     closeList();
     const im=l.match(IMG_RE);
@@ -702,6 +723,7 @@ function render(){
   else if(S.view==="matiere")h=viewMatiere();
   else if(S.view==="classe")h=viewClasse();
   else if(S.view==="plan")h=viewPlan();
+  else if(S.view==="methode")h=viewMethode();
   else if(S.view==="revise")h=viewRevise();
   else if(S.view==="assist")h=viewAssist();
   else if(S.view==="synd")h=viewSynd();
@@ -827,7 +849,7 @@ function viewNew(){
 }
 function viewDeck(){
   const d=getDeck(S.deckId); if(!d){S.view="matieres";return viewMatieres()}
-  const tabs=[["source","Cours source"],["fiche","Fiche synthétique"],["obj","Objectifs"],["lesson","Cours expliqué"],["visuel","Visuel"],["memo","Mémoriser"],["explain","Comprendre"],["cards","Flashcards"],["qcm","QCM"],["cov","Couverture"],["edit","Modifier"]];
+  const tabs=[["source","Cours source"],["fiche","Fiche synthétique"],["obj","Objectifs"],["flyer","Flyer"],["recite","Réciter"],["lesson","Cours expliqué"],["visuel","Visuel"],["memo","Mémoriser"],["explain","Comprendre"],["cards","Flashcards"],["qcm","QCM"],["cov","Couverture"],["edit","Modifier"]];
   let body="";
   if(S.tab==="fiche")body=tabFiche(d);
   else if(S.tab==="cards")body=tabCards(d);
@@ -838,6 +860,8 @@ function viewDeck(){
   else if(S.tab==="visuel")body=tabVisuel(d);
   else if(S.tab==="lesson")body=tabLesson(d);
   else if(S.tab==="obj")body=tabObjectifs(d);
+  else if(S.tab==="flyer")body=tabFlyer(d);
+  else if(S.tab==="recite")body=tabRecite(d);
   else if(S.tab==="memo")body=viewMemo(d);
   else body=tabEdit(d);
   return topbar(d.name,true)+`<div class="hero"><div class="label">${esc(d.matiere||"")}${d.partie?" · "+esc(d.partie):""}${d.example?" · exemple":""}</div><h1>${esc(d.name)}</h1>${(d.fiche||"").trim()?`<button class="btn soft au-btn" data-act="auopen" data-id="${d.id}">🎧 Écouter le cours</button>`:""}</div>
@@ -1780,7 +1804,10 @@ function tasksFor(date){
   const push=t=>{if(seen.has(t.key))return;seen.add(t.key);t.prio+=(pr(t.mat)-2)*6;T.push(t)};
   // 1. cours suivis récemment, pas encore appris
   X.classes.filter(e=>e.date<=date&&e.date>=addDays(date,-3)).forEach(e=>{const d=getDeck(e.deckId);if(!d||d.learnedOn)return;
-    const est=estimate(d);push({key:"learn:"+d.id,deckId:d.id,mat:d.matiere,title:"Apprendre le cours : "+d.name,min:Math.max(25,Math.min(150,est.read+Math.min(est.cards,20))),prio:100,kind:"learn"})});
+    const L=dayLoad(e.date);push({key:"learn:"+d.id,deckId:d.id,mat:d.matiere,title:(L.lvl==="lourde"?"J0 allégé · Survol + Blurting : ":"J0 · Comprendre + Blurting : ")+d.name,min:j0Min(e,d,L.lvl),prio:100,kind:"learn",tab:"lesson"})});
+  // 1 ter. nouvelle partie d'un chapitre déjà commencé (ex. 2e cours sur le même support)
+  X.classes.filter(e=>e.date<=date&&e.date>=addDays(date,-2)).forEach(e=>{const d=getDeck(e.deckId);if(!d||!d.learnedOn||e.date<=d.learnedOn)return;const k="part:"+e.id;if(keyDone(k))return;
+    const L=dayLoad(e.date);push({key:k,deckId:d.id,mat:d.matiere,title:"J0 nouvelle partie · "+(e.titre||d.name),min:j0Min(e,d,L.lvl),prio:99,kind:"learn",tab:"lesson"})});
   // 1 bis. le jour même : revoir chaque cours de l'emploi du temps juste après l'avoir eu
   fixedFor(date).filter(f=>f.kind==="cours").forEach(f=>{
     const cl=X.classes.find(e=>e.date===date&&e.deckId&&getDeck(e.deckId)&&fold(e.matiere||getDeck(e.deckId).matiere||"").includes(fold(f.title).slice(0,6)));
@@ -1788,7 +1815,10 @@ function tasksFor(date){
     push({key:"post:"+f.ref+":"+date,deckId:null,mat:f.title,title:"Revoir le cours du jour : "+f.title,min:f.e>=18*60?45:Math.max(45,Math.min(90,Math.round((f.e-f.s)*.5/5)*5)),prio:98,kind:"post",after:f.e+10})});
   // 2. révisions J dues ou en retard à cette date
   S.decks.forEach(d=>{if(!d.learnedOn)return;const n=J_STEPS.find(j=>!(d.jDone||[]).includes(j));if(!n)return;const dd=addDays(d.learnedOn,n);if(dd>date)return;
-    push({key:`J${n}:${d.id}`,deckId:d.id,mat:d.matiere,title:`J${n} · ${d.name}`,min:revMin(d),prio:dd<date?95:90,kind:"J",rev:true,j:n})});
+    const heavy=n===1&&dayLoad(d.learnedOn).lvl==="lourde";
+    push({key:`J${n}:${d.id}`,deckId:d.id,mat:d.matiere,title:`J${n} · ${heavy?"Approfondir + objectifs":MAJ[n].t} · ${d.name}`,min:revMin(d)+(heavy?Math.round(slidesOf(X.classes.find(e=>e.deckId===d.id&&e.date===d.learnedOn),d)*.4/5)*5:0),prio:dd<date?95:90,kind:"J",rev:true,j:n,tab:heavy?"lesson":MAJ[n].tab})});
+  // 2 bis. dimanche : bilan de la semaine, QCM mélangés de tous les cours de la semaine
+  if(wdOf(date)===7){const wk=S.decks.filter(d=>d.learnedOn&&d.learnedOn>=addDays(date,-7)&&(d.qcm||[]).length);if(wk.length&&!keyDone("bilan:"+date))push({key:"bilan:"+date,deckId:null,mat:"",title:`Bilan de la semaine · QCM mélangés (${wk.length} cours)`,min:Math.min(60,20+wk.length*5),prio:85,kind:"bilan"})}
   // 3. partiels dans les 21 jours
   (P.exams||[]).filter(e=>e.date>=date&&e.date<=addDays(date,21)).forEach(e=>{const days=Math.max(1,Math.round((new Date(e.date)-new Date(date))/864e5));
     S.decks.filter(d=>(d.matiere||"")===e.matiere).map(d=>({d,p:chapProgress(d)})).filter(x=>x.p<75).sort((a,b)=>a.p-b.p).slice(0,days<=7?3:2).forEach(({d})=>
@@ -1832,7 +1862,7 @@ function schedule(date){
     while(need>0&&budget>=15){if(need<20&&need<t.min)break;const af=t.after||0,ix=slots.findIndex(([s,e])=>e-Math.max(s,af)>=Math.min(need,20));if(ix<0)break;let sl=slots[ix];
       if(sl[0]<af){const pre=[sl[0],af];sl[0]=af;if(pre[1]-pre[0]>=20)slots.splice(ix,0,pre)}
       let len=Math.min(need,+P.block||50,sl[1]-sl[0],budget);if(need-len>0&&need-len<20&&need<=sl[1]-sl[0]&&need<=budget&&need<=(+P.block||50)+20)len=need;if(len<20&&len<need){slots.splice(slots.indexOf(sl),1);continue}
-      blocks.push({id:uid(),key:t.key,deckId:t.deckId,title:t.title,kind:t.kind,rev:!!t.rev,start:hm(sl[0]),end:hm(sl[0]+len),done:false});
+      blocks.push({id:uid(),key:t.key,deckId:t.deckId,title:t.title,kind:t.kind,rev:!!t.rev,tab:t.tab||"",start:hm(sl[0]),end:hm(sl[0]+len),done:false});
       sl[0]+=len+(+P.pause||10);need-=len;budget-=len}
     if(need>=10)over.push({key:t.key,title:t.title,min:need})}
   X.plans[date]={id:date,date,blocks:[...keep,...blocks].sort((x,y)=>x.start.localeCompare(y.start)),extra:old.extra||[],over,gen:new Date().toISOString(),tk:taskSig(date)};
@@ -1865,8 +1895,8 @@ const KIND_CLS={cours:"k-cours",habitude:"k-hab",obligation:"k-obl","imprévu":"
 function dayTimeline(date,p,fixed){
   const items=[...fixed.map(f=>({s:f.s,e:f.e,fixed:f})),...p.blocks.map(b=>({s:toMin(b.start),e:toMin(b.end),b}))].sort((a,b)=>a.s-b.s);
   return `<div class="tl">${items.length?items.map(x=>x.fixed?(()=>{const fd=!!(p.fdone||{})[x.fixed.ref];return `<div class="tli ${KIND_CLS[x.fixed.kind]} ${fd?"done":""}"><span class="tlt">${hm(x.s)}<br>${hm(x.e)}</span><div style="min-width:0;flex:1"><div class="label">${esc(x.fixed.kind)}${x.fixed.type?" · "+esc(x.fixed.type):""}${x.fixed.lieu?" · "+esc(x.fixed.lieu):""}</div><strong>${esc(x.fixed.title)}</strong></div>${x.fixed.ref&&/^Coran ·/.test(x.fixed.title)&&!fd?`<button class="iconbtn" data-act="actgo" data-t="${esc(x.fixed.title)}" data-min="${x.e-x.s}" data-ref="${esc(x.fixed.ref)}" data-date="${date}" aria-label="Chronométrer">⏱</button>`:""}${x.fixed.ref?`<button class="iconbtn chk ${fd?"on":""}" data-act="fdone" data-ref="${esc(x.fixed.ref)}" data-date="${date}" aria-label="${fd?"Marquer non fait":"Marquer fait"}">✓</button>`:""}</div>`})()
-    :`<div class="tli k-study ${x.b.done?"done":""}"><span class="tlt">${x.b.start}<br>${x.b.end}</span><div style="min-width:0;flex:1"><div class="label">${esc({learn:"Nouveau cours",post:"Après le cours",J:"Révision J",exam:"Partiel",cards:"Flashcards",err:"Erreurs"}[x.b.kind]||"Travail")}</div><strong>${esc(x.b.title)}</strong>
-      <div class="row" style="margin-top:6px">${x.b.kind==="post"?`<button class="btn small" data-act="cnew" data-m="${esc(x.b.title.replace(/^Revoir le cours du jour : /,""))}">Ajouter mes notes</button>`:x.b.kind==="err"?`<button class="btn small" data-act="nav" data-v="revise">Commencer</button>`:x.b.deckId?`<button class="btn small" data-act="chpick" data-id="${x.b.deckId}" data-rev="${x.b.rev?1:""}" data-key="${esc(x.b.key)}" data-date="${date}">Chrono</button><button class="btn ghost small" data-act="open" data-id="${x.b.deckId}">Ouvrir</button>`:""}</div></div>
+    :`<div class="tli k-study ${x.b.done?"done":""}"><span class="tlt">${x.b.start}<br>${x.b.end}</span><div style="min-width:0;flex:1"><div class="label">${esc({learn:"Nouveau cours",post:"Après le cours",J:"Révision J",bilan:"Bilan",exam:"Partiel",cards:"Flashcards",err:"Erreurs"}[x.b.kind]||"Travail")}</div><strong>${esc(x.b.title)}</strong>
+      <div class="row" style="margin-top:6px">${x.b.kind==="post"?`<button class="btn small" data-act="cnew" data-m="${esc(x.b.title.replace(/^Revoir le cours du jour : /,""))}">Ajouter mes notes</button>`:(x.b.kind==="err"||x.b.kind==="bilan")?`<button class="btn small" data-act="nav" data-v="revise">Commencer</button>`:x.b.deckId?`<button class="btn small" data-act="chpick" data-id="${x.b.deckId}" data-rev="${x.b.rev?1:""}" data-key="${esc(x.b.key)}" data-date="${date}">Chrono</button><button class="btn ghost small" data-act="goto" data-id="${x.b.deckId}" data-tab="${esc(x.b.tab||"fiche")}">Ouvrir</button>`:""}</div></div>
       <button class="iconbtn chk ${x.b.done?"on":""}" data-act="bdone" data-id="${x.b.id}" data-date="${date}" aria-label="${x.b.done?"Marquer non fait":"Marquer fait"}">✓</button></div>`).join(""):`<div class="empty">Rien de prévu ce jour.</div>`}</div>`;
 }
 function semWeek(date){const st=X.planning?.semStart;if(!st)return 0;const n=Math.floor((new Date(mondayOf(date)+"T12:00")-new Date(mondayOf(st)+"T12:00"))/(7*864e5))+1;return n>=1?n:0}
@@ -1917,7 +1947,8 @@ function itemForm(list){
 function planRules(){
   const P=X.planning,pr=P.prefs,mats=Object.keys(groupsByMat());
   const row=(x,l)=>`<div class="mini"><span><strong>${esc(x.title)}</strong> <span class="muted">· ${x.date?esc(fmtDate(x.date)):(x.days||[]).map(d=>WD[d].slice(0,3)).join(", ")} · ${esc(x.start)}–${esc(x.end)}</span></span><button class="btn ghost small" data-act="pldel" data-l="${l}" data-id="${x.id}">Retirer</button></div>`;
-  return `<div class="section"><h2>Apparence</h2><div class="panel stack"><div class="chips">${[["light","☀️ Clair"],["dark","🌙 Sombre"],["auto","Comme mon téléphone"]].map(([k,l])=>`<button class="chip" data-act="themeset" data-t="${k}" aria-pressed="${themePref()===k}">${l}</button>`).join("")}</div></div></div>
+  return `<div class="section"><h2>Méthode de révision</h2><button class="mini" data-act="nav" data-v="methode"><span><strong>📊 Méthode Major</strong><br><span class="muted">Durées calculées selon le nombre de cours et de diapos de chaque jour</span></span><span class="pill">Voir</span></button></div>
+  <div class="section"><h2>Apparence</h2><div class="panel stack"><div class="chips">${[["light","☀️ Clair"],["dark","🌙 Sombre"],["auto","Comme mon téléphone"]].map(([k,l])=>`<button class="chip" data-act="themeset" data-t="${k}" aria-pressed="${themePref()===k}">${l}</button>`).join("")}</div></div></div>
   <div class="section"><h2>Profil</h2><div class="panel stack"><label class="f">Ton prénom<input type="text" id="pf-name" value="${esc(prenom())}" autocomplete="given-name"></label><button class="btn soft small" data-act="namesave" style="align-self:flex-start">Enregistrer</button><p class="help">${window.__STATIC?"Ta progression, tes coches et ton planning restent sur ton appareil : chaque personne qui utilise le lien a son propre suivi.":"Affiché sur l'accueil."}</p></div></div>
   <div class="section"><h2>Semestre</h2><div class="panel stack"><label class="f">Lundi de la semaine 1<input type="date" id="sem-start" value="${esc(P.semStart||"")}"></label><button class="btn soft small" data-act="semsave" style="align-self:flex-start">Enregistrer</button><p class="help">Sert à numéroter tes semaines (Semaine 1, 2, 3…) dans l'accueil et le planning.</p></div></div>
   <div class="section"><h2>Habitudes</h2>${(P.habits||[]).map(x=>row(x,"habits")).join("")||`<p class="help">Sommeil, repas, prière, sport, trajet… tout ce qui revient chaque semaine.</p>`}${itemForm("habits")}</div>
@@ -2021,7 +2052,7 @@ function viewHome(){
     </div></div>
   ${searchBox("hq","","Chercher un chapitre, une notion, un mot-clé…")}
   ${X.chrono?`<button class="mini" data-act="nav" data-v="timer" style="margin-bottom:14px;border-color:var(--scrub)"><span><strong>Séance en cours</strong> · ${esc(X.chrono.act?X.chrono.act.title:getDeck(X.chrono.deckId)?.name||"")}</span><span class="pill">${X.chrono.running?"en cours":"en pause"}</span></button>`:""}
-  <div class="section"><div class="row" style="justify-content:space-between"><h2>Ma journée</h2><span class="row" style="gap:6px;flex-wrap:nowrap"><button class="iconbtn" data-act="themetog" aria-label="Changer de thème">${curTheme()==="dark"?"☀️":"🌙"}</button><button class="iconbtn" data-act="ntopen" aria-label="Rappels">🔔</button><button class="btn ghost small" data-act="nav" data-v="plan">Planning</button></span></div>
+  ${loadLine(t)}<div class="section"><div class="row" style="justify-content:space-between"><h2>Ma journée</h2><span class="row" style="gap:6px;flex-wrap:nowrap"><button class="iconbtn" data-act="themetog" aria-label="Changer de thème">${curTheme()==="dark"?"☀️":"🌙"}</button><button class="iconbtn" data-act="ntopen" aria-label="Rappels">🔔</button><button class="btn ghost small" data-act="nav" data-v="plan">Planning</button></span></div>
     ${!X.loaded?`<div class="help">Chargement…</div>`:plan?`<p class="help">${done.length}/${plan.blocks.length+fx.length} fait${done.length>1?"s":""} · touche ✓ dès qu'une activité est faite.</p>${dayTimeline(t,plan,fx)}`:`<div class="empty">Ajoute ton emploi du temps dans Planning pour un programme sur mesure.</div>`}
     ${plan?.over?.length?`<p class="help">${plan.over.length} tâche(s) reportée(s) faute de temps libre aujourd'hui.</p>`:""}</div>
   <div class="section"><h2>Fait aujourd'hui</h2>
@@ -2544,6 +2575,118 @@ ${String(d.fiche||"").replace(/!\[[^\]]*\]\([^)]*\)/g,"").slice(0,60000)}`,{mode
   catch(e){toast(aiErr(e))}
   X.ai[k]=false;render()}
 
+/* ---------- Méthode Major : révisions adaptées à la charge du jour (nombre de cours × nombre de diapos) ---------- */
+const MAJ={0:{t:"Comprendre + Blurting",tab:"lesson",how:"Lis le Cours expliqué puis la fiche. Ferme tout et fais un Blurting : écris de mémoire tout ce que tu as retenu, puis compare."},
+  1:{t:"Objectifs + flashcards",tab:"obj",how:"Récite chaque objectif à voix haute (mode Me tester), puis les flashcards dues."},
+  3:{t:"QCM + Blurting",tab:"qcm",how:"Fais les QCM du chapitre, puis un Blurting sur les parties où tu t'es trompée."},
+  7:{t:"Explique-le comme un prof",tab:"recite",how:"Méthode Feynman : explique le cours avec tes mots, comme si tu le faisais à une camarade. La correction te montre ce qui manque."},
+  15:{t:"QCM mélangés + points faibles",tab:"memo",how:"Mémoriser en mode « Seulement ceux à revoir », puis examen blanc mélangé dans Révisions ciblées."},
+  30:{t:"Blurting final",tab:"recite",how:"Blurting sur tout le chapitre, sans rien regarder. Objectif : plus de 85 %."}};
+function slidesOf(cl,d){
+  const t=(cl?.titre||"")+" "+(cl?.notes||""),m=t.match(/(?:diapos?|pages?|slides?)\s*(\d+)\s*(?:à|a|-|–)\s*(\d+)/i);
+  if(m){const a=+m[1],b=+m[2];if(b>=a)return b-a+1}
+  if(d?.diapos)return +d.diapos;
+  return d?Math.max(10,Math.round(words(plain(d.fiche||""))/45)):20}
+function dayLoad(date){
+  const cls=X.classes.filter(e=>e.date===date&&e.deckId&&getDeck(e.deckId));
+  const sl=cls.reduce((n,e)=>n+slidesOf(e,getDeck(e.deckId)),0),n=cls.length;
+  const lvl=n>=4||sl>100?"lourde":sl>=40||n>=2?"moyenne":n?"légère":"aucune";
+  return {n,sl,lvl,cls}}
+function j0Min(cl,d,lvl){const s=slidesOf(cl,d);return Math.max(30,Math.min(120,Math.round((s*(lvl==="lourde"?.6:1)+10)/5)*5))}
+function keyDone(k){return Object.values(X.plans||{}).some(p=>(p.blocks||[]).some(b=>b.key===k&&b.done))}
+function loadLine(date){const L=dayLoad(date);if(!L.n)return "";
+  const msg={légère:"J0 complet ce soir.",moyenne:"J0 complet, un cours après l'autre.",lourde:"J0 allégé ce soir (survol + Blurting), approfondissement demain au J1."}[L.lvl];
+  return `<button class="mini loadl" data-act="nav" data-v="methode"><span>📊 Charge du jour : <strong>${L.n} cours · ${L.sl} diapos</strong> · ${L.lvl}<br><span class="muted">${msg}</span></span><span class="pill ${L.lvl==="lourde"?"late":L.lvl==="moyenne"?"":"ok"}">Méthode</span></button>`}
+function viewMethode(){
+  const t=today(),L=dayLoad(t);const wk=[];for(let i=-6;i<=0;i++){const dd=addDays(t,i),l=dayLoad(dd);if(l.n)wk.push({dd,l})}
+  return topbar("Ma méthode",true)+`<div class="hero"><div class="label">Méthode Major</div><h1>Réviser selon ta charge</h1></div>
+  <div class="panel stack" style="margin-bottom:14px"><div class="label">Aujourd'hui</div>
+    ${L.n?`<p style="margin:0"><strong>${L.n} cours · ${L.sl} diapos</strong> → charge <strong>${L.lvl}</strong></p>${L.cls.map(e=>{const d=getDeck(e.deckId);return `<div class="mini"><span>${esc(d.name)} <span class="muted">· ${slidesOf(e,d)} diapos</span></span><span class="pill">J0 ≈ ${j0Min(e,d,L.lvl)} min</span></div>`}).join("")}`:`<p class="help" style="margin:0">Pas de cours enregistré aujourd'hui : le planning se consacre aux J et aux points faibles.</p>`}</div>
+  <div class="panel stack" style="margin-bottom:14px"><div class="label">Comment je calcule</div>
+    <ul class="mlist"><li><strong>Charge légère</strong> (moins de 40 diapos) : J0 complet, ≈ 1 min par diapo + 10 min de Blurting.</li>
+    <li><strong>Charge moyenne</strong> (40 à 100 diapos ou 2-3 cours) : J0 complet, cours par cours, dans l'ordre de la journée.</li>
+    <li><strong>Charge lourde</strong> (plus de 100 diapos ou 4 cours) : J0 allégé (≈ 0,6 min par diapo : Cours expliqué + Blurting), et le J1 du lendemain est rallongé pour approfondir.</li>
+    <li>Un J0 dure entre 30 min et 2 h ; au-delà, il est coupé en blocs avec pauses.</li></ul></div>
+  <div class="section"><h2>Les étapes pour chaque cours</h2>${[0,...J_STEPS].map(j=>`<div class="panel mstep"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><strong>J${j} · ${esc(MAJ[j].t)}</strong><span class="pill">${{0:"le jour du cours",1:"lendemain",3:"3 jours",7:"1 semaine",15:"2 semaines",30:"1 mois"}[j]}</span></div><p class="help" style="margin:6px 0 0">${esc(MAJ[j].how)}</p></div>`).join("")}
+  <div class="panel mstep"><div class="row" style="justify-content:space-between"><strong>Dimanche · Bilan de la semaine</strong><span class="pill">chaque semaine</span></div><p class="help" style="margin:6px 0 0">Examen blanc de QCM mélangés sur tous les cours de la semaine (on retient mieux quand les matières sont mélangées), puis tes erreurs.</p></div></div>
+  <div class="panel stack"><div class="label">Pourquoi ça marche</div>
+    <ul class="mlist"><li><strong>Récupération active</strong> : te forcer à retrouver l'information (Blurting, objectifs, QCM) la grave bien plus que relire.</li>
+    <li><strong>Répétition espacée</strong> : revoir juste avant d'oublier (J1, J3, J7…) consolide la mémoire à long terme.</li>
+    <li><strong>Feynman</strong> : si tu sais l'expliquer simplement, tu l'as compris ; sinon la correction te montre exactement le trou.</li>
+    <li><strong>Mélange</strong> : le bilan du dimanche t'entraîne comme à l'examen, où les questions arrivent dans le désordre.</li></ul></div>
+  ${wk.length?`<div class="section"><h2>Ta semaine</h2>${wk.map(x=>`<div class="mini"><span>${esc(fmtDate(x.dd))}</span><span class="pill ${x.l.lvl==="lourde"?"late":""}">${x.l.n} cours · ${x.l.sl} diapos</span></div>`).join("")}</div>`:""}`}
+
+/* ---------- Réciter : Blurting (page blanche) et Feynman (explique comme un prof), corrigés à partir de la fiche ---------- */
+function ficheParts(d){const out=[];let cur=null;
+  for(const l of String(d.fiche||"").split("\n")){const m=l.match(/^##\s+(.*)/);if(m){cur={h:m[1].replace(/[*=_`]/g,"").trim(),lines:[]};out.push(cur);continue}if(cur)cur.lines.push(l)}
+  return out.filter(p=>!/objectif/i.test(p.h)&&p.lines.join("").trim())}
+function tabRecite(d){
+  const P=ficheParts(d),mode=X.rcMode||"blurt",sec=X.rcSec?.[d.id]??"",r=X.rcRes?.[d.id],busy=X.ai["rc-"+d.id],H=(d.blurts||[]).slice(-6).reverse();
+  const draft=X.rcDraft?.[d.id+"|"+mode+"|"+sec]||"";
+  return `<div class="panel stack" style="margin-bottom:12px"><div class="label">Réciter · on le fait ensemble</div>
+    <div class="chips"><button class="chip" data-act="rcmode" data-m="blurt" aria-pressed="${mode==="blurt"}">📝 Blurting</button><button class="chip" data-act="rcmode" data-m="feyn" aria-pressed="${mode==="feyn"}">👩‍🏫 Explique comme un prof</button></div>
+    <p class="help" style="margin:0">${mode==="blurt"?"Sans regarder le cours, écris (ou dicte avec le micro du clavier) tout ce dont tu te souviens : listes, chiffres, mots-clés. Ensuite je compare avec ta fiche et je te montre ce que tu as oublié.":"Explique la partie avec tes mots, comme si tu l'apprenais à une camarade qui ne connaît rien : définitions, mécanismes, le pourquoi. Je te corrige comme un prof, à partir de ta fiche."}</p>
+    <label class="f">Partie<select id="rc-sec" data-rcsec="${d.id}"><option value="">Tout le chapitre</option>${P.map((p,i)=>`<option value="${i}" ${String(i)===String(sec)?"selected":""}>${esc(p.h)}</option>`).join("")}</select></label>
+    <textarea id="rc-text" data-rcd="${esc(d.id+"|"+mode+"|"+sec)}" rows="9" placeholder="${mode==="blurt"?"Écris tout ce que tu as retenu…":"Explique comme au tableau…"}">${esc(draft)}</textarea>
+    ${aiOK()?`<button class="btn" data-act="rcgo" ${busy?"disabled":""} style="align-self:flex-start">${busy?"Je corrige…":"Corriger avec mon cours"}</button>`:`<button class="btn soft" data-act="rcshow" style="align-self:flex-start">Afficher la fiche pour me corriger seule</button>${noAI}`}</div>
+  ${r?`<div class="panel stack rcres"><div class="row" style="justify-content:space-between"><div class="label">Correction${r.sec?" · "+esc(r.sec):""}</div><span class="pill ${r.score>=85?"ok":r.score<50?"late":""}">${r.score} %</span></div>
+    ${(r.retenu||[]).length?`<div><strong>✅ Ce que tu as retenu</strong><ul>${r.retenu.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}
+    ${(r.oublie||[]).length?`<div><strong>❌ Ce que tu as oublié</strong><ul>${r.oublie.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}
+    ${(r.erreurs||[]).length?`<div><strong>⚠️ À corriger</strong><ul>${r.erreurs.map(x=>`<li>Tu as écrit « ${esc(x.dit||"")} » → d'après ton cours : <strong>${esc(x.correct||"")}</strong></li>`).join("")}</ul></div>`:""}
+    ${r.conseil?`<div class="expl">${esc(r.conseil)}</div>`:""}
+    <div class="row"><button class="btn soft small" data-act="rcagain">Recommencer cette partie</button><button class="btn ghost small" data-act="tab" data-t="fiche">Relire la fiche</button></div></div>`:""}
+  ${X.rcShow?.[d.id]?`<article class="panel fiche">${md(sec===""?String(d.fiche||""):"## "+P[+sec].h+"\n"+P[+sec].lines.join("\n"))}</article>`:""}
+  ${H.length?`<div class="section"><h2>Mes récitations</h2>${H.map(h=>`<div class="mini"><span>${h.mode==="feyn"?"👩‍🏫":"📝"} ${esc(h.sec||"Tout le chapitre")} <span class="muted">· ${esc(fmtDate(h.at))}</span></span><span class="pill ${h.score>=85?"ok":h.score<50?"late":""}">${h.score} %</span></div>`).join("")}</div>`:""}`}
+async function doRecite(d){
+  const k="rc-"+d.id;if(X.ai[k])return;const ta=document.getElementById("rc-text"),txt=(ta?.value||"").trim();
+  if(txt.length<15){toast("Écris un peu plus avant de corriger");return}
+  const mode=X.rcMode||"blurt",sec=X.rcSec?.[d.id]??"",P=ficheParts(d),part=sec===""?null:P[+sec];
+  const ref=(part?"## "+part.h+"\n"+part.lines.join("\n"):String(d.fiche||"")).replace(/!\[[^\]]*\]\([^)]*\)/g,"").slice(0,40000);
+  X.ai[k]=true;render();
+  try{const o=await askJSON(`Tu es le professeur de médecine d'une étudiante de L3. Elle vient de faire ${mode==="blurt"?"un BLURTING : elle a écrit de mémoire, sans regarder, tout ce qu'elle a retenu":"un exercice FEYNMAN : elle explique le cours avec ses mots comme à une camarade"} sur « ${part?part.h:d.name} » (chapitre « ${d.name} »).
+Compare son texte à l'EXTRAIT DE COURS (seule référence). Règles :
+- "retenu" : les points importants du cours qu'elle a correctement restitués (formulation courte).
+- "oublie" : les points importants du cours qu'elle n'a pas mentionnés, formulés exactement comme dans le cours (listes complètes, chiffres exacts). Priorité aux éléments surlignés ==…== et en **gras**. Maximum 15.
+- "erreurs" : ce qu'elle a écrit de faux ou d'imprécis par rapport au cours : {"dit":"…","correct":"…"} ; "correct" vient du cours.
+- "score" : pourcentage (0-100) des points essentiels de l'extrait correctement restitués.
+- "conseil" : 1 à 2 phrases bienveillantes et concrètes${mode==="feyn"?", y compris sur la clarté de l'explication et le « pourquoi »":""}.
+N'invente rien : n'utilise que l'extrait. Ignore les fautes d'orthographe.
+Réponds en JSON : {"score":0,"retenu":[],"oublie":[],"erreurs":[],"conseil":""}
+
+EXTRAIT DE COURS :
+<<<
+${ref}
+>>>
+
+TEXTE DE L'ÉTUDIANTE :
+<<<
+${txt.slice(0,12000)}
+>>>`,{modelTier:"default"});
+    if(!o||typeof o.score!=="number")throw {code:"invalid_json"};
+    const res={score:Math.max(0,Math.min(100,Math.round(o.score))),retenu:(o.retenu||[]).map(String),oublie:(o.oublie||[]).map(String),erreurs:(o.erreurs||[]).filter(x=>x&&x.correct),conseil:String(o.conseil||""),sec:part?part.h:""};
+    (X.rcRes??={})[d.id]=res;
+    const live=getDeck(d.id);live.blurts=[...(live.blurts||[]),{at:today(),mode,sec:res.sec,score:res.score,oublie:res.oublie.slice(0,15)}].slice(-20);markDirty(live.id)}
+  catch(e){toast(aiErr(e))}
+  X.ai[k]=false;render()}
+
+/* ---------- Flyer : l'essentiel du chapitre sur une page, construit uniquement à partir de la fiche ---------- */
+function flyerData(d){
+  const parts=ficheParts(d).map(p=>{
+    const bl=p.lines.filter(l=>/^\s*-\s+/.test(l));let pts=bl.filter(l=>l.includes("=="));if(pts.length<2)pts=pts.concat(bl.filter(l=>!pts.includes(l)&&l.includes("**")).slice(0,3-pts.length));
+    const tl=[];let inT=false;for(const l of p.lines){if(/^\|/.test(l)){tl.push(l);inT=true}else if(inT)break}
+    return {h:p.h,pts:pts.slice(0,5).map(l=>l.replace(/^\s*-\s+/,"")),table:tl.length>2&&tl.length<=9?tl.join("\n"):""}}).filter(p=>p.pts.length||p.table);
+  return parts}
+function tabFlyer(d){
+  const parts=flyerData(d),obj=(d.objectifs||[]),figs=courseFigs(d).slice(0,1),fx=figs[0]?(d.figExpl||{})[figKey(figs[0].u)]:null;
+  const prof=(String(d.fiche||"").split("\n").find(l=>/^>\s/.test(l))||"").replace(/^>\s*/,"").replace(/\*\*.*$/,"").replace(/[.·\s]+$/,"");
+  if(!parts.length)return `<div class="empty">La fiche de ce chapitre est trop courte pour faire un flyer.</div>`;
+  return `<div class="row" style="justify-content:space-between;margin-bottom:10px"><p class="help" style="margin:0;flex:1">L'essentiel du cours sur une page : uniquement ce qui est surligné dans ta fiche.</p><button class="btn soft small" data-act="flyprint">🖨️ Imprimer / PDF</button></div>
+  <section class="flyer" id="flyer"><header class="flyh"><div class="label">${esc(d.matiere||"")}${d.periode?" · "+esc(d.periode):""}</div><h2>${esc(d.name)}</h2>${prof?`<div class="help">${esc(prof)}</div>`:""}</header>
+    ${obj.length?`<div class="flyc flyobj"><h3>🎯 Objectifs</h3><ul>${obj.map(o=>`<li>${esc(o.obj)}${(o.cle||[]).length?` <span class="flyk">${o.cle.map(esc).join(" · ")}</span>`:""}</li>`).join("")}</ul></div>`:""}
+    <div class="flyg">${parts.map((p,i)=>`<div class="flyc c${i%4}"><h3>${esc(p.h)}</h3>${p.pts.length?`<div class="fiche">${md(p.pts.map(x=>"- "+x).join("\n"))}</div>`:""}${p.table?`<div class="fiche">${md(p.table)}</div>`:""}</div>`).join("")}
+    ${figs.length?`<div class="flyc flyfig"><h3>🖼️ ${esc(figs[0].alt.replace(/^Diapo \d+ · /,""))}</h3><img src="${esc(figs[0].u)}" alt="">${fx&&(fx.retenir||[]).length?`<ul>${fx.retenir.slice(0,4).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}</div>`:""}</div>
+  </section>`}
+
 /* ---------- Fiche : notes du prof, mémorisation, chrono ---------- */
 function ficheExtras(d){
   const e=estimate(d);const errs=errItems().filter(x=>x.deckId===d.id).length;
@@ -2564,6 +2707,11 @@ document.addEventListener("click",async e=>{
       window.__seedPlanning&&window.__seedPlanning(o);location.reload();break}
     case "simple":if(d)doSimple(d);break;
     case "lesson":if(d){if(b.dataset.re){d.lesson=null;markDirty(d.id)}doLesson(d)}break;
+    case "rcmode":X.rcMode=b.dataset.m;render();break;
+    case "rcgo":if(d)doRecite(d);break;
+    case "rcagain":if(d){(X.rcRes??={})[d.id]=null;const sec=X.rcSec?.[d.id]??"";(X.rcDraft??={})[d.id+"|"+(X.rcMode||"blurt")+"|"+sec]="";render()}break;
+    case "rcshow":if(d){(X.rcShow??={})[d.id]=!X.rcShow[d.id];render()}break;
+    case "flyprint":document.body.classList.add("pflyer");setTimeout(()=>{try{window.print()}catch(e){toast("Impression indisponible ici : ouvre l'appli dans le navigateur")}setTimeout(()=>document.body.classList.remove("pflyer"),500)},50);break;
     case "objmode":X.objHide=b.dataset.m==="test";X.objShow={};render();break;
     case "objshow":X.objShow={...(X.objShow||{}),[b.dataset.i]:true};render();break;
     case "objgen":if(d)doObjectifs(d);break;
@@ -2718,6 +2866,8 @@ function renderFab(){let f=document.getElementById("fab");if(!f){f=document.crea
   f.innerHTML=hide?"":`<button class="fab" data-act="nav" data-v="assist" aria-label="Demander à l'assistant">✦ Demander</button>`}
 
 document.addEventListener("input",e=>{if(e.target.id==="ch-note"&&X.chrono){X.chrono.note=e.target.value;chronoSave()}});
+document.addEventListener("input",e=>{const t=e.target;if(t.id==="rc-text"&&t.dataset.rcd){(X.rcDraft??={})[t.dataset.rcd]=t.value}});
+document.addEventListener("change",e=>{const t=e.target;if(t.id==="rc-sec"&&t.dataset.rcsec){(X.rcSec??={})[t.dataset.rcsec]=t.value;(X.rcRes??={})[t.dataset.rcsec]=null;render()}});
 
 renderTabbar();
 boot().then(bootExtras);

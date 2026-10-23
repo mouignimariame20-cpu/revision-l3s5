@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261023195230";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261023195651";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -945,7 +945,7 @@ function tabCards(d){
     return `<div class="stack"><div class="row" style="justify-content:space-between"><span class="label">Carte ${s.i+1} / ${s.queue.length}</span><button class="btn ghost small" data-act="endsession">Arrêter</button></div>
       <div class="progress"><i style="width:${pct}%"></i></div>
       <div class="card-wrap"><div class="fcard ${s.flipped?"flipped":""}" data-act="flip" role="button" tabindex="0" aria-label="Retourner la carte">
-        <div class="face"><div class="label">Question</div>${c.img&&safeUrl(c.img)?`<img class="cimg" src="${esc(c.img)}" alt="Schéma du cours">`:""}<div class="q">${esc(c.q)}</div><div class="help">Touche pour voir la réponse</div></div>
+        <div class="face"><div class="label">${c.src?esc(c.src):"Question"}</div>${c.img&&safeUrl(c.img)?`<img class="cimg" src="${esc(c.img)}" alt="Schéma du cours">`:""}<div class="q">${esc(c.q)}</div><div class="help">Touche pour voir la réponse</div></div>
         <div class="face back"><div class="label">Réponse</div><div>${esc(c.a).replace(/\n/g,"<br>")}</div>${c.src?`<div class="label">Section : ${esc(c.src)}</div>`:""}${mnemoBlock(d,c)}</div>
       </div></div>
       ${s.flipped?`<div class="answer-row"><button class="btn danger" data-act="grade" data-g="0">À revoir</button><button class="btn" data-act="grade" data-g="1">Je savais</button></div>`:`<button class="btn soft" data-act="flip">Voir la réponse</button>`}
@@ -958,7 +958,10 @@ function tabCards(d){
     <h2>${due} carte${due>1?"s":""} à revoir aujourd'hui</h2>
     <p class="help">Une carte sue revient après 1, 3, 7, 15 puis 30 jours, comme ta méthode des J. Une carte ratée revient le jour même.</p>
     <div class="jstrip">${["Nouv.","J1","J3","J7","J15","J30"].map((l,i)=>`<span class="j ${boxes[i]?"done":""}">${l} · ${boxes[i]}</span>`).join("")}</div>
-    <div class="row"><button class="btn" data-act="startcards" ${due?"":"disabled"}>Réviser les ${due} cartes</button><button class="btn ghost" data-act="startcards" data-all="1">Tout réviser (${n})</button></div></div>
+    <div class="row"><button class="btn" data-act="startcards" ${due?"":"disabled"}>Réviser les ${due} cartes</button><button class="btn ghost" data-act="startcards" data-all="1">Tout réviser (${n})</button></div>
+    <div class="chips"><button class="chip" data-act="cardmix" data-v="0" aria-pressed="${!X.cardMix}">📚 Dans l'ordre du cours</button><button class="chip" data-act="cardmix" data-v="1" aria-pressed="${!!X.cardMix}">🔀 Mélangées</button></div></div>
+  <div class="section" style="margin-top:18px"><h2>Par partie</h2><p class="help">Une partie à la fois, dans l'ordre du cours : plus facile pour apprendre. Garde « Mélangées » pour les J7 et plus.</p>
+    <div class="stack" style="gap:8px">${cardGroups(d).map((g,i)=>{const du=g.cards.filter(c=>dueCards(d).includes(c)).length,ok=g.cards.filter(c=>(c.box||0)>0).length;return `<button class="mini" data-act="startcards" data-all="1" data-part="${i}"><span><strong>${esc(g.titre)}</strong><br><span class="muted">${g.cards.length} carte${g.cards.length>1?"s":""}${ok?` · ${ok} déjà sue${ok>1?"s":""}`:""}${du?` · ${du} à revoir`:""}</span></span><span class="pill">▶</span></button>`}).join("")}</div></div>
   <div class="section" style="margin-top:18px"><h2>Toutes les cartes · ${n}</h2><p class="help">Touche une question pour voir la réponse.</p>
     ${d.cards.map(c=>`<details class="item" id="card-${c.id}"><summary>${esc(c.q)}</summary><div>${c.img&&safeUrl(c.img)?`<img class="cimg zoomable" data-act="zoom" data-src="${esc(c.img)}" src="${esc(c.img)}" alt="Schéma du cours">`:""}${esc(c.a).replace(/\n/g,"<br>")}${c.src?`<div class="label" style="margin-top:6px">Section : ${esc(c.src)}</div>`:""}${(c.lapses||0)>0?`<div class="label" style="margin-top:4px;color:var(--late)">Ratée ${c.lapses} fois</div>`:""}${mnemoBlock(d,c)}</div></details>`).join("")}</div>`;
 }
@@ -1070,7 +1073,7 @@ document.addEventListener("click",e=>{
     case "tab":if(S.tab==="edit")readEdit();S.tab=b.dataset.t;S.session=null;go();break;
     case "learned":d.learnedOn=today();d.jDone=[];markDirty(d.id);toast("J0 enregistré : J1 demain");go();break;
     case "jdone":{const i=jInfo(d);d.jDone=[...(d.jDone||[]),i.next];markDirty(d.id);toast(`J${i.next} validé`);go();break}
-    case "startcards":{const list=b.dataset.all?d.cards:dueCards(d);const q=list.map(c=>c.id).sort(()=>Math.random()-.5);S.session={type:"cards",deckId:d.id,queue:q,i:0,flipped:false,known:0,total:q.length,missed:new Set()};go();break}
+    case "startcards":{let list=b.dataset.all?d.cards:dueCards(d);if(b.dataset.part!=null&&b.dataset.part!==""){const g=cardGroups(d)[+b.dataset.part];list=g?g.cards:[]}const q=X.cardMix?list.map(c=>c.id).sort(()=>Math.random()-.5):cardOrder(d,list.map(c=>c.id));S.session={type:"cards",deckId:d.id,queue:q,i:0,flipped:false,known:0,total:q.length,missed:new Set()};go();break}
     case "flip":if(S.session){S.session.flipped=!S.session.flipped;go()}break;
     case "grade":{const s=S.session,c=d.cards.find(x=>x.id===s.queue[s.i]);
       const first=!s.missed.has(c.id)&&!(s.seen??=new Set()).has(c.id);s.seen.add(c.id);
@@ -2503,7 +2506,7 @@ function memoItems(d){
   const heads=[];for(const l of String(d.fiche||"").split("\n")){const m=l.match(/^#{1,4}\s+(.*)/);if(m)heads.push(m[1].replace(/[*=_`]/g,"").trim())}
   const nz=t=>fold(String(t||"").replace(/[*=_`]/g,"")).replace(/\s+/g," ").trim();const pos=t=>{const i=heads.findIndex(h=>nz(h)===nz(t));return i<0?999:i};
   const groups=new Map();
-  (d.cards||[]).forEach((c,n)=>{const g=c.src||"Points clés";if(!groups.has(g))groups.set(g,{titre:g,ord:pos(g),items:[]});groups.get(g).items.push({id:"c:"+c.id,q:c.q,a:c.a,n})});
+  (d.cards||[]).forEach((c,n)=>{const g=c.src||guessSrc(d,c)||"Points clés";if(!groups.has(g))groups.set(g,{titre:g,ord:pos(g),items:[]});groups.get(g).items.push({id:"c:"+c.id,q:c.q,a:c.a,n})});
   const out=[...groups.values()].sort((a,b)=>a.ord-b.ord||a.items[0].n-b.items[0].n);
   const figs=courseFigs(d).map(f=>({f,x:(d.figExpl||{})[figKey(f.u)]})).filter(o=>o.x&&(o.x.retenir||[]).length);
   if(figs.length)out.push({titre:"Les schémas à connaître",fig:true,items:figs.map(o=>({id:"f:"+figKey(o.f.u),q:o.f.alt.replace(/^Diapo \d+ · /,""),a:o.x.retenir.join(" · "),img:o.f.u}))});
@@ -2524,6 +2527,19 @@ function viewMemo(d){
       ${shown?`<div class="memoa">${esc(i.a)}</div>`:`<button class="memoa hid" data-act="memoshow" data-i="${esc(i.id)}">Toucher pour voir la réponse</button>`}
       ${shown?`<div class="row memob"><button class="btn small ${ok[i.id]?"":"soft"}" data-act="memook" data-i="${esc(i.id)}" data-v="1">${ok[i.id]?"✓ Je sais":"Je sais"}</button>${hide||ok[i.id]?`<button class="btn ghost small" data-act="memook" data-i="${esc(i.id)}" data-v="0">À revoir</button>`:""}</div>`:""}</div>`}).join("")}</div>`}).join("")||`<div class="empty">Tout est su dans ce chapitre 🎉</div>`}
   <p class="help">Les points viennent des flashcards du cours et des explications des schémas. Ce que tu marques « Je sais » est retenu ; les flashcards continuent de revenir selon les J.</p>`}
+/* flashcards groupées par partie, dans l'ordre de la fiche */
+function cardGroups(d){const by=new Map((d.cards||[]).map(c=>[c.id,c]));return memoItems(d).filter(g=>!g.fig).map(g=>({titre:g.titre,cards:g.items.map(i=>by.get(i.id.slice(2))).filter(Boolean)})).filter(g=>g.cards.length)}
+function cardOrder(d,ids){const pos=new Map();cardGroups(d).flatMap(g=>g.cards).forEach((c,i)=>pos.set(c.id,i));return ids.slice().sort((a,b)=>(pos.get(a)??999)-(pos.get(b)??999))}
+
+/* carte sans « src » : on la range dans la partie (##) de la fiche dont le vocabulaire est le plus proche */
+const _gs=new Map();
+function guessSrc(d,c){
+  const key=d.id+"|"+(d.fiche||"").length;let P=_gs.get(key);
+  if(!P){P=ficheParts(d).map(p=>{const t=new Set(tok(p.h+" "+p.lines.join(" ")).filter(w=>w.length>3&&!STOP.has(w)));return {h:p.h,t,ht:new Set(tok(p.h).filter(w=>w.length>3))}});_gs.set(key,P)}
+  if(!P.length)return "";
+  const w=[...new Set(tok(c.q+" "+c.a).filter(x=>x.length>3&&!STOP.has(x)))];let best=null,bs=0;
+  P.forEach(p=>{let sc=0;w.forEach(x=>{if(p.t.has(x))sc+=1;if(p.ht.has(x))sc+=2});sc=sc/Math.sqrt(Math.max(8,p.t.size));if(sc>bs){bs=sc;best=p}});
+  return best?best.h:""}
 
 /* ---------- Cours expliqué : le chapitre réexpliqué comme un nouveau cours, uniquement à partir de la fiche ---------- */
 function tabLesson(d){
@@ -2802,6 +2818,7 @@ document.addEventListener("click",async e=>{
     case "simple":if(d)doSimple(d);break;
     case "lesson":if(d){if(b.dataset.re){d.lesson=null;markDirty(d.id)}doLesson(d)}break;
     case "rcstep":if(d){const n=recParts(d).length,c=+(X.rcSec?.[d.id]||0),v=Math.max(0,Math.min(n-1,c+ +b.dataset.v));(X.rcSec??={})[d.id]=String(v);(X.rcRes??={})[d.id]=null;render();window.scrollTo(0,0)}break;
+    case "cardmix":X.cardMix=b.dataset.v==="1";render();break;
     case "avonly":X.avOnly=b.dataset.v==="1";render();break;
     case "rcmode":X.rcMode=b.dataset.m;render();break;
     case "rcgo":if(d)doRecite(d);break;

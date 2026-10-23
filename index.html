@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261023202210";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261023202516";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2266,9 +2266,16 @@ const auPrefSave=()=>{try{localStorage.setItem(LS_AU,JSON.stringify(AU_PREF))}ca
 const TTS=typeof window!=="undefined"&&"speechSynthesis" in window?window.speechSynthesis:null;
 let AU_VOICES=[];
 function auLoadVoices(){if(!TTS)return;const all=TTS.getVoices()||[];
-  const score=v=>(/natural|neural|online|premium|enhanced|amélie|amelie|audrey|aurélie|thomas|marie|denise|henri|google/i.test(v.name)?10:0)+(/^fr-FR/i.test(v.lang)?3:/^fr/i.test(v.lang)?1:0)+(v.localService?0:1);
+  const score=v=>auQual(v)*10+(/^fr-FR/i.test(v.lang)?3:/^fr/i.test(v.lang)?1:0)+(v.localService?0:1);
   AU_VOICES=all.filter(v=>/^fr/i.test(v.lang)).sort((a,b)=>score(b)-score(a));}
 if(TTS){auLoadVoices();try{TTS.addEventListener("voiceschanged",()=>{auLoadVoices();if(X.au)auBar()})}catch(e){TTS.onvoiceschanged=auLoadVoices}}
+/* qualité d'une voix : 3 = très humaine (Premium / Natural / Neural), 2 = améliorée, 1 = correcte, 0 = robotique (voix « Eloquence » d'iOS) */
+function auQual(v){const n=v.name||"";
+  if(/eloquence|grandma|grandpa|grand-m|grand-p|rocko|shelley|flo\b|eddy|reed|sandy|jacques|bad news|bells|bubbles|cellos|zarvox|whisper|wobble|trinoids|organ|albert|boing|jester|superstar|bahh|ralph|fred|junior|kathy/i.test(n))return 0;
+  if(/premium|natural|neural|online|wavenet|studio/i.test(n))return 3;
+  if(/enhanced|améliorée|amelioree|google/i.test(n))return 2;
+  return 1}
+function auVoiceLabel(x){const q=auQual(x);return x.name.replace(/\s*\((français|french|france|canada)[^)]*\)/ig,"").replace(/Microsoft\s+/,"").trim()+(q===3?" ★★★":q===2?" ★★":"")}
 function auVoice(){return AU_VOICES.find(v=>v.voiceURI===AU_PREF.voice)||AU_VOICES[0]||null}
 function auSig(d){const s=(d.fiche||"")+"|"+(d.profNotes||"");let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h.toString(36)+":"+s.length}
 /* Découpe en phrases courtes (les navigateurs coupent les longues lectures) */
@@ -2352,7 +2359,7 @@ function auSpeak(){
     if(a.busy){a.waiting=true;auBar();return}     // la suite est en préparation
     a.playing=false;a.i=0;a.j=0;a.ended=true;auBar();return}
   const u=new SpeechSynthesisUtterance(ch[a.j]);const v=auVoice();if(v){u.voice=v;u.lang=v.lang}else u.lang="fr-FR";u.volume=1;u.onstart=()=>{a.started=true};
-  u.rate=+(AU_PREF.rate||1);u.pitch=1;
+  u.rate=+(AU_PREF.rate||.95);u.pitch=1;
   const tok=a.tok=Math.random();
   clearTimeout(a.wd);
   const next=()=>{clearTimeout(a.wd);if(X.au!==a||a.tok!==tok||!a.playing)return;a.tok=0;a.j++;auSpeak()};
@@ -2404,7 +2411,7 @@ function auBar(){
         <button class="btn au-play" data-act="${a.playing?"aupause":"auplay"}" ${!n?"disabled":""}>${a.playing?"❚❚ Pause":a.ended?"▶ Réécouter":"▶ Écouter"}</button>
         <button class="iconbtn" data-act="aunext" aria-label="Partie suivante">⏭</button></div>
       <div class="filters" style="margin:0"><select id="au-rate" aria-label="Vitesse">${[0.8,0.9,1,1.1,1.25,1.5].map(r=>`<option value="${r}" ${r===rate?"selected":""}>Vitesse ×${String(r).replace(".",",")}</option>`).join("")}</select>
-        <select id="au-voice" aria-label="Voix">${AU_VOICES.length?AU_VOICES.map(x=>`<option value="${esc(x.voiceURI)}" ${v&&x.voiceURI===v.voiceURI?"selected":""}>${esc(x.name.replace(/\s*\(.*?\)\s*/g," ").trim())}</option>`).join(""):`<option>Voix française par défaut</option>`}</select></div>
+        <select id="au-voice" aria-label="Voix">${AU_VOICES.length?AU_VOICES.map(x=>`<option value="${esc(x.voiceURI)}" ${v&&x.voiceURI===v.voiceURI?"selected":""}>${esc(auVoiceLabel(x))}</option>`).join(""):`<option>Voix française par défaut</option>`}</select></div>${(v?auQual(v):0)<3?`<p class="help" style="margin:4px 0 0">🎙️ Voix plus humaine : ${/iPad|iPhone|Macintosh/.test(navigator.userAgent)?"Réglages → Accessibilité → Contenu énoncé → Voix → Français → télécharge une voix <strong>Premium</strong> ou <strong>Améliorée</strong>, puis rouvre l'appli et choisis-la ici (★★★).":/Android/.test(navigator.userAgent)?"Paramètres → Synthèse vocale → moteur Google → installe la voix française haute qualité, puis choisis-la ici.":"choisis une voix ★★★ (Natural / Online) si ton navigateur en propose, par exemple dans Edge ou Chrome."}</p>`:""}
       ${a.mode==="explain"?`<p class="help">L'explication est faite uniquement à partir de ta fiche${d.profNotes?" et des notes du prof":""} ; ton cours de référence n'est pas modifié. En cas de doute, la fiche fait foi.${a.busy?"":` <button class="linkbtn" data-act="auregen">Refaire l'explication</button>`}</p>`:""}
       ${a.mode?`<button class="linkbtn" data-act="aumode0" style="align-self:flex-start">Changer de mode</button>`:""}`}
     ${a.err?`<div class="callout">${esc(a.err)}</div>`:""}

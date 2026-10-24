@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261023224829";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261024175048";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1749,7 +1749,7 @@ function viewAct(c){
 }
 function curBlockTab(c){const p=X.plans[c.date||today()];const b=p&&(p.blocks||[]).find(x=>x.key===c.blockKey);return (b&&b.tab)||"fiche"}
 function nextUI(c){if(!c.blockKey)return "";const nb=nextBlock(c);const over=c.rang;
-  return `<div class="nextt ${over?"over":""}">${over?"⏰ <strong>Temps écoulé.</strong> ":""}${nb?`Ensuite : <strong>${esc(nb.title)}</strong> <span class="muted">· ${esc(nb.start)}–${esc(nb.end)}</span><button class="btn small" data-act="chnext" style="margin-top:8px">Terminer et passer à la suite →</button>`:`C'est la dernière tâche de la journée 🎉`}</div>`}
+  return `<div class="nextt ${over?"over":""}">${over?"⏰ <strong>Temps écoulé.</strong> ":""}${nb?`Ensuite : <strong>${esc(nb.title)}</strong> <span class="muted">· ${esc(ht(nb.start))}–${esc(ht(nb.end))}</span><button class="btn small" data-act="chnext" style="margin-top:8px">Terminer et passer à la suite →</button>`:`C'est la dernière tâche de la journée 🎉`}</div>`}
 function viewTimer(){
   const c=X.chrono;
   if(!c)return topbar("Chrono")+chronoPicker()+pomodoroBlock();
@@ -1843,6 +1843,8 @@ setInterval(()=>{const c=X.chrono;if(!c||!c.running||c.rang)return;const tgt=c.t
 function chronoBar(){const c=X.chrono;if(!c||S.view==="timer")return "";const tgt=c.target||(c.act&&c.act.min)||0;const r=tgt?Math.max(0,Math.ceil(tgt-chronoActive(c)/60000)):0;
   return `<button class="chbar ${c.rang?"over":""}" data-act="nav" data-v="timer">⏱ ${esc(c.label||(c.act&&c.act.title)||getDeck(c.deckId)?.name||"")} · ${c.running?(tgt?(c.rang?"temps écoulé":r+" min restantes"):"en cours"):"en pause"}</button>`}
 
+/* heures après minuit (24:30 → 00:30) */
+const ht=t=>{const m=String(t||"").match(/^(\d{1,2}):(\d{2})$/);return m&&+m[1]>=24?String(+m[1]-24).padStart(2,"0")+":"+m[2]:t};
 /* ---------- Planning : emploi du temps, habitudes, obligations, programme du jour ---------- */
 function fixedFor(date){
   const P=X.planning||DEF_PLAN(),wd=wdOf(date),out=[];
@@ -1950,7 +1952,7 @@ const KIND_CLS={cours:"k-cours",habitude:"k-hab",obligation:"k-obl","imprévu":"
 function dayTimeline(date,p,fixed){
   const items=[...fixed.map(f=>({s:f.s,e:f.e,fixed:f})),...p.blocks.map(b=>({s:toMin(b.start),e:toMin(b.end),b}))].sort((a,b)=>a.s-b.s);
   return calBanner(date)+`<div class="tl">${items.length?items.map(x=>x.fixed?(()=>{const fd=!!(p.fdone||{})[x.fixed.ref];return `<div class="tli ${KIND_CLS[x.fixed.kind]} ${fd?"done":""}"><span class="tlt">${hm(x.s)}<br>${hm(x.e)}</span><div style="min-width:0;flex:1"><div class="label">${esc(x.fixed.kind)}${x.fixed.type?" · "+esc(x.fixed.type):""}${x.fixed.lieu?" · "+esc(x.fixed.lieu):""}</div><strong>${esc(x.fixed.title)}</strong></div>${x.fixed.ref&&/^Coran ·/.test(x.fixed.title)&&!fd?`<button class="iconbtn" data-act="actgo" data-t="${esc(x.fixed.title)}" data-min="${x.e-x.s}" data-ref="${esc(x.fixed.ref)}" data-date="${date}" aria-label="Chronométrer">⏱</button>`:""}${x.fixed.ref?`<button class="iconbtn chk ${fd?"on":""}" data-act="fdone" data-ref="${esc(x.fixed.ref)}" data-date="${date}" aria-label="${fd?"Marquer non fait":"Marquer fait"}">✓</button>`:""}</div>`})()
-    :`<div class="tli k-study ${x.b.done?"done":""}"><span class="tlt">${x.b.start}<br>${x.b.end}</span><div style="min-width:0;flex:1"><div class="label">${esc({learn:"Nouveau cours",post:"Après le cours",J:"Révision J",bilan:"Bilan",exam:"Partiel",cards:"Flashcards",err:"Erreurs"}[x.b.kind]||"Travail")}</div><strong>${esc(x.b.title)}</strong>
+    :`<div class="tli k-study ${x.b.done?"done":""}"><span class="tlt">${ht(x.b.start)}<br>${ht(x.b.end)}</span><div style="min-width:0;flex:1"><div class="label">${esc({learn:"Nouveau cours",post:"Après le cours",J:"Révision J",bilan:"Bilan",exam:"Partiel",cards:"Flashcards",err:"Erreurs"}[x.b.kind]||"Travail")}</div><strong>${esc(x.b.title)}</strong>
       <div class="row" style="margin-top:6px">${x.b.kind==="post"?`<button class="btn small" data-act="cnew" data-m="${esc(x.b.title.replace(/^Revoir le cours du jour : /,""))}">Ajouter mes notes</button>`:(x.b.kind==="err"||x.b.kind==="bilan")?`<button class="btn small" data-act="nav" data-v="revise">Commencer</button>`:x.b.deckId?`<button class="btn small" data-act="chpick" data-id="${x.b.deckId}" data-rev="${x.b.rev?1:""}" data-key="${esc(x.b.key)}" data-date="${date}" data-min="${toMin(x.b.end)-toMin(x.b.start)}" data-label="${esc(x.b.title)}">⏱ ${toMin(x.b.end)-toMin(x.b.start)} min</button><button class="btn ghost small" data-act="goto" data-id="${x.b.deckId}" data-tab="${esc(x.b.tab||"fiche")}">Ouvrir</button>`:""}</div></div>
       <button class="iconbtn chk ${x.b.done?"on":""}" data-act="bdone" data-id="${x.b.id}" data-date="${date}" aria-label="${x.b.done?"Marquer non fait":"Marquer fait"}">✓</button></div>`).join(""):`<div class="empty">Rien de prévu ce jour.</div>`}</div>`;
 }

@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261025233944";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261025234856";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -354,6 +354,12 @@ body.has-au .wrap{padding-bottom:62vh}
 .nhid.w{width:100%;padding:6px;font-weight:600;font-size:.85rem}
 table.grille th{white-space:nowrap;width:1%}
 table.grille th{text-align:left;width:34%;white-space:normal}table.grille td{width:66%}
+.pq{margin-top:8px;background:#f1eafb;border-radius:12px;padding:8px 12px}
+:root[data-theme="dark"] .pq{background:rgba(201,160,230,.15)}
+.pq summary{cursor:pointer;font-weight:700;font-size:.9rem;color:#7a4fa0}
+.pqc{margin:8px 0 2px;padding-left:20px;display:grid;gap:6px;counter-reset:none}
+.pqc li{line-height:1.45}
+.pqc li:not(:last-child)::after{content:" ↓";color:#b34b72;font-weight:800}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -2947,11 +2953,11 @@ function tabTrain(d){
   else
   if(cur==="hdm"){}else if(cur==="signes"){const hide=!!X.trHide;body=`<div class="panel stack"><p class="help" style="margin:0">En sémio, on ne retient pas les signes un par un : on les <strong>déduit du mécanisme</strong>. Lis, puis passe en « Me tester » : regarde le signe et explique pourquoi il apparaît.</p>
     <div class="chips"><button class="chip" data-act="trhide" data-v="0" aria-pressed="${!hide}">📖 Lire</button><button class="chip" data-act="trhide" data-v="1" aria-pressed="${hide}">🙈 Me tester</button></div></div>
-    ${S.map((x,i)=>{const id="s:"+i,sh=!hide||X.trShow?.[id];return `<div class="memoi ${ok[id]?"ok":""}"><div class="memoq">${esc(x.s)}</div>${sh?`<div class="trou">➜ ${esc(x.ou)}</div><div class="memoa">🔬 ${esc(x.m)}</div><div class="row memob"><button class="btn small ${ok[id]?"":"soft"}" data-act="memook" data-i="${id}" data-v="1">${ok[id]?"✓ Je sais":"Je sais"}</button>${hide||ok[id]?`<button class="btn ghost small" data-act="memook" data-i="${id}" data-v="0">À revoir</button>`:""}</div>`:`<button class="memoa hid" data-act="trshow" data-k="${id}">Quelle maladie, et pourquoi ? Touche pour vérifier</button>`}</div>`}).join("")}
+    ${S.map((x,i)=>{const id="s:"+i,sh=!hide||X.trShow?.[id];return `<div class="memoi ${ok[id]?"ok":""}"><div class="memoq">${esc(x.s)}</div>${sh?`<div class="trou">➜ ${esc(x.ou)}</div><div class="memoa">🔬 ${esc(x.m)}</div>${pqChain(x)}<div class="row memob"><button class="btn small ${ok[id]?"":"soft"}" data-act="memook" data-i="${id}" data-v="1">${ok[id]?"✓ Je sais":"Je sais"}</button>${hide||ok[id]?`<button class="btn ghost small" data-act="memook" data-i="${id}" data-v="0">À revoir</button>`:""}</div>`:`<button class="memoa hid" data-act="trshow" data-k="${id}">Quelle maladie, et pourquoi ? Touche pour vérifier</button>`}</div>`}).join("")}
     <p class="help">Les explications 🔬 sont de la physiopathologie classique pour comprendre ton cours ; en cas de doute, le cours du prof fait foi.</p>`}
   else if(cur==="devine"){const n=S.length,i=((X.trDev??=Math.floor(Math.random()*n))%n+n)%n,x=S[i],sh=X.trShow?.["d:"+i];
     body=`<div class="panel stack" style="text-align:center"><div class="label">Je suis un signe… qui suis-je ?</div><h2 style="margin:6px 0">${esc(x.s)}</h2>
-      ${sh?`<div class="trou">➜ ${esc(x.ou)}</div><p class="memoa" style="text-align:left">🔬 ${esc(x.m)}</p>`:`<p class="help">Dis à voix haute la maladie et le mécanisme, puis vérifie.</p><button class="btn soft" data-act="trshow" data-k="d:${i}">Voir la réponse</button>`}
+      ${sh?`<div class="trou">➜ ${esc(x.ou)}</div><p class="memoa" style="text-align:left">🔬 ${esc(x.m)}</p><div style="text-align:left">${pqChain(x)}</div>`:`<p class="help">Dis à voix haute la maladie et le mécanisme, puis vérifie.</p><button class="btn soft" data-act="trshow" data-k="d:${i}">Voir la réponse</button>`}
       <button class="btn" data-act="trdev">Signe suivant →</button></div>`}
   else if(cur==="grille"){const hide=X.trHide!==false&&X.trHideG!==false;body=`<div class="panel stack"><div class="label">${esc(G.titre)}</div><p class="help" style="margin:0">Pour chaque douleur, pose toujours les mêmes questions dans le même ordre. Récite la réponse de chaque ligne, puis touche pour vérifier.</p>
       <div class="chips"><button class="chip" data-act="trhideg" data-v="0" aria-pressed="${!hide}">📖 Lire</button><button class="chip" data-act="trhideg" data-v="1" aria-pressed="${hide}">🙈 Me tester</button></div>
@@ -2972,6 +2978,8 @@ ${String(d.fiche||"").replace(/!\[[^\]]*\]\([^)]*\)/g,"").slice(0,30000)}`,{mode
     if(!o||!o.patient)throw {code:"invalid_json"};(X.trCas??={})[d.id]=o;if(X.trShow)delete X.trShow.cas}
   catch(e){toast(aiErr(e))}
   X.ai[k]=false;render()}
+
+function pqChain(x){const c=x.pq||[];if(!c.length)return "";return `<details class="pq" open><summary>🔬 Le pourquoi, étape par étape</summary><ol class="pqc">${c.map(t=>`<li>${esc(t)}</li>`).join("")}</ol></details>`}
 
 /* ---------- Fiche : notes du prof, mémorisation, chrono ---------- */
 function ficheExtras(d){

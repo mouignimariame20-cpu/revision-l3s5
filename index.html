@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261024194932";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261025172813";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -348,6 +348,12 @@ body.has-au .wrap{padding-bottom:62vh}
 :root[data-theme="dark"] .qprof{background:var(--surface)}
 .pill.prof{background:#fdeef3;color:#b34b72;font-weight:700;margin-bottom:6px;display:inline-block}
 .qans{font-size:1rem;margin-bottom:6px;color:var(--scrub)}.qok{font-weight:700}
+.trtabs{flex-wrap:wrap}
+.trou{font-weight:700;color:var(--scrub);margin:6px 0 2px}
+.nhid{border:0;border-radius:8px;padding:1px 10px;background:var(--scrub-soft,#fdeef3);color:var(--scrub,#b34b72);font:inherit;font-weight:800;cursor:pointer}
+.nhid.w{width:100%;padding:6px;font-weight:600;font-size:.85rem}
+table.grille th{white-space:nowrap;width:1%}
+table.grille th{text-align:left;width:34%;white-space:normal}table.grille td{width:66%}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -875,7 +881,7 @@ function viewNew(){
 }
 function viewDeck(){
   const d=getDeck(S.deckId); if(!d){S.view="matieres";return viewMatieres()}
-  const tabs=[["source","Cours source"],["fiche","Fiche synthétique"],["obj","Objectifs"],["flyer","Flyer"],["recite","Réciter"],["lesson","Cours expliqué"],["visuel","Visuel"],["memo","Mémoriser"],["explain","Comprendre"],["cards","Flashcards"],["qcm","QCM"],["cov","Couverture"],["edit","Modifier"]];
+  const tabs=[["source","Cours source"],["fiche","Fiche synthétique"],["obj","Objectifs"],["train","🩺 S'entraîner"],["flyer","Flyer"],["recite","Réciter"],["lesson","Cours expliqué"],["visuel","Visuel"],["memo","Mémoriser"],["explain","Comprendre"],["cards","Flashcards"],["qcm","QCM"],["cov","Couverture"],["edit","Modifier"]];
   let body="";
   if(S.tab==="fiche")body=tabFiche(d);
   else if(S.tab==="cards")body=tabCards(d);
@@ -887,6 +893,7 @@ function viewDeck(){
   else if(S.tab==="lesson")body=tabLesson(d);
   else if(S.tab==="obj")body=tabObjectifs(d);
   else if(S.tab==="flyer")body=tabFlyer(d);
+  else if(S.tab==="train")body=tabTrain(d);
   else if(S.tab==="recite")body=tabRecite(d);
   else if(S.tab==="memo")body=viewMemo(d);
   else body=tabEdit(d);
@@ -2878,6 +2885,52 @@ function avHome(){const A=Object.entries(groupsByMat()).map(([m,l])=>matAvance(m
   const seen=A.reduce((n,a)=>n+a.seen.length,0),todo=A.reduce((n,a)=>n+a.seen.filter(x=>!x.d.learnedOn).length,0);
   return `<button class="mini avhome" data-act="nav" data-v="avance"><span>📈 <strong>Avancement des cours</strong><br><span class="muted">${seen} chapitre${seen>1?"s":""} vu${seen>1?"s":""} dans ${A.length} matière${A.length>1?"s":""}${todo?` · ${todo} à réviser`:" · tout est révisé"}</span></span><span class="pill">Voir</span></button>`}
 
+/* ---------- 🩺 S'entraîner : signes et mécanismes, grille, tableaux cachés, chiffres clés, patient imaginaire ---------- */
+function ficheTables(d){const out=[];let cur=null,h="";
+  for(const l of String(d.fiche||"").split("\n")){const m=l.match(/^#{2,4}\s+(.*)/);if(m){h=m[1].replace(/[*=_`]/g,"").trim();cur=null;continue}
+    if(/^\s*\|/.test(l)){if(!cur){cur={h,rows:[]};out.push(cur)}if(!/^\s*\|?\s*:?-{3,}/.test(l))cur.rows.push(l.trim().replace(/^\||\|$/g,"").split("|").map(c=>c.trim()))}else cur=null}
+  return out.filter(t=>t.rows.length>=3&&t.rows[0].length>=2)}
+const NUM_RE=/(?:[<>≤≥]\s*)?\d+(?:[,.]\d+)?(?:\s*(?:à|-|–)\s*\d+(?:[,.]\d+)?)?\s*(?:%|cm|mm|µm|g\/j|g|kg|j|jours?|N|ans|mois|semaines|h|heures|°|×\s*10[³⁶⁹]?)?/g;
+function ficheNums(d){const out=[];const seen=new Set();let h="";
+  for(const l of String(d.fiche||"").split("\n")){const m=l.match(/^#{2,4}\s+(.*)/);if(m){h=m[1].replace(/[*=_`]/g,"").trim();continue}
+    if(!/^\s*[-|]/.test(l)||IMG_RE.test(l)||/^\s*\|?\s*:?-{3,}/.test(l))continue;const t=l.replace(/^\s*-\s+/,"").replace(/\|/g," · ").replace(/[*=]/g,"").trim();
+    if(!/\d/.test(t)||/^\d+\)/.test(t)||/^(Diapo|diapos?)/i.test(t))continue;if(!(t.match(NUM_RE)||[]).some(x=>/\d/.test(x)&&x.trim().length>0))continue;
+    const k=t.slice(0,80);if(seen.has(k))continue;seen.add(k);out.push({h,t})}
+  return out.slice(0,40)}
+function maskNums(t,id,shown){let i=0;return esc(t).replace(NUM_RE,m=>{if(!/\d/.test(m))return m;const k=id+"-"+(i++);return shown||X.trShow?.[k]?`<mark>${m}</mark>`:`<button class="nhid" data-act="trshow" data-k="${k}">?</button>`})}
+function tabTrain(d){
+  const sec=X.trSec||"signes",S=d.signes||[],G=d.grille,T=ficheTables(d),N=ficheNums(d),ok=d.memoOk||{};
+  const tabs=[S.length&&["signes","🔍 Signes et mécanismes"],S.length&&["devine","🎯 Je suis un signe"],G&&["grille","📋 Grille"],T.length&&["tab","🗂️ Tableaux cachés"],N.length&&["num","🔢 Chiffres clés"],["cas","🧑‍⚕️ Patient imaginaire"]].filter(Boolean);
+  const cur=tabs.some(t=>t[0]===sec)?sec:tabs[0][0];
+  let body="";
+  if(cur==="signes"){const hide=!!X.trHide;body=`<div class="panel stack"><p class="help" style="margin:0">En sémio, on ne retient pas les signes un par un : on les <strong>déduit du mécanisme</strong>. Lis, puis passe en « Me tester » : regarde le signe et explique pourquoi il apparaît.</p>
+    <div class="chips"><button class="chip" data-act="trhide" data-v="0" aria-pressed="${!hide}">📖 Lire</button><button class="chip" data-act="trhide" data-v="1" aria-pressed="${hide}">🙈 Me tester</button></div></div>
+    ${S.map((x,i)=>{const id="s:"+i,sh=!hide||X.trShow?.[id];return `<div class="memoi ${ok[id]?"ok":""}"><div class="memoq">${esc(x.s)}</div>${sh?`<div class="trou">➜ ${esc(x.ou)}</div><div class="memoa">🔬 ${esc(x.m)}</div><div class="row memob"><button class="btn small ${ok[id]?"":"soft"}" data-act="memook" data-i="${id}" data-v="1">${ok[id]?"✓ Je sais":"Je sais"}</button>${hide||ok[id]?`<button class="btn ghost small" data-act="memook" data-i="${id}" data-v="0">À revoir</button>`:""}</div>`:`<button class="memoa hid" data-act="trshow" data-k="${id}">Quelle maladie, et pourquoi ? Touche pour vérifier</button>`}</div>`}).join("")}
+    <p class="help">Les explications 🔬 sont de la physiopathologie classique pour comprendre ton cours ; en cas de doute, le cours du prof fait foi.</p>`}
+  else if(cur==="devine"){const n=S.length,i=((X.trDev??=Math.floor(Math.random()*n))%n+n)%n,x=S[i],sh=X.trShow?.["d:"+i];
+    body=`<div class="panel stack" style="text-align:center"><div class="label">Je suis un signe… qui suis-je ?</div><h2 style="margin:6px 0">${esc(x.s)}</h2>
+      ${sh?`<div class="trou">➜ ${esc(x.ou)}</div><p class="memoa" style="text-align:left">🔬 ${esc(x.m)}</p>`:`<p class="help">Dis à voix haute la maladie et le mécanisme, puis vérifie.</p><button class="btn soft" data-act="trshow" data-k="d:${i}">Voir la réponse</button>`}
+      <button class="btn" data-act="trdev">Signe suivant →</button></div>`}
+  else if(cur==="grille"){const hide=X.trHide!==false&&X.trHideG!==false;body=`<div class="panel stack"><div class="label">${esc(G.titre)}</div><p class="help" style="margin:0">Pour chaque douleur, pose toujours les mêmes questions dans le même ordre. Récite la réponse de chaque ligne, puis touche pour vérifier.</p>
+      <div class="chips"><button class="chip" data-act="trhideg" data-v="0" aria-pressed="${!hide}">📖 Lire</button><button class="chip" data-act="trhideg" data-v="1" aria-pressed="${hide}">🙈 Me tester</button></div>
+      <div class="tblwrap"><table class="grille">${G.items.map((x,i)=>`<tr><th>${esc(x.k)}</th><td>${!hide||X.trShow?.["g:"+i]?esc(x.v):`<button class="nhid w" data-act="trshow" data-k="g:${i}">Toucher pour voir</button>`}</td></tr>`).join("")}</table></div></div>`}
+  else if(cur==="tab"){body=`<p class="help">Les tableaux de ta fiche avec les cases cachées : récite chaque case de mémoire, puis touche pour vérifier. Les signes se retiennent mieux par contraste.</p>`+T.map((t,ti)=>`<div class="panel stack" style="margin-bottom:10px"><div class="label">${esc(t.h)}</div><div class="tblwrap"><table>${t.rows.map((r,ri)=>`<tr>${r.map((c,ci)=>{const k="t:"+ti+":"+ri+":"+ci;const txt=c.replace(/\*\*|==/g,"");return ri===0||ci===0?`<th>${esc(txt)}</th>`:`<td>${X.trShow?.[k]?esc(txt):`<button class="nhid w" data-act="trshow" data-k="${k}">?</button>`}</td>`}).join("")}</tr>`).join("")}</table></div><button class="linkbtn" data-act="trall" data-p="t:${ti}:">Tout révéler</button></div>`).join("")}
+  else if(cur==="num"){body=`<p class="help">Tous les chiffres de la fiche, cachés. Récite-les 2 minutes par jour : à l'examen, les QCM jouent souvent sur un chiffre.</p><div class="stack" style="gap:8px">${N.map((x,i)=>`<div class="memoi"><div class="label">${esc(x.h)}</div><div>${maskNums(x.t,"n:"+i,false)}</div></div>`).join("")}</div><button class="linkbtn" data-act="trall" data-p="n:">Tout révéler</button>`}
+  else{const c=X.trCas?.[d.id],busy=X.ai["cas-"+d.id];body=`<div class="panel stack"><p class="help" style="margin:0">Je t'invente un patient avec les signes de ce chapitre. Tu proposes le diagnostic et tu justifies, puis tu compares avec la correction. Tout vient de ta fiche.</p>
+      ${aiOK()?`<button class="btn" data-act="trcas" ${busy?"disabled":""} style="align-self:flex-start">${busy?"J'invente le patient…":c?"Un autre patient":"Invente-moi un patient"}</button>`:noAI}</div>
+      ${c?`<div class="panel stack"><div class="label">🧑‍⚕️ Le patient</div><p style="margin:0">${esc(c.patient)}</p><p style="margin:0"><strong>${esc(c.question)}</strong></p>
+        <textarea id="cas-rep" rows="3" placeholder="Ton diagnostic et tes arguments…"></textarea>
+        ${X.trShow?.["cas"]?`<div class="expl"><strong>Réponse : ${esc(c.reponse)}</strong><ul>${(c.arguments||[]).map(a=>`<li>${esc(a)}</li>`).join("")}</ul></div>`:`<button class="btn soft small" data-act="trshow" data-k="cas" style="align-self:flex-start">Voir la correction</button>`}</div>`:""}`}
+  return `<div class="chips trtabs" style="margin-bottom:12px">${tabs.map(([k,l])=>`<button class="chip" data-act="trsec" data-s="${k}" aria-pressed="${k===cur}">${l}</button>`).join("")}</div>${body}`}
+async function doCas(d){const k="cas-"+d.id;if(X.ai[k])return;X.ai[k]=true;render();
+  try{const o=await askJSON(`Tu es professeur de sémiologie médicale (L3). À partir UNIQUEMENT de la fiche ci-dessous, invente un court cas clinique (3 à 5 phrases : âge, motif, 3 à 5 signes cliniques et/ou biologiques tirés de la fiche, sans donner le diagnostic), puis la question « Quel est votre diagnostic ? » (ou le mécanisme / l'examen à demander), la réponse attendue et 3 à 5 arguments tirés de la fiche. N'invente aucun signe, chiffre ou examen absent de la fiche. Varie le tableau d'une fois à l'autre (graine ${Math.floor(Math.random()*1e6)}).
+Réponds en JSON : {"patient":"…","question":"…","reponse":"…","arguments":["…"]}
+FICHE « ${d.name} » :
+${String(d.fiche||"").replace(/!\[[^\]]*\]\([^)]*\)/g,"").slice(0,30000)}`,{modelTier:"default",cache:false});
+    if(!o||!o.patient)throw {code:"invalid_json"};(X.trCas??={})[d.id]=o;if(X.trShow)delete X.trShow.cas}
+  catch(e){toast(aiErr(e))}
+  X.ai[k]=false;render()}
+
 /* ---------- Fiche : notes du prof, mémorisation, chrono ---------- */
 function ficheExtras(d){
   const e=estimate(d);const errs=errItems().filter(x=>x.deckId===d.id).length;
@@ -2899,6 +2952,13 @@ document.addEventListener("click",async e=>{
     case "simple":if(d)doSimple(d);break;
     case "lesson":if(d){if(b.dataset.re){d.lesson=null;markDirty(d.id)}doLesson(d)}break;
     case "rcstep":if(d){const n=recParts(d).length,c=+(X.rcSec?.[d.id]||0),v=Math.max(0,Math.min(n-1,c+ +b.dataset.v));(X.rcSec??={})[d.id]=String(v);(X.rcRes??={})[d.id]=null;render();window.scrollTo(0,0)}break;
+    case "trsec":X.trSec=b.dataset.s;render();break;
+    case "trhide":X.trHide=b.dataset.v==="1";X.trShow={};render();break;
+    case "trhideg":X.trHideG=b.dataset.v==="1";X.trHide=b.dataset.v==="1";X.trShow={};render();break;
+    case "trshow":X.trShow={...(X.trShow||{}),[b.dataset.k]:true};render();break;
+    case "trall":{const p=b.dataset.p;document.querySelectorAll('[data-act="trshow"]').forEach(x=>{if(x.dataset.k.startsWith(p))(X.trShow??={})[x.dataset.k]=true});render();break}
+    case "trdev":{const n=(d&&d.signes||[]).length||1;let v;do{v=Math.floor(Math.random()*n)}while(n>1&&v===X.trDev);X.trDev=v;render();break}
+    case "trcas":if(d)doCas(d);break;
     case "profcorr":X.profOpen=!X.profOpen;render();break;
     case "cardmix":X.cardMix=b.dataset.v==="1";render();break;
     case "avonly":X.avOnly=b.dataset.v==="1";render();break;

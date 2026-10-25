@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261025232649";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261025233944";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1008,7 +1008,7 @@ function tabQcm(d){
   return `<div class="panel stack"><div class="label">Entraînement</div><h2>${n} question${n>1?"s":""}</h2>
     <p class="help">Plusieurs réponses peuvent être justes. Une question compte comme juste seulement si toutes les bonnes propositions sont cochées, et aucune fausse.</p>
     ${d.lastScore!=null?`<p>Dernier score : <strong>${d.lastScore}%</strong></p>`:""}
-    <button class="btn" data-act="startqcm">Commencer le QCM</button></div>
+    <button class="btn" data-act="startqcm">Commencer le QCM</button></div>${qcmParts(d)}
   <div class="section" style="margin-top:18px"><h2>Toutes les questions</h2><p class="help">Ouvre une question pour voir la correction.</p>
     ${d.qcm.map((q,i)=>`<details class="item" id="q-${q.id}"><summary>${i+1}. ${esc(q.q)}</summary><div>${q.options.map((o,k)=>`<div class="${q.correct.includes(k)?"":"muted"}">${q.correct.includes(k)?"✓":"✗"} ${"ABCDEFGH"[k]}. ${esc(o)}</div>`).join("")}${q.expl?`<div class="expl" style="margin-top:6px">${esc(q.expl)}</div>`:""}${(q.errs||0)>0?`<div class="label" style="margin-top:4px;color:var(--late)">Ratée ${q.errs} fois</div>`:""}<div style="margin-top:6px">${qDetailBlock(d,q)}</div></div></details>`).join("")}</div>`;
 }
@@ -1099,7 +1099,7 @@ document.addEventListener("click",e=>{
       if(b.dataset.g==="1"){if(!s.missed.has(c.id))s.known++;gradeCard(d,c,true,!s.missed.has(c.id))}
       else{gradeCard(d,c,false,first);s.missed.add(c.id);s.queue.push(c.id)}
       s.i++;s.flipped=false;if(s.i>=s.queue.length)markTaskDone(today(),"cards:"+d.id,true);go();break}
-    case "startqcm":{const set=b.dataset.set||S.qset||"";S.qset=set;const pool=d.qcm.filter(q=>set==="prof"?isProfQ(q):set==="mine"?!isProfQ(q):true);const o=set==="prof"?pool.map(q=>q.id):pool.map(q=>q.id).sort(()=>Math.random()-.5);S.session={type:"qcm",deckId:d.id,order:o,i:0,sel:[],checked:false,score:0};go();break}
+    case "startqcm":{const set=b.dataset.set||S.qset||"";S.qset=set;const pool=b.dataset.part!=null?(qcmGroups(d)[+b.dataset.part]||{qs:[]}).qs:d.qcm.filter(q=>set==="prof"?isProfQ(q):set==="mine"?!isProfQ(q):true);const o=set==="prof"?pool.map(q=>q.id):pool.map(q=>q.id).sort(()=>Math.random()-.5);S.session={type:"qcm",deckId:d.id,order:o,i:0,sel:[],checked:false,score:0};go();break}
     case "pick":{const s=S.session,k=+b.dataset.k;s.sel=s.sel.includes(k)?s.sel.filter(x=>x!==k):[...s.sel,k];go();break}
     case "checkq":{const s=S.session,q=d.qcm.find(x=>x.id===s.order[s.i]);const A=[...s.sel].sort().join(),B=[...q.correct].sort().join();s.lastOk=A===B;if(s.lastOk)s.score++;gradeQcm(d,q,s.lastOk);s.checked=true;go();break}
     case "nextq":{const s=S.session;s.i++;s.sel=[];s.checked=false;if(s.i>=s.order.length){d.lastScore=Math.round(s.score/s.order.length*100);markDirty(d.id)}go();break}
@@ -2610,9 +2610,42 @@ function qcmSplit(d,PQ,MQ){const all=!!X.profOpen;
   return `<div class="panel stack qprof"><div class="row" style="justify-content:space-between"><div class="label">📝 QCM du prof</div><span class="pill">${PQ.length} questions</span></div>
     <p class="help" style="margin:0">Les questions données par le prof dans son support, dans son ordre. Plusieurs réponses peuvent être justes.</p>
     <div class="row"><button class="btn" data-act="startqcm" data-set="prof">Faire les QCM du prof</button><button class="btn soft" data-act="profcorr">${all?"Masquer la correction":"Voir toute la correction"}</button></div></div>
+  ${qcmParts(d)}
   <div class="section" style="margin-top:14px"><h2>Correction des QCM du prof</h2><p class="help">${all?"Toutes les réponses sont affichées.":"Touche une question pour voir sa réponse et sa correction."}</p>${PQ.map((q,i)=>qCorr(d,q,i,all)).join("")}</div>
   ${MQ.length?`<div class="panel stack" style="margin-top:18px"><div class="label">Mes QCM d'entraînement</div><h2>${MQ.length} question${MQ.length>1?"s":""}</h2><p class="help" style="margin:0">Préparés à partir de ta fiche. Une question est juste seulement si toutes les bonnes propositions sont cochées et aucune fausse.</p>${d.lastScore!=null?`<p style="margin:0">Dernier score : <strong>${d.lastScore}%</strong></p>`:""}<div class="row"><button class="btn" data-act="startqcm" data-set="mine">Commencer</button><button class="btn ghost" data-act="startqcm" data-set="">Tout mélanger (${PQ.length+MQ.length})</button></div></div>
   <div class="section" style="margin-top:18px"><h2>Mes QCM : questions et corrections</h2>${MQ.map((q,i)=>qCorr(d,q,i,false)).join("")}</div>`:""}`}
+/* ---------- QCM par partie (## de la fiche) ---------- */
+function qParts(d){let P=ficheParts(d);if(P.length>=4)return P;
+  const out=[];let h2="",cur=null;
+  for(const l of String(d.fiche||"").split("\n")){let m=l.match(/^##\s+(.*)/);if(m){h2=m[1].replace(/[*=_`]/g,"").trim();cur=null;if(/objectif/i.test(h2))h2="";continue}
+    m=l.match(/^###\s+(.*)/);if(m&&h2){cur={h:m[1].replace(/[*=_`]/g,"").trim(),lines:[]};out.push(cur);continue}
+    if(!h2)continue;if(!cur){cur={h:h2,lines:[]};out.push(cur)}cur.lines.push(l)}
+  const o=out.filter(p=>p.lines.join("").trim());return o.length>12?P:o}
+function qcmGroups(d){const P=qParts(d);const G=P.map(p=>({titre:p.h,qs:[]}));
+  const T=P.map(p=>({t:new Set(tok(p.h+" "+p.lines.join(" ")).filter(w=>w.length>3&&!STOP.has(w))),ht:new Set(tok(p.h).filter(w=>w.length>3))}));
+  (d.qcm||[]).forEach(q=>{let i=q.src?P.findIndex(p=>fold(p.h)===fold(q.src)):-1;
+    if(i<0){const w=[...new Set(tok(qTxt(q)+" "+(q.options||[]).join(" ")+" "+(q.expl||"")).filter(x=>x.length>3&&!STOP.has(x)))];let bs=0;
+      T.forEach((p,k)=>{let sc=0;w.forEach(x=>{if(p.t.has(x))sc++;if(p.ht.has(x))sc+=2});sc/=Math.sqrt(Math.max(8,p.t.size));if(sc>bs){bs=sc;i=k}})}
+    if(i>=0)G[i].qs.push(q)});
+  return G}
+function qcmParts(d){const G=qcmGroups(d),busy=X.ai["qp-"+d.id];if(!G.length)return "";
+  return `<div class="section" style="margin-top:18px"><h2>QCM par partie</h2><p class="help">Une partie à la fois, dans l'ordre du cours : fais-les juste après avoir appris la partie.</p><div class="stack" style="gap:8px">
+  ${G.map((g,i)=>{const err=g.qs.filter(q=>(q.errs||0)>0&&!(q.okSince>=2)).length;return `<div class="mini qpart"><span><strong>${esc(g.titre)}</strong><br><span class="muted">${g.qs.length?`${g.qs.length} QCM${err?` · ${err} à revoir`:""}`:"pas encore de QCM"}</span></span>
+    <span class="row" style="gap:6px;flex-wrap:nowrap">${g.qs.length?`<button class="btn small" data-act="startqcm" data-part="${i}">▶</button>`:""}${aiOK()&&g.qs.length<4?`<button class="btn soft small" data-act="qpgen" data-part="${i}" ${busy?"disabled":""}>${busy===String(i)?"…":"+ QCM"}</button>`:""}</span></div>`}).join("")}</div>
+  ${aiOK()?`<p class="help">« + QCM » crée 4 questions sur la partie, uniquement à partir de ta fiche.</p>`:""}</div>`}
+async function doQcmPart(d,i){const k="qp-"+d.id;if(X.ai[k])return;const P=qParts(d)[i];if(!P)return;X.ai[k]=String(i);render();
+  try{const o=await askJSON(`Tu es professeur de médecine (L3). Rédige 4 QCM à réponses multiples (5 propositions A à E, 1 à 4 justes) sur la partie « ${P.h} » du chapitre « ${d.name} », UNIQUEMENT à partir de l'extrait ci-dessous : chaque proposition juste ou fausse doit pouvoir être vérifiée dans l'extrait (les fausses sont des modifications plausibles du cours : chiffre changé, inversion, intrus). Pas de « toutes les réponses sont justes ». Ajoute une explication courte tirée de l'extrait.
+Réponds en JSON : {"qcm":[{"q":"…","options":["…","…","…","…","…"],"correct":[0,2],"expl":"…"}]}
+EXTRAIT :
+<<<
+## ${P.h}
+${P.lines.join("\n").replace(/!\[[^\]]*\]\([^)]*\)/g,"")}
+>>>`,{modelTier:"default",cache:false});
+    const arr=(o&&o.qcm||[]).filter(q=>q&&q.q&&Array.isArray(q.options)&&q.options.length>=3&&Array.isArray(q.correct)&&q.correct.length);
+    if(!arr.length)throw {code:"invalid_json"};
+    const live=getDeck(d.id);live.qcm=[...(live.qcm||[]),...arr.map(q=>({id:uid(),q:String(q.q),options:q.options.map(String),correct:q.correct.map(Number).filter(n=>n>=0&&n<q.options.length),expl:String(q.expl||""),src:P.h,ia:true}))];markDirty(live.id);toast(arr.length+" QCM ajoutés à « "+P.h+" »")}
+  catch(e){toast(aiErr(e))}
+  X.ai[k]=false;render()}
 
 /* ---------- Cours expliqué : le chapitre réexpliqué comme un nouveau cours, uniquement à partir de la fiche ---------- */
 function tabLesson(d){
@@ -2969,6 +3002,7 @@ document.addEventListener("click",async e=>{
     case "trall":{const p=b.dataset.p;document.querySelectorAll('[data-act="trshow"]').forEach(x=>{if(x.dataset.k.startsWith(p))(X.trShow??={})[x.dataset.k]=true});render();break}
     case "trdev":{const n=(d&&d.signes||[]).length||1;let v;do{v=Math.floor(Math.random()*n)}while(n>1&&v===X.trDev);X.trDev=v;render();break}
     case "trcas":if(d)doCas(d);break;
+    case "qpgen":if(d)doQcmPart(d,+b.dataset.part);break;
     case "profcorr":X.profOpen=!X.profOpen;render();break;
     case "cardmix":X.cardMix=b.dataset.v==="1";render();break;
     case "avonly":X.avOnly=b.dataset.v==="1";render();break;

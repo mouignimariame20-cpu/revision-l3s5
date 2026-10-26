@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261026222623";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261026222941";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -399,6 +399,7 @@ table.grille th{text-align:left;width:34%;white-space:normal}table.grille td{wid
 .dnav-g[aria-selected="true"]{background:var(--scrub);border-color:var(--scrub);color:var(--scrub-ink)}
 .dnav-g:last-child{grid-column:span 2;padding:6px;font-size:.8rem}
 .dnav-s{margin-bottom:14px}
+.seg-sep{flex:0 0 2px;align-self:stretch;margin:6px 3px;background:var(--line);border-radius:2px}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -944,7 +945,7 @@ function viewDeck(){
   else if(S.tab==="memo")body=viewMemo(d);
   else body=tabEdit(d);
   return topbar(d.name,true)+`<div class="hero"><div class="label">${esc(d.matiere||"")}${d.partie?" · "+esc(d.partie):""}${d.example?" · exemple":""}</div><h1>${esc(d.name)}</h1>${(d.fiche||"").trim()?`<button class="btn soft au-btn" data-act="auopen" data-id="${d.id}">🎧 Écouter le cours</button>`:""}</div>
-  ${deckNav()}${body}`;
+  ${deckNav2()}${body}`;
 }
 function tabFiche(d){
   const info=jInfo(d);
@@ -3459,6 +3460,9 @@ const DECK_GROUPS=[["c","1 · Comprendre",[["lesson","Cours expliqué"],["simple
 function deckNav(){const t=S.tab==="train"&&X.trSec==="tab"&&X.trOnlyTab?"cmp":S.tab;const g=DECK_GROUPS.find(G=>G[2].some(x=>x[0]===t))||DECK_GROUPS[0];
   return `<div class="dnav">${DECK_GROUPS.map(G=>`<button class="dnav-g" data-act="dgroup" data-g="${G[0]}" aria-selected="${G===g}">${G[1]}</button>`).join("")}</div>
   <div class="chips dnav-s">${g[2].map(([k,l])=>`<button class="chip" data-act="dtab" data-t="${k}" aria-pressed="${t===k}">${l}</button>`).join("")}</div>`}
+const DECK_TABS=[["source","Cours source"],["fiche","Fiche synthétique"],["obj","Objectifs"],0,["lesson","Cours expliqué"],["simple","Cours simplifié"],["visuel","Visuel"],0,["cmp","📊 Tableaux"],["flyer","Flyer"],0,["cards","Flashcards"],["recite","Réciter"],["memo","Mémoriser"],0,["qcm","QCM"],["train","🩺 S'entraîner"],0,["explain","Comprendre"],["cov","Couverture"],["edit","Modifier"]];
+function deckNav2(){const t=S.tab==="train"&&X.trSec==="tab"&&X.trOnlyTab?"cmp":S.tab;
+  return `<div class="seg" role="tablist">${DECK_TABS.map(x=>x?`<button role="tab" data-act="dtab" data-t="${x[0]}" aria-selected="${t===x[0]}">${x[1]}</button>`:`<span class="seg-sep"></span>`).join("")}</div>`}
 renderTabbar();
 boot().then(bootExtras);
 </script>

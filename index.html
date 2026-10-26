@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261026005714";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261026013456";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -362,6 +362,7 @@ table.grille th{text-align:left;width:34%;white-space:normal}table.grille td{wid
 .pqc li:not(:last-child)::after{content:" ↓";color:#b34b72;font-weight:800}
 .lexr{font-size:.88rem;font-weight:700;color:#7a4fa0;margin:4px 0}
 .leximg{font-size:.88rem;color:var(--muted,#8a6b76);font-style:italic;margin-top:4px}
+.mcard{margin-bottom:12px;border:2px solid #e8b4c4}.mcard summary,.mstep summary{cursor:pointer}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -1876,7 +1877,7 @@ function tasksFor(date){
   const push=t=>{if(seen.has(t.key))return;seen.add(t.key);t.prio+=(pr(t.mat)-2)*6;T.push(t)};
   // 1. cours suivis récemment, pas encore appris
   X.classes.filter(e=>e.date<=date&&e.date>=addDays(date,-3)).forEach(e=>{const d=getDeck(e.deckId);if(!d||d.learnedOn)return;
-    const L=dayLoad(e.date);push({key:"learn:"+d.id,deckId:d.id,mat:d.matiere,title:(L.lvl==="lourde"?"J0 allégé · Survol + Blurting : ":"J0 · Comprendre + Blurting : ")+d.name,min:j0Min(e,d,L.lvl),prio:100,kind:"learn",tab:"lesson"})});
+    const L=dayLoad(e.date);push({key:"learn:"+d.id,deckId:d.id,mat:d.matiere,title:(L.lvl==="lourde"?"J0 allégé · Survol + Blurting : ":"J0 · "+stepFor(d,0).t+" : ")+d.name,min:j0Min(e,d,L.lvl),prio:100,kind:"learn",tab:L.lvl==="lourde"?"lesson":stepFor(d,0).tab})});
   // 1 ter. nouvelle partie d'un chapitre déjà commencé (ex. 2e cours sur le même support)
   X.classes.filter(e=>e.date<=date&&e.date>=addDays(date,-2)).forEach(e=>{const d=getDeck(e.deckId);if(!d||!d.learnedOn||e.date<=d.learnedOn)return;const k="part:"+e.id;if(keyDone(k))return;
     const L=dayLoad(e.date);push({key:k,deckId:d.id,mat:d.matiere,title:"J0 nouvelle partie · "+(e.titre||d.name),min:j0Min(e,d,L.lvl),prio:99,kind:"learn",tab:"lesson"})});
@@ -1888,7 +1889,7 @@ function tasksFor(date){
   // 2. révisions J dues ou en retard à cette date
   S.decks.forEach(d=>{if(!d.learnedOn)return;const n=J_STEPS.find(j=>!(d.jDone||[]).includes(j));if(!n)return;const dd=addDays(d.learnedOn,n);if(dd>date)return;
     const heavy=n===1&&dayLoad(d.learnedOn).lvl==="lourde";
-    push({key:`J${n}:${d.id}`,deckId:d.id,mat:d.matiere,title:`J${n} · ${heavy?"Approfondir + objectifs":MAJ[n].t} · ${d.name}`,min:revMin(d)+(heavy?Math.round(slidesOf(X.classes.find(e=>e.deckId===d.id&&e.date===d.learnedOn),d)*.4/5)*5:0),prio:dd<date?95:90,kind:"J",rev:true,j:n,tab:heavy?"lesson":MAJ[n].tab})});
+    push({key:`J${n}:${d.id}`,deckId:d.id,mat:d.matiere,title:`J${n} · ${heavy?"Approfondir + objectifs":stepFor(d,n).t} · ${d.name}`,min:revMin(d)+(heavy?Math.round(slidesOf(X.classes.find(e=>e.deckId===d.id&&e.date===d.learnedOn),d)*.4/5)*5:0),prio:dd<date?95:90,kind:"J",rev:true,j:n,tab:heavy?"lesson":stepFor(d,n).tab})});
   // 2 bis. dimanche : bilan de la semaine, QCM mélangés de tous les cours de la semaine
   if(wdOf(date)===7){const wk=S.decks.filter(d=>d.learnedOn&&d.learnedOn>=addDays(date,-7)&&(d.qcm||[]).length);if(wk.length&&!keyDone("bilan:"+date))push({key:"bilan:"+date,deckId:null,mat:"",title:`Bilan de la semaine · QCM mélangés (${wk.length} cours)`,min:Math.min(60,20+wk.length*5),prio:85,kind:"bilan"})}
   // 3. partiels dans les 21 jours
@@ -2754,7 +2755,8 @@ function viewMethode(){
     <li><strong>Charge moyenne</strong> (40 à 100 diapos ou 2-3 cours) : J0 complet, cours par cours, dans l'ordre de la journée.</li>
     <li><strong>Charge lourde</strong> (plus de 100 diapos ou 4 cours) : J0 allégé (≈ 0,6 min par diapo : Cours expliqué + Blurting), et le J1 du lendemain est rallongé pour approfondir.</li>
     <li>Un J0 dure entre 30 min et 2 h ; au-delà, il est coupé en blocs avec pauses.</li></ul></div>
-  <div class="section"><h2>Les étapes pour chaque cours</h2>${[0,...J_STEPS].map(j=>`<div class="panel mstep"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><strong>J${j} · ${esc(MAJ[j].t)}</strong><span class="pill">${{0:"le jour du cours",1:"lendemain",3:"3 jours",7:"1 semaine",15:"2 semaines",30:"1 mois"}[j]}</span></div><p class="help" style="margin:6px 0 0">${esc(MAJ[j].how)}</p></div>`).join("")}
+  ${methAll()}
+  <div class="section"><h2>Les étapes par défaut (autres matières)</h2>${[0,...J_STEPS].map(j=>`<div class="panel mstep"><div class="row" style="justify-content:space-between;flex-wrap:nowrap"><strong>J${j} · ${esc(MAJ[j].t)}</strong><span class="pill">${{0:"le jour du cours",1:"lendemain",3:"3 jours",7:"1 semaine",15:"2 semaines",30:"1 mois"}[j]}</span></div><p class="help" style="margin:6px 0 0">${esc(MAJ[j].how)}</p></div>`).join("")}
   <div class="panel mstep"><div class="row" style="justify-content:space-between"><strong>Dimanche · Bilan de la semaine</strong><span class="pill">chaque semaine</span></div><p class="help" style="margin:6px 0 0">Examen blanc de QCM mélangés sur tous les cours de la semaine (on retient mieux quand les matières sont mélangées), puis tes erreurs.</p></div></div>
   <div class="panel stack"><div class="label">Pourquoi ça marche</div>
     <ul class="mlist"><li><strong>Récupération active</strong> : te forcer à retrouver l'information (Blurting, objectifs, QCM) la grave bien plus que relire.</li>
@@ -2979,7 +2981,7 @@ function tabTrain(d){
       ${c?`<div class="panel stack"><div class="label">🧑‍⚕️ Le patient</div><p style="margin:0">${esc(c.patient)}</p><p style="margin:0"><strong>${esc(c.question)}</strong></p>
         <textarea id="cas-rep" rows="3" placeholder="Ton diagnostic et tes arguments…"></textarea>
         ${X.trShow?.["cas"]?`<div class="expl"><strong>Réponse : ${esc(c.reponse)}</strong><ul>${(c.arguments||[]).map(a=>`<li>${esc(a)}</li>`).join("")}</ul></div>`:`<button class="btn soft small" data-act="trshow" data-k="cas" style="align-self:flex-start">Voir la correction</button>`}</div>`:""}`}
-  return `<div class="chips trtabs" style="margin-bottom:12px">${tabs.map(([k,l])=>`<button class="chip" data-act="trsec" data-s="${k}" aria-pressed="${k===cur}">${l}</button>`).join("")}</div>${body}`}
+  return methCard(d)+`<div class="chips trtabs" style="margin-bottom:12px">${tabs.map(([k,l])=>`<button class="chip" data-act="trsec" data-s="${k}" aria-pressed="${k===cur}">${l}</button>`).join("")}</div>${body}`}
 async function doCas(d){const k="cas-"+d.id;if(X.ai[k])return;X.ai[k]=true;render();
   try{const o=await askJSON(`Tu es professeur de sémiologie médicale (L3). À partir UNIQUEMENT de la fiche ci-dessous, invente un court cas clinique présenté comme à l'hôpital (motif de consultation, puis histoire de la maladie : date et mode de début, circonstances ; si c'est une douleur, décris-la selon SITECHIA : siège, intensité, type, évolution, facteur calmant/déclenchant, horaire, irradiation, facteur aggravant ; signes associés, contexte fébrile ou non, 3 A ; puis 1 à 3 éléments d'examen ou de biologie), en 4 à 7 phrases, avec uniquement des signes tirés de la fiche, sans donner le diagnostic, puis la question « Quel est votre diagnostic ? » (ou le mécanisme / l'examen à demander), la réponse attendue et 3 à 5 arguments tirés de la fiche. N'invente aucun signe, chiffre ou examen absent de la fiche. Varie le tableau d'une fois à l'autre (graine ${Math.floor(Math.random()*1e6)}).
 Réponds en JSON : {"patient":"…","question":"…","reponse":"…","arguments":["…"]}
@@ -3000,6 +3002,36 @@ ${String(d.fiche||"").replace(/!\[[^\]]*\]\([^)]*\)/g,"").slice(0,30000)}`,{mode
     const live=getDeck(d.id);live.lexique=arr.map(x=>({mot:String(x.mot),rac:String(x.rac||""),sens:String(x.sens),img:String(x.img||"")}));markDirty(live.id)}
   catch(e){toast(aiErr(e))}
   X.ai[k]=false;render()}
+
+/* ---------- Méthode par matière : quoi faire à chaque J selon la matière ---------- */
+const MATM=[
+ {re:/s[ée]miolog/i,nom:"Sémiologie",ic:"🩺",
+  idee:"On ne retient pas les signes un par un : on les déduit du mécanisme, et on les range comme à l'hôpital.",
+  steps:[["Comprendre le mécanisme de chaque signe","Cours expliqué + 🩺 S'entraîner → Signes et mécanismes","lesson"],["Ranger en 3 tiroirs : clinique / biologie / imagerie","Flyer et Objectifs","flyer"],["Toute douleur en SITECHIA, tout patient avec l'histoire de la maladie","S'entraîner → Histoire de la maladie, Grille","train"],["Les tableaux comparatifs de mémoire","S'entraîner → Tableaux cachés","train"],["Les chiffres clés, 2 minutes par jour","S'entraîner → Chiffres clés","train"],["Des cas cliniques : du signe au diagnostic","S'entraîner → Patient imaginaire, Je suis un signe","train"]],
+  J:{0:["Comprendre : Cours expliqué + Signes et mécanismes","lesson"],1:["Objectifs + Lexique (Me tester)","obj"],3:["QCM par partie + Tableaux cachés","qcm"],7:["Patient imaginaire (histoire de la maladie, SITECHIA)","train"],15:["Je suis un signe + Chiffres clés","train"],30:["Blurting final + annales","recite"]}},
+ {re:/immuno/i,nom:"Immunologie",ic:"🛡️",
+  idee:"Matière abstraite : d'abord les mots et l'histoire (le scénario d'une infection), les détails (marqueurs CD) en dernier.",
+  steps:[["Les mots d'abord","S'entraîner → Lexique","train"],["L'histoire avant les détails : raconte le scénario (microbe → innée → cellule dendritique → LT/LB → anticorps → mémoire)","Cours expliqué","lesson"],["Les schémas du cours","Visuel","visuel"],["Les comparaisons : inné / adaptatif, LT / LB, CMH I / CMH II","S'entraîner → Tableaux cachés","train"],["Les marqueurs et les chiffres en dernier, par petites parties","Flashcards par partie","cards"],["Explique-le comme un prof","Réciter → Explique comme un prof","recite"]],
+  J:{0:["Lexique, puis Cours expliqué : raconte le scénario","train"],1:["Objectifs + schémas","obj"],3:["Flashcards par partie + QCM","cards"],7:["Explique comme un prof : le scénario d'une infection","recite"],15:["QCM mélangés + Tableaux cachés","qcm"],30:["Blurting final","recite"]}},
+ {re:/anatomie path|anapath|cytolog/i,nom:"Anatomie pathologique",ic:"🔬",
+  idee:"Beaucoup de vocabulaire et de définitions exactes : le prof demande souvent « définir ». Les images servent à reconnaître les lésions.",
+  steps:[["Le vocabulaire des lésions","S'entraîner → Lexique","train"],["Les définitions mot pour mot","Objectifs (mode Me tester)","obj"],["Les images : macroscopie et microscopie","Fiche synthétique + Visuel","visuel"],["Les comparaisons (nécrose / apoptose, hypertrophie / hyperplasie…)","S'entraîner → Tableaux cachés","train"],["Les QCM du prof","QCM → QCM du prof","qcm"],["Le Blurting par petits morceaux","Réciter","recite"]],
+  J:{0:["Lexique + fiche avec les images","train"],1:["Objectifs (définitions) + QCM du prof","obj"],3:["Flashcards par partie + Tableaux cachés","cards"],7:["Blurting par morceaux","recite"],15:["QCM mélangés","qcm"],30:["Blurting final","recite"]}},
+ {re:/h[ée]matolog/i,nom:"Hématologie",ic:"🩸",
+  idee:"C'est une matière de schémas (les lignées) et de chiffres (durées de vie, pourcentages, productions).",
+  steps:[["Comprendre la logique de l'usine","Cours expliqué","lesson"],["Redessiner les lignées de mémoire","Visuel, puis Réciter","visuel"],["Les chiffres clés","S'entraîner → Chiffres clés","train"],["Les tableaux (facteur → lignée…)","S'entraîner → Tableaux cachés","train"],["Les objectifs","Objectifs","obj"],["Flashcards et QCM par partie","Flashcards, QCM","cards"]],
+  J:{0:["Cours expliqué + schémas des lignées","lesson"],1:["Objectifs + Chiffres clés","obj"],3:["Flashcards par partie + QCM","cards"],7:["Redessine les lignées de mémoire (Blurting)","recite"],15:["QCM mélangés + Tableaux cachés","qcm"],30:["Blurting final","recite"]}},
+ {re:/bact[ée]rio|virolog|microbio|parasito|mycolog/i,nom:"Bactériologie / microbiologie",ic:"🦠",
+  idee:"Toujours la même logique : structure → fonction → application médicale (diagnostic, antibiotiques, vaccins).",
+  steps:[["Le schéma de la bactérie (ou du microbe) annoté","Visuel","visuel"],["Les mots","S'entraîner → Lexique","train"],["Pour chaque élément : structure → fonction → intérêt médical","Cours expliqué","lesson"],["Les comparaisons (Gram + / Gram −, eucaryote / procaryote)","S'entraîner → Tableaux cachés","train"],["Les objectifs","Objectifs","obj"],["Flashcards et QCM par partie","Flashcards, QCM","cards"]],
+  J:{0:["Schéma de la bactérie + Lexique + fiche","visuel"],1:["Objectifs + Tableaux cachés","obj"],3:["Flashcards par partie + QCM","cards"],7:["Explique comme un prof : structure → fonction","recite"],15:["QCM mélangés","qcm"],30:["Blurting final","recite"]}}];
+function matMeth(m){return MATM.find(x=>x.re.test(m||""))||null}
+function stepFor(d,n){const M=matMeth(d.matiere);if(M&&M.J[n])return {t:M.J[n][0],tab:M.J[n][1]};return MAJ[n]}
+function methCard(d){const M=matMeth(d.matiere);if(!M)return "";
+  return `<details class="panel mcard" ${X.mcOpen?"open":""}><summary><strong>${M.ic} Ma méthode en ${esc(M.nom)}</strong></summary><p class="help" style="margin:6px 0">${esc(M.idee)}</p>
+    <ol class="pqc">${M.steps.map(([t,o,tab])=>`<li><strong>${esc(t)}</strong><br><button class="linkbtn" data-act="tab" data-t="${tab}">→ ${esc(o)}</button></li>`).join("")}</ol></details>`}
+function methAll(){return `<div class="section"><h2>Ma méthode par matière</h2>${MATM.map(M=>`<details class="panel mstep"><summary><strong>${M.ic} ${esc(M.nom)}</strong></summary><p class="help" style="margin:6px 0">${esc(M.idee)}</p><ol class="pqc">${M.steps.map(([t,o])=>`<li><strong>${esc(t)}</strong> <span class="muted">· ${esc(o)}</span></li>`).join("")}</ol>
+  <div class="label" style="margin-top:8px">Au planning</div><ul class="mlist">${[0,...J_STEPS].map(j=>`<li><strong>J${j}</strong> : ${esc(M.J[j][0])}</li>`).join("")}</ul></details>`).join("")}</div>`}
 
 /* ---------- Fiche : notes du prof, mémorisation, chrono ---------- */
 function ficheExtras(d){

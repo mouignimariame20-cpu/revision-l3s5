@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261026194017";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261026195922";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -891,7 +891,7 @@ function viewNew(){
 }
 function viewDeck(){
   const d=getDeck(S.deckId); if(!d){S.view="matieres";return viewMatieres()}
-  const tabs=[["source","Cours source"],["fiche","Fiche synthétique"],["obj","Objectifs"],["train","🩺 S'entraîner"],["flyer","Flyer"],["recite","Réciter"],["lesson","Cours expliqué"],["visuel","Visuel"],["memo","Mémoriser"],["explain","Comprendre"],["cards","Flashcards"],["qcm","QCM"],["cov","Couverture"],["edit","Modifier"]];
+  const tabs=[["source","Cours source"],["fiche","Fiche synthétique"],["obj","Objectifs"],["train","🩺 S'entraîner"],["flyer","Flyer"],["recite","Réciter"],["simple","Cours simplifié"],["lesson","Cours expliqué"],["visuel","Visuel"],["memo","Mémoriser"],["explain","Comprendre"],["cards","Flashcards"],["qcm","QCM"],["cov","Couverture"],["edit","Modifier"]];
   let body="";
   if(S.tab==="fiche")body=tabFiche(d);
   else if(S.tab==="cards")body=tabCards(d);
@@ -901,6 +901,7 @@ function viewDeck(){
   else if(S.tab==="explain")body=tabExplain(d);
   else if(S.tab==="visuel")body=tabVisuel(d);
   else if(S.tab==="lesson")body=tabLesson(d);
+  else if(S.tab==="simple")body=tabSimple(d);
   else if(S.tab==="obj")body=tabObjectifs(d);
   else if(S.tab==="flyer")body=tabFlyer(d);
   else if(S.tab==="train")body=tabTrain(d);
@@ -2529,7 +2530,7 @@ function tabVisuel(d){
       <div class="figx-t"><div class="label">${esc(f.alt)}</div>${x?`<p>${esc(x.texte)}</p>${(x.retenir||[]).length?`<div class="figx-r"><strong>À retenir</strong><ul>${x.retenir.map(r=>`<li>${esc(r)}</li>`).join("")}</ul></div>`:""}`
         :aiOK()?`<button class="btn soft small" data-act="figx" data-k="${esc(k)}" data-u="${esc(f.u)}" data-alt="${esc(f.alt)}" ${busy?"disabled":""}>${busy?"J'analyse le schéma…":"Explique-moi ce schéma"}</button>`:""}</div></div>`}).join("")}</div>`:""}
   <div class="panel stack" style="margin-bottom:14px"><div class="label">Le cours en simple</div>
-    ${sp?`<div class="stack">${(sp.sections||[]).map(s=>`<div class="simp"><h3>${esc(s.titre||"")}</h3><p>${esc(s.simple||"")}</p>${s.image?`<div class="simp-img"><strong>Pour se représenter :</strong> ${esc(s.image)}</div>`:""}${(s.retenir||[]).length?`<ul class="simp-ret">${s.retenir.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}</div>`).join("")}</div>
+    ${sp?`<div class="stack">${(sp.sections||[]).map(s=>`<div class="simp"><h3>${esc(s.titre||"")}</h3><div class="fiche">${md(s.simple||"")}</div>${s.image?`<div class="simp-img"><strong>Pour se représenter :</strong> ${esc(s.image)}</div>`:""}${(s.retenir||[]).length?`<ul class="simp-ret">${s.retenir.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}</div>`).join("")}</div>
       <p class="help">Version simplifiée faite uniquement à partir de ta fiche. Les « pour se représenter » sont des images pour comprendre, pas des faits du cours. En cas de doute, la fiche fait foi.</p>
       ${aiOK()?`<button class="btn ghost small" data-act="simple" data-re="1" ${busy?"disabled":""} style="align-self:flex-start">${busy?"Je simplifie…":"Refaire la version simple"}</button>`:""}`
     :aiOK()?`<p class="help">Chaque partie du chapitre expliquée avec des mots simples, l'essentiel à retenir et une image pour se représenter les notions compliquées.</p><button class="btn" data-act="simple" ${busy?"disabled":""} style="align-self:flex-start">${busy?"Je simplifie le chapitre…":"Simplifie-moi ce chapitre"}</button>`:noAI}</div>
@@ -2708,6 +2709,19 @@ function lessonView(d,L){
   ${i===0&&head.trim()?`<article class="panel fiche lesson" style="margin-bottom:10px">${md(head)}</article>`:""}
   <article class="panel fiche lesson"><div class="label">${esc(p.g)}</div>${md(p.lines.join("\n"))}</article>
   <div class="panel" style="margin-top:10px">${nav}</div>`}
+
+/* Cours simplifié : une section à la fois (d.simple.sections : {g,titre,simple,image,retenir}) */
+function tabSimple(d){
+  const sp=d.simple,S2=(sp&&sp.sections)||[];
+  const intro=`<div class="panel stack" style="margin-bottom:10px"><div class="label">Le cours simplifié</div><p class="help" style="margin:0">Le cours redit simplement, partie par partie, dans l'ordre du cours. Les « pour se représenter » sont des images pour comprendre. En cas de doute, la fiche et le cours du prof font foi.</p></div>`;
+  if(!S2.length)return intro+`<div class="panel"><p class="help" style="margin:0">Pas encore de cours simplifié pour ce chapitre. Demande-le à Claude dans la conversation, ou va dans Visuel pour le générer.</p></div>`;
+  const all=(X.spAll??={})[d.id],i=Math.max(0,Math.min(S2.length-1,+((X.spP??={})[d.id]||0)));
+  const one=s=>`<div class="simp">${s.g?`<div class="label">${esc(s.g)}</div>`:""}<h3>${esc(s.titre||"")}</h3><div class="fiche">${md(s.simple||"")}</div>${s.image?`<div class="simp-img"><strong>Pour se représenter :</strong> ${esc(s.image)}</div>`:""}${(s.retenir||[]).length?`<div class="label" style="margin-top:10px">À retenir</div><ul class="simp-ret">${s.retenir.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}</div>`;
+  if(all)return intro+`<div class="panel stack" style="margin-bottom:10px"><button class="linkbtn" data-act="spall" style="align-self:flex-start">Revenir partie par partie</button></div><div class="panel stack">${S2.map(one).join("")}</div>`;
+  const groups=[...new Set(S2.map(s=>s.g||""))];
+  const sel=`<select id="sp-sec" data-spsec="${d.id}">${groups.map(g=>`<optgroup label="${esc(g||"Cours")}">${S2.map((s,j)=>(s.g||"")!==g?"":`<option value="${j}" ${j===i?"selected":""}>${j+1}. ${esc(s.titre||"")}</option>`).join("")}</optgroup>`).join("")}</select>`;
+  const nav=`<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><button class="btn ghost" data-act="spstep" data-v="-1" ${i?"":"disabled"}>◀ Précédente</button><span class="help" style="margin:0">Partie ${i+1} / ${S2.length}</span><button class="btn" data-act="spstep" data-v="1" ${i<S2.length-1?"":"disabled"}>Suivante ▶</button></div>`;
+  return intro+`<div class="panel stack" style="margin-bottom:10px"><label class="f">Partie${sel}</label>${nav}<button class="linkbtn" data-act="spall" style="align-self:flex-start">Tout afficher d'un coup</button></div><div class="panel">${one(S2[i])}</div><div class="panel" style="margin-top:10px">${nav}</div>`}
 
 /* ---------- Objectifs : chaque objectif du cours avec sa réponse type, à mémoriser ---------- */
 function ficheObjectifs(d){
@@ -3075,6 +3089,8 @@ document.addEventListener("click",async e=>{
       window.__seedPlanning&&window.__seedPlanning(o);location.reload();break}
     case "simple":if(d)doSimple(d);break;
     case "lesson":if(d){if(b.dataset.re){d.lesson=null;markDirty(d.id)}doLesson(d)}break;
+    case "spstep":if(d){const n=(d.simple?.sections||[]).length,c=+((X.spP??={})[d.id]||0);X.spP[d.id]=Math.max(0,Math.min(n-1,c+ +b.dataset.v));render();window.scrollTo(0,0)}break;
+    case "spall":if(d){(X.spAll??={})[d.id]=!X.spAll[d.id];render()}break;
     case "lsstep":if(d){const n=lessonParts(d.lesson?.text).parts.length,c=+((X.lesP??={})[d.id]||0);X.lesP[d.id]=Math.max(0,Math.min(n-1,c+ +b.dataset.v));render();window.scrollTo(0,0)}break;
     case "lsall":if(d){(X.lesAll??={})[d.id]=!X.lesAll[d.id];render()}break;
     case "rcstep":if(d){const n=recParts(d).length,c=+(X.rcSec?.[d.id]||0),v=Math.max(0,Math.min(n-1,c+ +b.dataset.v));(X.rcSec??={})[d.id]=String(v);(X.rcRes??={})[d.id]=null;render();window.scrollTo(0,0)}break;
@@ -3256,7 +3272,7 @@ function renderFab(){let f=document.getElementById("fab");if(!f){f=document.crea
 
 document.addEventListener("input",e=>{if(e.target.id==="ch-note"&&X.chrono){X.chrono.note=e.target.value;chronoSave()}});
 document.addEventListener("input",e=>{const t=e.target;if(t.id==="rc-text"&&t.dataset.rcd){(X.rcDraft??={})[t.dataset.rcd]=t.value}});
-document.addEventListener("change",e=>{const t=e.target;if(t.id==="ls-sec"&&t.dataset.lssec){(X.lesP??={})[t.dataset.lssec]=+t.value;render();window.scrollTo(0,0)}if(t.id==="rc-sec"&&t.dataset.rcsec){(X.rcSec??={})[t.dataset.rcsec]=t.value;(X.rcRes??={})[t.dataset.rcsec]=null;render()}});
+document.addEventListener("change",e=>{const t=e.target;if(t.id==="sp-sec"&&t.dataset.spsec){(X.spP??={})[t.dataset.spsec]=+t.value;render();window.scrollTo(0,0)}if(t.id==="ls-sec"&&t.dataset.lssec){(X.lesP??={})[t.dataset.lssec]=+t.value;render();window.scrollTo(0,0)}if(t.id==="rc-sec"&&t.dataset.rcsec){(X.rcSec??={})[t.dataset.rcsec]=t.value;(X.rcRes??={})[t.dataset.rcsec]=null;render()}});
 
 renderTabbar();
 boot().then(bootExtras);

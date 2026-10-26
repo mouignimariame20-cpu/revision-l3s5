@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261026211010";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261026215738";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -386,6 +386,13 @@ table.grille th{text-align:left;width:34%;white-space:normal}table.grille td{wid
 .tu-ans{border-top:1px dashed var(--line);padding-top:8px;margin-top:4px}
 .tu-list{list-style:none;padding:0;margin:2px 0}.tu-list li{margin:3px 0}
 @media (prefers-color-scheme:dark){.tu-opt.ok,.tu-fb.ok{background:#1e3a2a}.tu-opt.ko,.tu-fb.ko{background:#3a1e1e}.tu-piege{background:#3a2f1e}.tu-manque{background:#1e2a3a}}
+
+.tu-slide{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 14px;position:relative}
+.tu-slide h4{margin:0 0 6px;padding-right:34px;font-size:1.02rem;color:var(--accent,#8c2f4b)}
+.tu-sn{position:absolute;top:10px;right:12px;font-size:.72rem;color:var(--muted);font-weight:700}
+.tu-fig{margin:6px 0 8px}.tu-fig svg{width:100%;height:auto;display:block;border-radius:14px}
+.tu-fig figcaption{font-size:.7rem;color:var(--muted);margin-top:3px;text-align:center}
+.fiche blockquote{margin:6px 0;padding:8px 12px;border-left:3px solid #8c2f4b;background:#fbe9ee;border-radius:10px}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -2778,15 +2785,21 @@ function tabTutor(d){
     else if(key==="retenir")body=`<ul>${v.map(x=>`<li>${md(x)}</li>`).join("")}</ul>${n.piege?`<div class="tu-piege">⚠️ <strong>Piège :</strong> ${md(n.piege)}</div>`:""}`;
     else body=md(v);
     return `<div class="tu-b tu-${key}"><div class="label">${lab}</div><div class="fiche">${body}</div></div>`};
-  const visible=TU_STEPS.filter(([k])=>n[k]&&(!Array.isArray(n[k])||n[k].length));
-  const shown=visible.slice(0,step).map(([k,l])=>blk(k,l)).join("");
-  const more=step<visible.length?`<button class="btn" data-act="tustep" data-k="${esc(k)}" style="align-self:flex-start">Continuer : ${visible[step][1]} ▸</button>`:"";
+  let visible,shown,more;
+  if(n.slides&&n.slides.length){
+    const SL=[...n.slides,{t:"🎯 À retenir pour l'examen",retenir:true}];visible=SL;
+    shown=SL.slice(0,step).map((x,j)=>x.retenir?blk("retenir","🎯 À retenir pour l'examen"):`<div class="tu-slide"><div class="tu-sn">${j+1}/${SL.length}</div><h4>${esc(x.t)}</h4>${x.svg&&tuSafeSvg(x.svg)?`<figure class="tu-fig">${tuSafeSvg(x.svg)}<figcaption>Schéma simplifié pour comprendre (pas une image du cours)</figcaption></figure>`:""}<div class="fiche">${md(x.md||"")}</div></div>`).join("");
+    more=step<SL.length?`<button class="btn" data-act="tustep" data-k="${esc(k)}" style="align-self:flex-start">${SL[step].retenir?"Voir l'essentiel à retenir ▸":"Suite ▸"}</button>`:"";
+  }else{
+  visible=TU_STEPS.filter(([k])=>n[k]&&(!Array.isArray(n[k])||n[k].length));
+  shown=visible.slice(0,step).map(([k,l])=>blk(k,l)).join("");
+  more=step<visible.length?`<button class="btn" data-act="tustep" data-k="${esc(k)}" style="align-self:flex-start">Continuer : ${visible[step][1]} ▸</button>`:"";}
   const src=n.src==="complement"?`<span class="tu-tag comp">Complément pédagogique</span>`:n.src==="mixte"?`<span class="tu-tag mix">Cours du prof + explications</span>`:`<span class="tu-tag prof">Cours du prof</span>`;
   const manque=n.manque?`<div class="tu-manque">ℹ️ ${md(n.manque)}</div>`:"";
   const asks=tuAsks(d,n),check=step>=visible.length?tuCheck(d,n,i):"";
   return head+intro+`<div class="panel stack tu-card"><div class="label">${esc(n.g)}</div><h3 style="margin:0">${esc(n.titre)}</h3><div class="row" style="gap:6px;flex-wrap:wrap">${src}<span class="tu-tag st${s.st||0}">${TU_IC[s.st||0]} ${TU_ST[s.st||0]}</span></div>${manque}${shown}${more}</div>${asks}${check}`}
 /* boutons « demander » : IA si connectée, sinon réponses préparées (et signalées comme telles) */
-const TU_ASK=[["simple","Plus simple"],["pourquoi","Pourquoi ?"],["exemple","Un exemple"],["etapes","Étape par étape"],["diff","Différence"]];
+const TU_ASK=[["simple","Plus simple"],["pourquoi","Pourquoi ?"],["exemple","Un exemple"],["etapes","Étape par étape"],["diff","Différence"],["detail","Explication détaillée"]];
 function tuAsks(d,n){const k=d.id+"|"+n.id,a=(X.tuAsk??={})[k];
   const btns=TU_ASK.map(([v,l])=>`<button class="chip" aria-pressed="${!!(a&&a.v===v)}" data-act="tuask" data-k="${esc(k)}" data-v="${v}">${l}</button>`).join("");
   let out="";if(a){out=`<div class="tu-ans"><div class="label">${esc(TU_ASK.find(x=>x[0]===a.v)?.[1]||"")} ${a.ai?"· réponse de l'IA (d'après ton cours)":"· réponse préparée"}</div>${a.busy&&!a.text?`<p class="help">L'IA rédige…</p>`:`<div class="fiche">${md(a.text||"")}</div>`}${a.err?`<p class="help">${esc(a.err)}</p>`:""}</div>`}
@@ -2795,11 +2808,12 @@ function tuAsks(d,n){const k=d.id+"|"+n.id,a=(X.tuAsk??={})[k];
 function tuPrepared(n,v){
   if(v==="simple")return n.autre||n.idee;if(v==="pourquoi")return n.pourquoi||"Le cours ne donne pas de mécanisme pour cette notion.";
   if(v==="exemple")return n.exemple2||n.exemple||"";if(v==="etapes")return (n.etapes||[]).map((x,i)=>`${i+1}. ${x}`).join("\n");
-  if(v==="diff")return n.diff||"Pas de comparaison préparée pour cette notion.";return ""}
+  if(v==="diff")return n.diff||"Pas de comparaison préparée pour cette notion.";
+  if(v==="detail")return [n.idee&&"**💡 L'idée** — "+n.idee,(n.etapes||[]).length&&"**🪜 Pas à pas**\n"+n.etapes.map((x,i)=>`${i+1}. ${x}`).join("\n"),n.pourquoi&&"**🔬 Pourquoi** — "+n.pourquoi,n.exemple&&"**🩺 Exemple** — "+n.exemple,(n.vocab||[]).length&&"**📖 Vocabulaire**\n"+n.vocab.map(([a,b])=>`- **${a}** : ${b}`).join("\n")].filter(Boolean).join("\n\n");return ""}
 async function tuAskDo(d,n,v,q){
   const k=d.id+"|"+n.id;const A=(X.tuAsk??={});
-  if(!aiOK()||(v!=="libre"&&!q&&false)){A[k]={v,text:tuPrepared(n,v),ai:false};render();return}
-  const ask0={simple:"Explique cette notion plus simplement, avec d'autres mots et une autre image que dans l'explication donnée.",pourquoi:"Explique le POURQUOI (physiopathologie, mécanisme) de cette notion, étape par étape, en partant des bases.",exemple:"Donne un AUTRE exemple concret (situation clinique simple) différent de celui déjà donné.",etapes:"Explique le mécanisme étape par étape, numéroté, sans sauter d'étape.",diff:"Explique la différence entre cette notion et celle avec laquelle on la confond le plus souvent dans ce cours (tableau si utile).",libre:q||""}[v];
+  if(!aiOK()||v==="detail"){A[k]={v,text:tuPrepared(n,v),ai:false};render();return}
+  const ask0={simple:"Explique cette notion plus simplement, avec d'autres mots et une autre image que dans l'explication donnée.",pourquoi:"Explique le POURQUOI (physiopathologie, mécanisme) de cette notion, étape par étape, en partant des bases.",exemple:"Donne un AUTRE exemple concret (situation clinique simple) différent de celui déjà donné.",etapes:"Explique le mécanisme étape par étape, numéroté, sans sauter d'étape.",detail:"",diff:"Explique la différence entre cette notion et celle avec laquelle on la confond le plus souvent dans ce cours (tableau si utile).",libre:q||""}[v];
   const src=String(d.fiche||"").slice(0,9000);
   const prompt=`Tu es un excellent professeur particulier d'une étudiante en L3 de médecine (Thiès). Réponds en français, de façon claire et précise (markdown simple, pas de titre #). Langage accessible mais termes médicaux exacts. Appuie-toi d'abord sur le COURS ci-dessous ; si tu ajoutes une explication qui n'y est pas (physiopathologie, exemple), c'est permis mais précise « (complément, pas dans le cours) ». N'invente jamais de contenu de diapositive. 150 à 300 mots.
 NOTION : ${n.titre}
@@ -2863,6 +2877,8 @@ async function doTutorGen(d){const k="tug-"+d.id;if(X.ai[k])return;X.ai[k]=true;
       (o.notions||[]).forEach((n,j)=>notions.push({...n,id:"g"+i+"-"+j,g:p.h,src:"mixte"}))}
     const live=getDeck(d.id);live.tutor={at:today(),by:"IA d'après ta fiche",notions};markDirty(live.id)}
   catch(e){X.ai["tue-"+d.id]=aiErr(e)}X.ai[k]=false;render()}
+
+function tuSafeSvg(x){x=String(x||"");if(!/^<svg[\s>]/.test(x)||/<script|<foreignObject|\son\w+\s*=|javascript:|<image|href=/i.test(x))return "";return x}
 
 /* ---------- Objectifs : chaque objectif du cours avec sa réponse type, à mémoriser ---------- */
 function ficheObjectifs(d){

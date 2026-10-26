@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261026195922";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261026211010";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -364,6 +364,28 @@ table.grille th{text-align:left;width:34%;white-space:normal}table.grille td{wid
 .leximg{font-size:.88rem;color:var(--muted,#8a6b76);font-style:italic;margin-top:4px}
 .mcard{margin-bottom:12px;border:2px solid #e8b4c4}.mcard summary,.mstep summary{cursor:pointer}
 .panel .chips{flex-wrap:wrap}
+
+/* tuteur pas à pas */
+.tu-seg{display:grid!important;grid-template-columns:1fr 1fr}
+.tubar{display:flex;height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.tubar .m{background:var(--accent,#8c2f4b)}.tubar .c{background:#e2a3b5}
+.tu-card h3{font-family:inherit;font-size:1.15rem}
+.tu-tag{font-size:.72rem;font-weight:700;border-radius:99px;padding:3px 9px;border:1px solid var(--line);color:var(--muted)}
+.tu-tag.prof{background:#fbe9ee;color:#8c2f4b;border-color:#f1c9d4}.tu-tag.mix{background:#fff4e5;color:#8a5a12;border-color:#f3dcb4}.tu-tag.comp{background:#eef3fb;color:#2d4f80;border-color:#cfdcf0}
+.tu-tag.st1{background:#fde7ee;color:#8c2f4b}.tu-tag.st2{background:#8c2f4b;color:#fff;border-color:#8c2f4b}
+.tu-b{border-left:3px solid #e9b8c6;padding:4px 0 4px 12px}
+.tu-pourquoi{border-left-color:#8c2f4b}.tu-retenir{border-left-color:#c9a227}.tu-autre{border-left-color:#5b7fb3;margin-top:6px}
+.tu-ol{padding-left:20px;margin:4px 0}.tu-ol li{margin:4px 0}
+.tu-voc dt{font-weight:800;margin-top:6px}.tu-voc dd{margin:0 0 4px 0}
+.tu-piege{background:#fff4e5;border-radius:12px;padding:8px 10px;margin-top:6px}
+.tu-manque{background:#eef3fb;border-radius:12px;padding:8px 10px;font-size:.9rem}
+.tu-opts{display:grid;gap:8px}
+.tu-opt{text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:14px;padding:11px 13px;font:inherit;color:inherit}
+.tu-opt.ok{border-color:#2e8b57;background:#e8f6ee}.tu-opt.ko{border-color:#c0392b;background:#fbeaea}
+.tu-fb{border-radius:14px;padding:10px 12px}.tu-fb.ok{background:#e8f6ee}.tu-fb.ko{background:#fbeaea}.tu-fb div{margin-top:4px}
+.tu-ans{border-top:1px dashed var(--line);padding-top:8px;margin-top:4px}
+.tu-list{list-style:none;padding:0;margin:2px 0}.tu-list li{margin:3px 0}
+@media (prefers-color-scheme:dark){.tu-opt.ok,.tu-fb.ok{background:#1e3a2a}.tu-opt.ko,.tu-fb.ko{background:#3a1e1e}.tu-piege{background:#3a2f1e}.tu-manque{background:#1e2a3a}}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -900,7 +922,7 @@ function viewDeck(){
   else if(S.tab==="cov")body=tabCov(d);
   else if(S.tab==="explain")body=tabExplain(d);
   else if(S.tab==="visuel")body=tabVisuel(d);
-  else if(S.tab==="lesson")body=tabLesson(d);
+  else if(S.tab==="lesson")body=tabLessonTop(d);
   else if(S.tab==="simple")body=tabSimple(d);
   else if(S.tab==="obj")body=tabObjectifs(d);
   else if(S.tab==="flyer")body=tabFlyer(d);
@@ -2723,6 +2745,125 @@ function tabSimple(d){
   const nav=`<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><button class="btn ghost" data-act="spstep" data-v="-1" ${i?"":"disabled"}>◀ Précédente</button><span class="help" style="margin:0">Partie ${i+1} / ${S2.length}</span><button class="btn" data-act="spstep" data-v="1" ${i<S2.length-1?"":"disabled"}>Suivante ▶</button></div>`;
   return intro+`<div class="panel stack" style="margin-bottom:10px"><label class="f">Partie${sel}</label>${nav}<button class="linkbtn" data-act="spall" style="align-self:flex-start">Tout afficher d'un coup</button></div><div class="panel">${one(S2[i])}</div><div class="panel" style="margin-top:10px">${nav}</div>`}
 
+/* ---------- Comprendre mon cours : tuteur pas à pas, notion par notion (d.tutor), états de compréhension (d.tutorState) ---------- */
+const TU_STEPS=[["idee","💡 L'idée principale"],["etapes","🪜 Pas à pas"],["pourquoi","🔬 Pourquoi ?"],["exemple","🩺 Exemple concret"],["vocab","📖 Vocabulaire"],["retenir","🎯 À retenir pour l'examen"]];
+const TU_ST=["Pas encore compris","Compris · à mémoriser","Maîtrisé"],TU_IC=["○","◐","●"];
+function tuNotions(d){return (d.tutor&&d.tutor.notions)||[]}
+function tuState(d,id){return ((d.tutorState||{})[id])||{st:0,ok:[],ko:0}}
+function tuSet(d,id,f){const live=getDeck(d.id);live.tutorState??={};const s={...tuState(live,id)};f(s);live.tutorState[id]=s;markDirty(live.id)}
+function tuCounts(d){const N=tuNotions(d),c=[0,0,0];N.forEach(n=>c[tuState(d,n.id).st||0]++);return c}
+function tuBar(d){const N=tuNotions(d),c=tuCounts(d),t=N.length||1;
+  return `<div class="tubar" title="${c[2]} maîtrisées · ${c[1]} comprises · ${c[0]} pas encore"><span style="width:${c[2]/t*100}%" class="m"></span><span style="width:${c[1]/t*100}%" class="c"></span></div>
+  <div class="help" style="margin:4px 0 0">${TU_IC[2]} ${c[2]} maîtrisée${c[2]>1?"s":""} · ${TU_IC[1]} ${c[1]} comprise${c[1]>1?"s":""} · ${TU_IC[0]} ${c[0]} pas encore</div>`}
+/* vue principale de l'onglet Cours expliqué */
+function tabLessonTop(d){
+  const N=tuNotions(d),mode=(X.tuMode??={})[d.id]||(N.length?"tu":"read");
+  const sw=`<div class="seg tu-seg" style="margin-bottom:12px"><button aria-selected="${mode==="tu"}" data-act="tumode" data-v="tu">🧠 Comprendre pas à pas</button><button aria-selected="${mode==="read"}" data-act="tumode" data-v="read">📖 Lire le cours expliqué</button></div>`;
+  if(mode!=="tu")return sw+tabLesson(d);
+  if(!N.length)return sw+`<div class="panel stack"><div class="label">Comprendre pas à pas</div><p class="help" style="margin:0">Ce cours n'a pas encore de parcours « notion par notion ». Demande-le à Claude dans la conversation${aiOK()?", ou génère-le ici à partir de ta fiche":""}.</p>${aiOK()?`<button class="btn" data-act="tugen" ${X.ai["tug-"+d.id]?"disabled":""} style="align-self:flex-start">${X.ai["tug-"+d.id]?`Préparation… ${X.ai["tugp-"+d.id]||""}`:"Préparer le parcours avec l'IA"}</button>`:""}</div>`;
+  return sw+tabTutor(d)}
+function tabTutor(d){
+  const N=tuNotions(d),T=d.tutor,iRaw=(X.tuI??={})[d.id];
+  if(iRaw==="end")return tuEnd(d);
+  if(iRaw==="rappel")return tuRecall(d);
+  const i=Math.max(0,Math.min(N.length-1,+(iRaw||0))),n=N[i],k=d.id+"|"+n.id,step=(X.tuStep??={})[k]||1,s=tuState(d,n.id);
+  const groups=[...new Set(N.map(x=>x.g))];
+  const sel=`<select id="tu-sec" data-tusec="${d.id}">${groups.map(g=>`<optgroup label="${esc(g)}">${N.map((x,j)=>x.g!==g?"":`<option value="${j}" ${j===i?"selected":""}>${TU_IC[tuState(d,x.id).st||0]} ${j+1}. ${esc(x.titre)}</option>`).join("")}</optgroup>`).join("")}</select>`;
+  const head=`<div class="panel stack" style="margin-bottom:10px">${tuBar(d)}<label class="f">Notion${sel}</label>
+    <div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn ghost small" data-act="tugo" data-v="${i-1}" ${i?"":"disabled"}>◀</button><button class="btn ghost small" data-act="tugo" data-v="${i+1}" ${i<N.length-1?"":"disabled"}>▶</button><button class="btn soft small" data-act="tugo" data-v="rappel">🔁 Interroge-moi</button><button class="btn soft small" data-act="tugo" data-v="end">🗺️ Bilan du chapitre</button></div></div>`;
+  const intro=i===0&&step===1&&T.intro?`<div class="panel" style="margin-bottom:10px"><div class="fiche">${md(T.intro)}</div></div>`:"";
+  const blk=(key,lab)=>{const v=n[key];if(!v||(Array.isArray(v)&&!v.length))return "";
+    let body="";if(key==="etapes")body=`<ol class="tu-ol">${v.map(x=>`<li>${md(x)}</li>`).join("")}</ol>`;
+    else if(key==="vocab")body=`<dl class="tu-voc">${v.map(([a,b])=>`<dt>${esc(a)}</dt><dd>${md(b)}</dd>`).join("")}</dl>`;
+    else if(key==="retenir")body=`<ul>${v.map(x=>`<li>${md(x)}</li>`).join("")}</ul>${n.piege?`<div class="tu-piege">⚠️ <strong>Piège :</strong> ${md(n.piege)}</div>`:""}`;
+    else body=md(v);
+    return `<div class="tu-b tu-${key}"><div class="label">${lab}</div><div class="fiche">${body}</div></div>`};
+  const visible=TU_STEPS.filter(([k])=>n[k]&&(!Array.isArray(n[k])||n[k].length));
+  const shown=visible.slice(0,step).map(([k,l])=>blk(k,l)).join("");
+  const more=step<visible.length?`<button class="btn" data-act="tustep" data-k="${esc(k)}" style="align-self:flex-start">Continuer : ${visible[step][1]} ▸</button>`:"";
+  const src=n.src==="complement"?`<span class="tu-tag comp">Complément pédagogique</span>`:n.src==="mixte"?`<span class="tu-tag mix">Cours du prof + explications</span>`:`<span class="tu-tag prof">Cours du prof</span>`;
+  const manque=n.manque?`<div class="tu-manque">ℹ️ ${md(n.manque)}</div>`:"";
+  const asks=tuAsks(d,n),check=step>=visible.length?tuCheck(d,n,i):"";
+  return head+intro+`<div class="panel stack tu-card"><div class="label">${esc(n.g)}</div><h3 style="margin:0">${esc(n.titre)}</h3><div class="row" style="gap:6px;flex-wrap:wrap">${src}<span class="tu-tag st${s.st||0}">${TU_IC[s.st||0]} ${TU_ST[s.st||0]}</span></div>${manque}${shown}${more}</div>${asks}${check}`}
+/* boutons « demander » : IA si connectée, sinon réponses préparées (et signalées comme telles) */
+const TU_ASK=[["simple","Plus simple"],["pourquoi","Pourquoi ?"],["exemple","Un exemple"],["etapes","Étape par étape"],["diff","Différence"]];
+function tuAsks(d,n){const k=d.id+"|"+n.id,a=(X.tuAsk??={})[k];
+  const btns=TU_ASK.map(([v,l])=>`<button class="chip" aria-pressed="${!!(a&&a.v===v)}" data-act="tuask" data-k="${esc(k)}" data-v="${v}">${l}</button>`).join("");
+  let out="";if(a){out=`<div class="tu-ans"><div class="label">${esc(TU_ASK.find(x=>x[0]===a.v)?.[1]||"")} ${a.ai?"· réponse de l'IA (d'après ton cours)":"· réponse préparée"}</div>${a.busy&&!a.text?`<p class="help">L'IA rédige…</p>`:`<div class="fiche">${md(a.text||"")}</div>`}${a.err?`<p class="help">${esc(a.err)}</p>`:""}</div>`}
+  const free=aiOK()?`<div class="row" style="gap:6px;margin-top:8px"><input type="text" id="tu-q-${esc(n.id)}" placeholder="Pose ta question sur cette notion…" style="flex:1"><button class="btn small" data-act="tuask" data-k="${esc(k)}" data-v="libre">Demander</button></div>`:"";
+  return `<div class="panel stack" style="margin-top:10px"><div class="label">Tu bloques ? Demande</div><div class="chips">${btns}</div>${free}${out}${aiOK()?"":`<p class="help" style="margin:0">Sans IA connectée, ces boutons affichent des explications préparées à l'avance.</p>`}</div>`}
+function tuPrepared(n,v){
+  if(v==="simple")return n.autre||n.idee;if(v==="pourquoi")return n.pourquoi||"Le cours ne donne pas de mécanisme pour cette notion.";
+  if(v==="exemple")return n.exemple2||n.exemple||"";if(v==="etapes")return (n.etapes||[]).map((x,i)=>`${i+1}. ${x}`).join("\n");
+  if(v==="diff")return n.diff||"Pas de comparaison préparée pour cette notion.";return ""}
+async function tuAskDo(d,n,v,q){
+  const k=d.id+"|"+n.id;const A=(X.tuAsk??={});
+  if(!aiOK()||(v!=="libre"&&!q&&false)){A[k]={v,text:tuPrepared(n,v),ai:false};render();return}
+  const ask0={simple:"Explique cette notion plus simplement, avec d'autres mots et une autre image que dans l'explication donnée.",pourquoi:"Explique le POURQUOI (physiopathologie, mécanisme) de cette notion, étape par étape, en partant des bases.",exemple:"Donne un AUTRE exemple concret (situation clinique simple) différent de celui déjà donné.",etapes:"Explique le mécanisme étape par étape, numéroté, sans sauter d'étape.",diff:"Explique la différence entre cette notion et celle avec laquelle on la confond le plus souvent dans ce cours (tableau si utile).",libre:q||""}[v];
+  const src=String(d.fiche||"").slice(0,9000);
+  const prompt=`Tu es un excellent professeur particulier d'une étudiante en L3 de médecine (Thiès). Réponds en français, de façon claire et précise (markdown simple, pas de titre #). Langage accessible mais termes médicaux exacts. Appuie-toi d'abord sur le COURS ci-dessous ; si tu ajoutes une explication qui n'y est pas (physiopathologie, exemple), c'est permis mais précise « (complément, pas dans le cours) ». N'invente jamais de contenu de diapositive. 150 à 300 mots.
+NOTION : ${n.titre}
+EXPLICATION DÉJÀ DONNÉE : ${n.idee}\n${(n.etapes||[]).join(" / ")}\n${n.pourquoi||""}
+DEMANDE DE L'ÉTUDIANTE : ${ask0}
+COURS (fiche) :\n${src}`;
+  A[k]={v,text:"",ai:true,busy:true};render();
+  try{await ask(prompt,{cache:false,onText:({text})=>{A[k].text=text;render()}})}catch(e){A[k].err=aiErr(e);if(!A[k].text){A[k].text=tuPrepared(n,v);A[k].ai=false}}
+  A[k].busy=false;render()}
+/* vérification : question → si erreur, explication de l'erreur + réexplication + 2e question */
+function tuQ(d,q,k,tag){const r=(X.tuAns??={})[k+tag];
+  const opts=q.options.map((o,j)=>{let cls="";if(r!=null){if(j===q.correct)cls="ok";else if(j===r)cls="ko"}return `<button class="tu-opt ${cls}" data-act="tuans" data-k="${esc(k)}" data-t="${tag}" data-v="${j}" ${r!=null?"disabled":""}>${esc(o)}</button>`}).join("");
+  let fb="";if(r!=null){const good=r===q.correct;fb=`<div class="tu-fb ${good?"ok":"ko"}"><strong>${good?"✅ Exact.":"❌ Pas tout à fait."}</strong> ${!good&&q.why&&q.why[r]?`<div><strong>Ton erreur :</strong> ${md(q.why[r])}</div>`:""}<div>${md(q.expl||"")}</div></div>`}
+  return `<div class="stack"><p style="margin:0"><strong>${esc(q.q)}</strong></p><div class="tu-opts">${opts}</div>${r==null?`<p class="help" style="margin:0">Réfléchis avant de répondre : la réponse n'apparaît qu'après ton choix.</p>`:""}${fb}</div>`}
+function tuCheck(d,n,i){const k=d.id+"|"+n.id,A=X.tuAns??={},r1=A[k+"a"],r2=A[k+"b"],N=tuNotions(d);
+  if(!n.q)return "";
+  let h=`<div class="panel stack tu-check"><div class="label">✋ Vérifie ta compréhension</div>${tuQ(d,n.q,k,"a")}`;
+  const nextBtn=i<N.length-1?`<button class="btn" data-act="tugo" data-v="${i+1}">Notion suivante ▸</button>`:`<button class="btn" data-act="tugo" data-v="end">Voir le bilan du chapitre ▸</button>`;
+  if(r1!=null&&r1===n.q.correct)h+=`<div class="row" style="gap:8px;flex-wrap:wrap">${nextBtn}<button class="btn soft small" data-act="tucard" data-k="${esc(k)}">➕ En flashcard</button></div>`;
+  else if(r1!=null){
+    h+=`<div class="tu-b tu-autre"><div class="label">🔄 Je te réexplique autrement</div><div class="fiche">${md(n.autre||n.idee)}</div>${n.exemple2?`<div class="fiche" style="margin-top:6px"><strong>Autre exemple :</strong> ${md(n.exemple2)}</div>`:""}</div>`;
+    if(n.q2){h+=`<div class="label" style="margin-top:6px">Nouvelle question</div>${tuQ(d,n.q2,k,"b")}`;
+      if(r2!=null)h+=r2===n.q2.correct?`<div class="row" style="gap:8px;flex-wrap:wrap">${nextBtn}<button class="btn soft small" data-act="tucard" data-k="${esc(k)}">➕ En flashcard</button></div>`:`<div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn" data-act="tuagain" data-k="${esc(k)}">Revoir la notion depuis le début</button><button class="btn ghost small" data-act="tugo" data-v="${i+1<N.length?i+1:"end"}">Passer (elle restera « pas encore comprise »)</button></div>`}
+  }
+  return h+`</div>`}
+function tuAnswer(d,k,tag,j){const n=tuNotions(d).find(x=>d.id+"|"+x.id===k);if(!n)return;(X.tuAns??={})[k+tag]=j;
+  const q=tag==="a"?n.q:n.q2,good=j===q.correct;
+  if(good)tuSet(d,n.id,s=>{if((s.st||0)<1)s.st=1;s.last=today()});else tuSet(d,n.id,s=>{s.ko=(s.ko||0)+1;if(tag==="b")s.st=0});
+  render()}
+function tuCard(d,k){const n=tuNotions(d).find(x=>d.id+"|"+x.id===k);if(!n)return;const live=getDeck(d.id);live.cards??=[];
+  const id="tu-"+n.id;if(live.cards.some(c=>c.id===id)){toast("Déjà dans tes flashcards");return}
+  live.cards.push({id,q:n.carte?.q||n.q?.q||n.titre,a:n.carte?.a||(n.retenir||[]).join(" ; "),src:n.g,box:0,due:null});markDirty(live.id);toast("Flashcard ajoutée ✓");render()}
+/* rappel espacé des notions comprises : maîtrisée après 3 rappels réussis sur 3 jours différents */
+function tuRecallPool(d){const t=today();return tuNotions(d).filter(n=>{const s=tuState(d,n.id);return (s.st||0)>=1&&n.q&&s.last!==t})}
+function tuRecall(d){const P=tuRecallPool(d),c=tuCounts(d);
+  const back=`<button class="btn ghost small" data-act="tugo" data-v="0">◀ Retour aux notions</button>`;
+  if(!P.length)return `<div class="panel stack">${back}<div class="label">🔁 Interroge-moi</div><p class="help" style="margin:0">${c[1]+c[2]?"Rien à rappeler aujourd'hui : les notions comprises ou revues aujourd'hui reviennent à partir de demain (c'est l'espacement qui fait mémoriser). Reviens à ton prochain J : une notion devient « maîtrisée » après 3 rappels réussis sur 3 jours différents.":"Commence par comprendre des notions : on ne peut être interrogé que sur ce qu'on a compris."}</p>${tuBar(d)}</div>`;
+  const n=P[0],k=d.id+"|"+n.id,s=tuState(d,n.id),q=((s.ok||[]).length%2&&n.q2)?n.q2:n.q,r=(X.tuAns??={})[k+"r"];
+  const opts=q.options.map((o,j)=>{let cls="";if(r!=null){if(j===q.correct)cls="ok";else if(j===r)cls="ko"}return `<button class="tu-opt ${cls}" data-act="turec" data-k="${esc(k)}" data-v="${j}" ${r!=null?"disabled":""}>${esc(o)}</button>`}).join("");
+  const fb=r==null?"":`<div class="tu-fb ${r===q.correct?"ok":"ko"}"><strong>${r===q.correct?"✅ Exact.":"❌ Raté : cette notion repasse en « pas encore comprise »."}</strong> ${r!==q.correct&&q.why&&q.why[r]?`<div><strong>Ton erreur :</strong> ${md(q.why[r])}</div>`:""}<div>${md(q.expl||"")}</div></div><button class="btn" data-act="turecnext" data-k="${esc(k)}">Question suivante ▸</button>`;
+  return `<div class="panel stack">${back}<div class="label">🔁 Interroge-moi · ${P.length} notion${P.length>1?"s":""} à rappeler</div>${tuBar(d)}<div class="label" style="margin-top:6px">${esc(n.g)} · ${esc(n.titre)}</div><p style="margin:0"><strong>${esc(q.q)}</strong></p><div class="tu-opts">${opts}</div>${fb}</div>`}
+function tuRecAnswer(d,k,j){const n=tuNotions(d).find(x=>d.id+"|"+x.id===k);if(!n)return;(X.tuAns??={})[k+"r"]=j;const s0=tuState(d,n.id),q=((s0.ok||[]).length%2&&n.q2)?n.q2:n.q;
+  if(j===q.correct)tuSet(d,n.id,s=>{s.ok=[...(s.ok||[]).filter(x=>x!==today()),today()];s.last=today();if(new Set(s.ok).size>=3)s.st=2});
+  else tuSet(d,n.id,s=>{s.st=0;s.ok=[];s.ko=(s.ko||0)+1;s.last=today()});render()}
+/* bilan de fin de chapitre */
+function tuEnd(d){const N=tuNotions(d),T=d.tutor,c=tuCounts(d);
+  const list=[...new Set(N.map(n=>n.g))].map(g=>`<div class="label" style="margin-top:8px">${esc(g)}</div><ul class="tu-list">${N.map((n,j)=>n.g!==g?"":`<li><button class="linkbtn" data-act="tugo" data-v="${j}">${TU_IC[tuState(d,n.id).st||0]} ${esc(n.titre)}</button></li>`).join("")}</ul>`).join("");
+  const ret=N.map(n=>(n.retenir||[]).slice(0,2).map(r=>`<li>${md(r)}</li>`).join("")).join("");
+  return `<div class="panel stack" style="margin-bottom:10px"><button class="btn ghost small" data-act="tugo" data-v="0" style="align-self:flex-start">◀ Retour aux notions</button><div class="label">🗺️ Bilan du chapitre</div>${tuBar(d)}</div>
+  ${T.synthese?`<div class="panel stack" style="margin-bottom:10px"><div class="label">Le cours en une vue</div><div class="fiche">${md(T.synthese)}</div></div>`:""}
+  <div class="panel stack" style="margin-bottom:10px"><div class="label">Carte mentale</div>${typeof mindMap==="function"?mindMap(d):""}</div>
+  <div class="panel stack" style="margin-bottom:10px"><div class="label">Les notions et ton niveau</div>${list}</div>
+  <div class="panel stack" style="margin-bottom:10px"><div class="label">L'indispensable à retenir</div><ul>${ret}</ul></div>
+  <div class="panel stack"><div class="label">Et maintenant</div><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn" data-act="tugo" data-v="rappel">🔁 Interroge-moi</button><button class="btn soft" data-act="goto" data-id="${d.id}" data-tab="cards">Flashcards</button><button class="btn soft" data-act="goto" data-id="${d.id}" data-tab="qcm">QCM corrigés</button>${d.matiere&&/s[ée]mio/i.test(d.matiere)?`<button class="btn soft" data-act="goto" data-id="${d.id}" data-tab="train">Cas clinique & grilles</button>`:`<button class="btn soft" data-act="goto" data-id="${d.id}" data-tab="train">S'entraîner</button>`}</div>
+  <p class="help" style="margin:0">« Compris » = question réussie. « Maîtrisé » = 3 rappels réussis sur 3 jours différents (fais « Interroge-moi » à tes J1, J3, J7…).</p></div>`}
+/* génération IA d'un parcours (si aucun parcours préparé) */
+async function doTutorGen(d){const k="tug-"+d.id;if(X.ai[k])return;X.ai[k]=true;render();
+  try{const parts=ficheParts(d).filter(p=>!/objectif/i.test(p.h||""));const notions=[];
+    for(let i=0;i<parts.length;i++){X.ai["tugp-"+d.id]=`(${i+1}/${parts.length})`;render();
+      const p=parts[i];const o=await askJSON(`Tu es professeur de médecine (L3, Thiès). À partir UNIQUEMENT de cette partie de cours, découpe-la en 1 à 4 notions importantes (dans l'ordre) et enseigne chacune. Français. Tu peux ajouter la physiopathologie standard dans "pourquoi" (sans inventer de contenu de diapositive). Réponds en JSON : {"notions":[{"titre":"","idee":"définition simple","etapes":["étape 1","étape 2"],"pourquoi":"mécanisme","exemple":"exemple clinique simple","exemple2":"autre exemple","autre":"réexplication par un autre angle","vocab":[["terme","définition"]],"retenir":["point clé"],"piege":"","q":{"q":"question","options":["a","b","c","d"],"correct":0,"why":["pourquoi a est faux ou vrai","…","…","…"],"expl":"explication"},"q2":{"q":"","options":[],"correct":0,"why":[],"expl":""}}]}\nPARTIE : ${p.h}\n${(p.body||p.text||"").slice(0,5000)}`,{});
+      (o.notions||[]).forEach((n,j)=>notions.push({...n,id:"g"+i+"-"+j,g:p.h,src:"mixte"}))}
+    const live=getDeck(d.id);live.tutor={at:today(),by:"IA d'après ta fiche",notions};markDirty(live.id)}
+  catch(e){X.ai["tue-"+d.id]=aiErr(e)}X.ai[k]=false;render()}
+
 /* ---------- Objectifs : chaque objectif du cours avec sa réponse type, à mémoriser ---------- */
 function ficheObjectifs(d){
   const out=[];let on=false;
@@ -3089,6 +3230,16 @@ document.addEventListener("click",async e=>{
       window.__seedPlanning&&window.__seedPlanning(o);location.reload();break}
     case "simple":if(d)doSimple(d);break;
     case "lesson":if(d){if(b.dataset.re){d.lesson=null;markDirty(d.id)}doLesson(d)}break;
+    case "tumode":if(d){(X.tuMode??={})[d.id]=b.dataset.v;render()}break;
+    case "tugo":if(d){const v=b.dataset.v;(X.tuI??={})[d.id]=(v==="end"||v==="rappel")?v:+v;render();window.scrollTo(0,0)}break;
+    case "tustep":{const k=b.dataset.k;(X.tuStep??={})[k]=((X.tuStep[k])||1)+1;render();setTimeout(()=>{const el=document.querySelector(".tu-card .tu-b:last-of-type");el&&el.scrollIntoView({behavior:"smooth",block:"start"})},30)}break;
+    case "tuask":if(d){const n=tuNotions(d).find(x=>d.id+"|"+x.id===b.dataset.k);if(n){const q=b.dataset.v==="libre"?(document.getElementById("tu-q-"+n.id)?.value||"").trim():"";if(b.dataset.v==="libre"&&!q)break;tuAskDo(d,n,b.dataset.v,q)}}break;
+    case "tuans":if(d)tuAnswer(d,b.dataset.k,b.dataset.t,+b.dataset.v);break;
+    case "tuagain":if(d){const k=b.dataset.k;X.tuStep[k]=1;delete X.tuAns[k+"a"];delete X.tuAns[k+"b"];render();window.scrollTo(0,0)}break;
+    case "tucard":if(d)tuCard(d,b.dataset.k);break;
+    case "turec":if(d)tuRecAnswer(d,b.dataset.k,+b.dataset.v);break;
+    case "turecnext":if(d){delete X.tuAns[b.dataset.k+"r"];render();window.scrollTo(0,0)}break;
+    case "tugen":if(d)doTutorGen(d);break;
     case "spstep":if(d){const n=(d.simple?.sections||[]).length,c=+((X.spP??={})[d.id]||0);X.spP[d.id]=Math.max(0,Math.min(n-1,c+ +b.dataset.v));render();window.scrollTo(0,0)}break;
     case "spall":if(d){(X.spAll??={})[d.id]=!X.spAll[d.id];render()}break;
     case "lsstep":if(d){const n=lessonParts(d.lesson?.text).parts.length,c=+((X.lesP??={})[d.id]||0);X.lesP[d.id]=Math.max(0,Math.min(n-1,c+ +b.dataset.v));render();window.scrollTo(0,0)}break;
@@ -3272,7 +3423,7 @@ function renderFab(){let f=document.getElementById("fab");if(!f){f=document.crea
 
 document.addEventListener("input",e=>{if(e.target.id==="ch-note"&&X.chrono){X.chrono.note=e.target.value;chronoSave()}});
 document.addEventListener("input",e=>{const t=e.target;if(t.id==="rc-text"&&t.dataset.rcd){(X.rcDraft??={})[t.dataset.rcd]=t.value}});
-document.addEventListener("change",e=>{const t=e.target;if(t.id==="sp-sec"&&t.dataset.spsec){(X.spP??={})[t.dataset.spsec]=+t.value;render();window.scrollTo(0,0)}if(t.id==="ls-sec"&&t.dataset.lssec){(X.lesP??={})[t.dataset.lssec]=+t.value;render();window.scrollTo(0,0)}if(t.id==="rc-sec"&&t.dataset.rcsec){(X.rcSec??={})[t.dataset.rcsec]=t.value;(X.rcRes??={})[t.dataset.rcsec]=null;render()}});
+document.addEventListener("change",e=>{const t=e.target;if(t.id==="tu-sec"&&t.dataset.tusec){(X.tuI??={})[t.dataset.tusec]=+t.value;render();window.scrollTo(0,0)}if(t.id==="sp-sec"&&t.dataset.spsec){(X.spP??={})[t.dataset.spsec]=+t.value;render();window.scrollTo(0,0)}if(t.id==="ls-sec"&&t.dataset.lssec){(X.lesP??={})[t.dataset.lssec]=+t.value;render();window.scrollTo(0,0)}if(t.id==="rc-sec"&&t.dataset.rcsec){(X.rcSec??={})[t.dataset.rcsec]=t.value;(X.rcRes??={})[t.dataset.rcsec]=null;render()}});
 
 renderTabbar();
 boot().then(bootExtras);

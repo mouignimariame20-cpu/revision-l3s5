@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261026172650";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261026173040";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -363,6 +363,7 @@ table.grille th{text-align:left;width:34%;white-space:normal}table.grille td{wid
 .lexr{font-size:.88rem;font-weight:700;color:#7a4fa0;margin:4px 0}
 .leximg{font-size:.88rem;color:var(--muted,#8a6b76);font-style:italic;margin-top:4px}
 .mcard{margin-bottom:12px;border:2px solid #e8b4c4}.mcard summary,.mstep summary{cursor:pointer}
+.panel .chips{flex-wrap:wrap}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -2945,10 +2946,10 @@ function ficheNums(d){const out=[];const seen=new Set();let h="";
   return out.slice(0,40)}
 function maskNums(t,id,shown){let i=0;return esc(t).replace(NUM_RE,m=>{if(!/\d/.test(m))return m;const k=id+"-"+(i++);return shown||X.trShow?.[k]?`<mark>${m}</mark>`:`<button class="nhid" data-act="trshow" data-k="${k}">?</button>`})}
 function tabTrain(d){
-  const sec=X.trSec||"",S=d.signes||[],G=d.grille,T=ficheTables(d),N=ficheNums(d),ok=d.memoOk||{};
+  const sec=X.trSec||"",S=d.signes||[],GG=d.grilles||(d.grille?[d.grille]:[]),G=GG.length?GG[Math.min(X.trG||0,GG.length-1)]:null,T=ficheTables(d),N=ficheNums(d),ok=d.memoOk||{};
   const semio=/s[ée]miolog/i.test(d.matiere||"");
   const LX=d.lexique||[];
-  const tabs=[["lex","📖 Lexique"],semio&&["hdm","🩺 Histoire de la maladie"],S.length&&["signes","🔍 Signes et mécanismes"],S.length&&["devine","🎯 Je suis un signe"],G&&["grille","📋 Grille"],T.length&&["tab","🗂️ Tableaux cachés"],N.length&&["num","🔢 Chiffres clés"],["cas","🧑‍⚕️ Patient imaginaire"]].filter(Boolean);
+  const tabs=[["lex","📖 Lexique"],semio&&["hdm","🩺 Histoire de la maladie"],S.length&&["signes","🔍 Signes et mécanismes"],S.length&&["devine","🎯 Je suis un signe"],G&&["grille",GG.length>1?"📋 Grilles SITECHIA ("+GG.length+")":"📋 Grille"],T.length&&["tab","🗂️ Tableaux cachés"],N.length&&["num","🔢 Chiffres clés"],["cas","🧑‍⚕️ Patient imaginaire"]].filter(Boolean);
   const cur=tabs.some(t=>t[0]===sec)?sec:tabs[0][0];
   let body="";
   if(cur==="lex"){const hide=!!X.trHideL,busy=X.ai["lex-"+d.id];
@@ -2971,7 +2972,7 @@ function tabTrain(d){
     body=`<div class="panel stack" style="text-align:center"><div class="label">Je suis un signe… qui suis-je ?</div><h2 style="margin:6px 0">${esc(x.s)}</h2>
       ${sh?`<div class="trou">➜ ${esc(x.ou)}</div><p class="memoa" style="text-align:left">🔬 ${esc(x.m)}</p><div style="text-align:left">${pqChain(x)}</div>`:`<p class="help">Dis à voix haute la maladie et le mécanisme, puis vérifie.</p><button class="btn soft" data-act="trshow" data-k="d:${i}">Voir la réponse</button>`}
       <button class="btn" data-act="trdev">Signe suivant →</button></div>`}
-  else if(cur==="grille"){const hide=X.trHide!==false&&X.trHideG!==false;body=`<div class="panel stack"><div class="label">${esc(G.titre)}</div><p class="help" style="margin:0">Pour chaque douleur, pose toujours les mêmes questions dans le même ordre. Récite la réponse de chaque ligne, puis touche pour vérifier.</p>
+  else if(cur==="grille"){const hide=X.trHide!==false&&X.trHideG!==false;body=`<div class="panel stack">${GG.length>1?`<div class="chips">${GG.map((g,i)=>`<button class="chip" data-act="trg" data-i="${i}" aria-pressed="${g===G}">${esc(g.titre)}</button>`).join("")}</div>`:""}<div class="label">${esc(G.titre.startsWith("SITECHIA")?G.titre:"SITECHIA · "+G.titre)}</div><p class="help" style="margin:0">Pour chaque douleur, pose toujours les mêmes questions dans le même ordre. Récite la réponse de chaque ligne, puis touche pour vérifier.</p>
       <div class="chips"><button class="chip" data-act="trhideg" data-v="0" aria-pressed="${!hide}">📖 Lire</button><button class="chip" data-act="trhideg" data-v="1" aria-pressed="${hide}">🙈 Me tester</button></div>
       <div class="tblwrap"><table class="grille">${G.items.map((x,i)=>`<tr><th>${esc(x.k)}</th><td>${!hide||X.trShow?.["g:"+i]?esc(x.v):`<button class="nhid w" data-act="trshow" data-k="g:${i}">Toucher pour voir</button>`}</td></tr>`).join("")}</table></div></div>`}
   else if(cur==="tab"){body=`<p class="help">Les tableaux de ta fiche avec les cases cachées : récite chaque case de mémoire, puis touche pour vérifier. Les signes se retiennent mieux par contraste.</p>`+T.map((t,ti)=>`<div class="panel stack" style="margin-bottom:10px"><div class="label">${esc(t.h)}</div><div class="tblwrap"><table>${t.rows.map((r,ri)=>`<tr>${r.map((c,ci)=>{const k="t:"+ti+":"+ri+":"+ci;const txt=c.replace(/\*\*|==/g,"");return ri===0||ci===0?`<th>${esc(txt)}</th>`:`<td>${X.trShow?.[k]?esc(txt):`<button class="nhid w" data-act="trshow" data-k="${k}">?</button>`}</td>`}).join("")}</tr>`).join("")}</table></div><button class="linkbtn" data-act="trall" data-p="t:${ti}:">Tout révéler</button></div>`).join("")}
@@ -3056,6 +3057,7 @@ document.addEventListener("click",async e=>{
     case "rcstep":if(d){const n=recParts(d).length,c=+(X.rcSec?.[d.id]||0),v=Math.max(0,Math.min(n-1,c+ +b.dataset.v));(X.rcSec??={})[d.id]=String(v);(X.rcRes??={})[d.id]=null;render();window.scrollTo(0,0)}break;
     case "trsec":X.trSec=b.dataset.s;render();break;
     case "trhide":X.trHide=b.dataset.v==="1";X.trShow={};render();break;
+    case "trg":X.trG=+b.dataset.i;X.trShow={};render();break;
     case "trhideh":X.trHideH=b.dataset.v==="1";X.trShow={};render();break;
     case "trhidel":X.trHideL=b.dataset.v==="1";X.trShow={};render();break;
     case "lexgen":if(d)doLex(d);break;

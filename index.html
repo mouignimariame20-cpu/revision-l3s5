@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261025234856";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261026005714";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -360,6 +360,8 @@ table.grille th{text-align:left;width:34%;white-space:normal}table.grille td{wid
 .pqc{margin:8px 0 2px;padding-left:20px;display:grid;gap:6px;counter-reset:none}
 .pqc li{line-height:1.45}
 .pqc li:not(:last-child)::after{content:" ↓";color:#b34b72;font-weight:800}
+.lexr{font-size:.88rem;font-weight:700;color:#7a4fa0;margin:4px 0}
+.leximg{font-size:.88rem;color:var(--muted,#8a6b76);font-style:italic;margin-top:4px}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -2924,6 +2926,7 @@ function avHome(){const A=Object.entries(groupsByMat()).map(([m,l])=>matAvance(m
   const seen=A.reduce((n,a)=>n+a.seen.length,0),todo=A.reduce((n,a)=>n+a.seen.filter(x=>!x.d.learnedOn).length,0);
   return `<button class="mini avhome" data-act="nav" data-v="avance"><span>📈 <strong>Avancement des cours</strong><br><span class="muted">${seen} chapitre${seen>1?"s":""} vu${seen>1?"s":""} dans ${A.length} matière${A.length>1?"s":""}${todo?` · ${todo} à réviser`:" · tout est révisé"}</span></span><span class="pill">Voir</span></button>`}
 
+const RACINES=[["hépat(o)", "foie"], ["splén(o)", "rate"], ["chol(é)", "bile"], ["cyt(o) / -cyte", "cellule"], ["hist(o)", "tissu"], ["caryo", "noyau"], ["hém(o), hémat(o)", "sang"], ["érythro", "rouge"], ["leuco", "blanc"], ["thrombo", "caillot"], ["lip(o), stéat(o)", "graisse"], ["gyné(co)", "femme"], ["mast(o), -mastie", "sein"], ["encéphal(o)", "cerveau"], ["cardi(o)", "cœur"], ["angi(o)", "vaisseau"], ["nécro", "mort"], ["a-, an-", "sans"], ["hyper- / hypo-", "plus / moins"], ["poly- / oligo-", "beaucoup / peu"], ["brady- / tachy-", "lent / rapide"], ["-ite", "inflammation"], ["-ose", "maladie, état"], ["-ome", "tumeur"], ["-algie", "douleur"], ["-mégalie", "grand, gros"], ["-émie", "dans le sang"], ["-urie", "dans les urines"], ["-rrhée", "écoulement"], ["-rragie", "saignement abondant"], ["-lyse", "destruction, dissolution"], ["-pénie", "manque"], ["-plasie", "formation"], ["-trophie", "croissance, nutrition"], ["-poïèse", "fabrication"], ["-scopie", "regarder"], ["-tomie / -ectomie", "couper / enlever"], ["-graphie", "image, enregistrement"], ["-phage", "qui mange"], ["-phile", "qui aime"]];
 const HDM=[["A · Symptomatologie (6 éléments)","1) Date : le début remonterait à… · 2) Mode : brutal ou progressif (marqué par…) · 3) Circonstances · 4) Nature · 5) Caractéristiques · 6) Signes associés"],["B · Signes par ailleurs","Les autres signes, en dehors de l'appareil concerné"],["C · Parcours du patient","Était-il dans un autre hôpital ? A-t-il vu un charlatan ? Quels soins lui a-t-on donnés ?"],["D · Évolution","Marquée par… : diminue, augmente"],["Contexte d'évolution","Fébrile ou non"],["Altération de l'état général (OMS)","Les 3 A : asthénie, amaigrissement (à chiffrer), anorexie (sélective ou non sélective)"]];
 const SITECHIA=[["S · Siège","Où ça fait mal ?"],["I · Intensité","Faible, modérée, intense (échelle de 0 à 10)"],["T · Type","Brûlure, crampe, torsion, coup de poignard, pesanteur…"],["E · Évolution","Début brutal ou progressif, permanente ou par crises, durée"],["C · Facteur calmant / déclenchant","Ce qui la soulage, ce qui la provoque"],["H · Horaire","Moment de survenue (nuit, à jeun, après les repas…)"],["I · Irradiation","Vers où elle s'étend"],["A · Facteur aggravant","Ce qui l'augmente"]];
 /* ---------- 🩺 S'entraîner : signes et mécanismes, grille, tableaux cachés, chiffres clés, patient imaginaire ---------- */
@@ -2942,16 +2945,23 @@ function maskNums(t,id,shown){let i=0;return esc(t).replace(NUM_RE,m=>{if(!/\d/.
 function tabTrain(d){
   const sec=X.trSec||"",S=d.signes||[],G=d.grille,T=ficheTables(d),N=ficheNums(d),ok=d.memoOk||{};
   const semio=/s[ée]miolog/i.test(d.matiere||"");
-  const tabs=[semio&&["hdm","🩺 Histoire de la maladie"],S.length&&["signes","🔍 Signes et mécanismes"],S.length&&["devine","🎯 Je suis un signe"],G&&["grille","📋 Grille"],T.length&&["tab","🗂️ Tableaux cachés"],N.length&&["num","🔢 Chiffres clés"],["cas","🧑‍⚕️ Patient imaginaire"]].filter(Boolean);
+  const LX=d.lexique||[];
+  const tabs=[["lex","📖 Lexique"],semio&&["hdm","🩺 Histoire de la maladie"],S.length&&["signes","🔍 Signes et mécanismes"],S.length&&["devine","🎯 Je suis un signe"],G&&["grille","📋 Grille"],T.length&&["tab","🗂️ Tableaux cachés"],N.length&&["num","🔢 Chiffres clés"],["cas","🧑‍⚕️ Patient imaginaire"]].filter(Boolean);
   const cur=tabs.some(t=>t[0]===sec)?sec:tabs[0][0];
   let body="";
+  if(cur==="lex"){const hide=!!X.trHideL,busy=X.ai["lex-"+d.id];
+    body=`<div class="panel stack"><p class="help" style="margin:0">Les mots difficiles du chapitre, découpés en morceaux. Quand tu connais les morceaux, tu devines le sens des mots que tu n'as jamais vus.</p>
+      ${LX.length?`<div class="chips"><button class="chip" data-act="trhidel" data-v="0" aria-pressed="${!hide}">📖 Lire</button><button class="chip" data-act="trhidel" data-v="1" aria-pressed="${hide}">🙈 Me tester</button></div>`:aiOK()?`<button class="btn" data-act="lexgen" ${busy?"disabled":""} style="align-self:flex-start">${busy?"Je prépare le lexique…":"Crée le lexique de ce chapitre"}</button>`:noAI}</div>
+    ${LX.map((x,i)=>{const id="l:"+i,sh=!hide||X.trShow?.[id];return `<div class="memoi lexi ${ok[id]?"ok":""}"><div class="memoq">${esc(x.mot)}</div>${sh?`${x.rac?`<div class="lexr">🧩 ${esc(x.rac)}</div>`:""}<div class="memoa">${esc(x.sens)}</div>${x.img?`<div class="leximg">💭 ${esc(x.img)}</div>`:""}<div class="row memob"><button class="btn small ${ok[id]?"":"soft"}" data-act="memook" data-i="${id}" data-v="1">${ok[id]?"✓ Je sais":"Je sais"}</button>${hide||ok[id]?`<button class="btn ghost small" data-act="memook" data-i="${id}" data-v="0">À revoir</button>`:""}</div>`:`<button class="memoa hid" data-act="trshow" data-k="${id}">Que veut dire ce mot ? Touche pour vérifier</button>`}</div>`}).join("")}
+    <details class="panel" style="margin-top:12px"><summary><strong>🧩 Les morceaux à connaître (toutes matières)</strong></summary><div class="tblwrap" style="margin-top:8px"><table class="grille">${RACINES.map(([a,b])=>`<tr><th>${esc(a)}</th><td>${esc(b)}</td></tr>`).join("")}</table></div></details>`}
+  else
   if(cur==="hdm"){const hide=!!X.trHideH;const grid=(id,rows)=>`<div class="tblwrap"><table class="grille">${rows.map(([k,v],i)=>`<tr><th>${esc(k)}</th><td>${!hide||X.trShow?.[id+i]?esc(v):`<button class="nhid w" data-act="trshow" data-k="${id+i}">Toucher pour voir</button>`}</td></tr>`).join("")}</table></div>`;
     body=`<div class="panel stack"><p class="help" style="margin:0">La trame utilisée à l'hôpital pour interroger un patient, et SITECHIA pour toute douleur. Apprends-les par cœur : elles servent dans <strong>tous</strong> les chapitres de sémio.</p>
       <div class="chips"><button class="chip" data-act="trhideh" data-v="0" aria-pressed="${!hide}">📖 Lire</button><button class="chip" data-act="trhideh" data-v="1" aria-pressed="${hide}">🙈 Me tester</button></div></div>
     <div class="panel stack" style="margin-top:10px"><div class="label">Histoire de la maladie</div>${grid("h:",HDM)}</div>
     <div class="panel stack" style="margin-top:10px"><div class="label">Douleur · SITECHIA</div>${grid("si:",SITECHIA)}<p class="help" style="margin:0">Pour un chapitre précis, l'onglet 📋 Grille donne la réponse SITECHIA tirée du cours (quand elle existe).</p></div>`}
   else
-  if(cur==="hdm"){}else if(cur==="signes"){const hide=!!X.trHide;body=`<div class="panel stack"><p class="help" style="margin:0">En sémio, on ne retient pas les signes un par un : on les <strong>déduit du mécanisme</strong>. Lis, puis passe en « Me tester » : regarde le signe et explique pourquoi il apparaît.</p>
+  if(cur==="hdm"||cur==="lex"){}else if(cur==="signes"){const hide=!!X.trHide;body=`<div class="panel stack"><p class="help" style="margin:0">En sémio, on ne retient pas les signes un par un : on les <strong>déduit du mécanisme</strong>. Lis, puis passe en « Me tester » : regarde le signe et explique pourquoi il apparaît.</p>
     <div class="chips"><button class="chip" data-act="trhide" data-v="0" aria-pressed="${!hide}">📖 Lire</button><button class="chip" data-act="trhide" data-v="1" aria-pressed="${hide}">🙈 Me tester</button></div></div>
     ${S.map((x,i)=>{const id="s:"+i,sh=!hide||X.trShow?.[id];return `<div class="memoi ${ok[id]?"ok":""}"><div class="memoq">${esc(x.s)}</div>${sh?`<div class="trou">➜ ${esc(x.ou)}</div><div class="memoa">🔬 ${esc(x.m)}</div>${pqChain(x)}<div class="row memob"><button class="btn small ${ok[id]?"":"soft"}" data-act="memook" data-i="${id}" data-v="1">${ok[id]?"✓ Je sais":"Je sais"}</button>${hide||ok[id]?`<button class="btn ghost small" data-act="memook" data-i="${id}" data-v="0">À revoir</button>`:""}</div>`:`<button class="memoa hid" data-act="trshow" data-k="${id}">Quelle maladie, et pourquoi ? Touche pour vérifier</button>`}</div>`}).join("")}
     <p class="help">Les explications 🔬 sont de la physiopathologie classique pour comprendre ton cours ; en cas de doute, le cours du prof fait foi.</p>`}
@@ -2981,6 +2991,16 @@ ${String(d.fiche||"").replace(/!\[[^\]]*\]\([^)]*\)/g,"").slice(0,30000)}`,{mode
 
 function pqChain(x){const c=x.pq||[];if(!c.length)return "";return `<details class="pq" open><summary>🔬 Le pourquoi, étape par étape</summary><ol class="pqc">${c.map(t=>`<li>${esc(t)}</li>`).join("")}</ol></details>`}
 
+async function doLex(d){const k="lex-"+d.id;if(X.ai[k])return;X.ai[k]=true;render();
+  try{const o=await askJSON(`Tu aides une étudiante en L3 médecine qui a du mal avec le vocabulaire médical. Dans la fiche ci-dessous, choisis les 12 à 20 mots techniques les plus difficiles (termes médicaux, noms de signes, de lésions, d'examens). Pour chacun donne : "rac" = la décomposition en racines grecques/latines avec leur sens (ex. « hépato (foie) + mégalie (grand) ») ou l'origine (nom propre, sigle développé) ; "sens" = une définition simple, conforme à la fiche ; "img" = une image mentale très courte pour s'en souvenir. N'invente pas de mot absent de la fiche ; si tu n'es pas sûr d'une étymologie, mets seulement l'origine que tu connais avec certitude.
+Réponds en JSON : {"lexique":[{"mot":"…","rac":"…","sens":"…","img":"…"}]}
+FICHE « ${d.name} » :
+${String(d.fiche||"").replace(/!\[[^\]]*\]\([^)]*\)/g,"").slice(0,30000)}`,{modelTier:"default"});
+    const arr=(o&&o.lexique||[]).filter(x=>x&&x.mot&&x.sens);if(!arr.length)throw {code:"invalid_json"};
+    const live=getDeck(d.id);live.lexique=arr.map(x=>({mot:String(x.mot),rac:String(x.rac||""),sens:String(x.sens),img:String(x.img||"")}));markDirty(live.id)}
+  catch(e){toast(aiErr(e))}
+  X.ai[k]=false;render()}
+
 /* ---------- Fiche : notes du prof, mémorisation, chrono ---------- */
 function ficheExtras(d){
   const e=estimate(d);const errs=errItems().filter(x=>x.deckId===d.id).length;
@@ -3005,6 +3025,8 @@ document.addEventListener("click",async e=>{
     case "trsec":X.trSec=b.dataset.s;render();break;
     case "trhide":X.trHide=b.dataset.v==="1";X.trShow={};render();break;
     case "trhideh":X.trHideH=b.dataset.v==="1";X.trShow={};render();break;
+    case "trhidel":X.trHideL=b.dataset.v==="1";X.trShow={};render();break;
+    case "lexgen":if(d)doLex(d);break;
     case "trhideg":X.trHideG=b.dataset.v==="1";X.trHide=b.dataset.v==="1";X.trShow={};render();break;
     case "trshow":X.trShow={...(X.trShow||{}),[b.dataset.k]:true};render();break;
     case "trall":{const p=b.dataset.p;document.querySelectorAll('[data-act="trshow"]').forEach(x=>{if(x.dataset.k.startsWith(p))(X.trShow??={})[x.dataset.k]=true});render();break}

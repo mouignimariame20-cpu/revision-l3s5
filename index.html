@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261026175532";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261026192354";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2663,7 +2663,7 @@ function tabLesson(d){
   return `<div class="panel stack" style="margin-bottom:14px"><div class="label">Le cours expliqué</div>
     <p class="help" style="margin:0">Le chapitre expliqué comme au tableau, depuis les bases, dans l'ordre du cours. Les encadrés 🔬 Le pourquoi expliquent la physiopathologie (pas toujours écrite sur les diapos) ; le reste vient de ta fiche. En cas de doute, le cours du prof fait foi.</p>
     ${!L&&aiOK()?`<button class="btn" data-act="lesson" ${busy?"disabled":""} style="align-self:flex-start">${busy?`Rédaction en cours… ${X.ai["lesp-"+d.id]||""}`:"Explique-moi ce cours comme un nouveau cours"}</button>`:!L?noAI:""}</div>
-  ${L?`<article class="panel fiche lesson">${md(L.text||"")}</article><p class="help">Rédigé le ${esc(fmtDate(L.at||today()))}${L.by?" · "+esc(L.by):""}. En cas de doute, c'est ta fiche et le cours du prof qui font foi.${aiOK()?` <button class="linkbtn" data-act="lesson" data-re="1">Refaire</button>`:""}</p>`:busy&&X.ai["lest-"+d.id]?`<article class="panel fiche lesson">${md(X.ai["lest-"+d.id])}</article>`:""}`}
+  ${L?`${lessonView(d,L)}<p class="help">Rédigé le ${esc(fmtDate(L.at||today()))}${L.by?" · "+esc(L.by):""}. En cas de doute, c'est ta fiche et le cours du prof qui font foi.${aiOK()?` <button class="linkbtn" data-act="lesson" data-re="1">Refaire</button>`:""}</p>`:busy&&X.ai["lest-"+d.id]?`<article class="panel fiche lesson">${md(X.ai["lest-"+d.id])}</article>`:""}`}
 async function doLesson(d){
   const k="les-"+d.id;if(X.ai[k])return;X.ai[k]=true;X.ai["lest-"+d.id]="";render();
   try{const groups=auGroups(d);let all="";
@@ -2687,6 +2687,27 @@ ${src}
     const live=getDeck(d.id);live.lesson={at:today(),text:all,by:"IA d'après ta fiche"};markDirty(live.id)}
   catch(e){toast(aiErr(e))}
   X.ai[k]=false;X.ai["lest-"+d.id]="";render()}
+
+/* Cours expliqué découpé par partie (### sous chaque ##), navigation précédente/suivante */
+function lessonParts(text){
+  const lines=String(text||"").split("\n"),n3=lines.filter(l=>/^###\s/.test(l)).length,lvl=n3>=3?3:2;
+  const cl=t=>t.replace(/[*=_`]/g,"").trim();const head=[],P=[];let h2="",cur=null;
+  for(const l of lines){let m;
+    if((m=l.match(/^##\s+(.*)/))){h2=cl(m[1]);cur=null;if(lvl===2){cur={g:h2,h:h2,lines:[l]};P.push(cur)}continue}
+    if(lvl===3&&(m=l.match(/^###\s+(.*)/))){cur={g:h2,h:cl(m[1]),lines:[l]};P.push(cur);continue}
+    if(!cur){if(!h2){head.push(l);continue}cur={g:h2,h:h2,lines:[]};P.push(cur)}
+    cur.lines.push(l)}
+  return {head:head.join("\n"),parts:P.filter(p=>p.lines.some(l=>l.trim()&&!/^#/.test(l)))}}
+function lessonView(d,L){
+  const {head,parts}=lessonParts(L.text);if(parts.length<2)return `<article class="panel fiche lesson">${md(L.text||"")}</article>`;
+  const all=(X.lesAll??={})[d.id],i=Math.max(0,Math.min(parts.length-1,+((X.lesP??={})[d.id]||0))),p=parts[i];
+  const sel=`<select id="ls-sec" data-lssec="${d.id}">${[...new Set(parts.map(q=>q.g))].map(g=>`<optgroup label="${esc(g)}">${parts.map((q,j)=>q.g!==g?"":`<option value="${j}" ${j===i?"selected":""}>${j+1}. ${esc(q.h)}</option>`).join("")}</optgroup>`).join("")}</select>`;
+  const nav=`<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><button class="btn ghost" data-act="lsstep" data-v="-1" ${i?"":"disabled"}>◀ Précédente</button><span class="help" style="margin:0">Partie ${i+1} / ${parts.length}</span><button class="btn" data-act="lsstep" data-v="1" ${i<parts.length-1?"":"disabled"}>Suivante ▶</button></div>`;
+  if(all)return `<div class="panel stack" style="margin-bottom:10px"><button class="linkbtn" data-act="lsall" style="align-self:flex-start">Revenir partie par partie</button></div><article class="panel fiche lesson">${md(L.text||"")}</article>`;
+  return `<div class="panel stack" style="margin-bottom:10px"><label class="f">Partie${sel}</label>${nav}<button class="linkbtn" data-act="lsall" style="align-self:flex-start">Tout afficher d'un coup</button></div>
+  ${i===0&&head.trim()?`<article class="panel fiche lesson" style="margin-bottom:10px">${md(head)}</article>`:""}
+  <article class="panel fiche lesson"><div class="label">${esc(p.g)}</div>${md(p.lines.join("\n"))}</article>
+  <div class="panel" style="margin-top:10px">${nav}</div>`}
 
 /* ---------- Objectifs : chaque objectif du cours avec sa réponse type, à mémoriser ---------- */
 function ficheObjectifs(d){
@@ -3054,6 +3075,8 @@ document.addEventListener("click",async e=>{
       window.__seedPlanning&&window.__seedPlanning(o);location.reload();break}
     case "simple":if(d)doSimple(d);break;
     case "lesson":if(d){if(b.dataset.re){d.lesson=null;markDirty(d.id)}doLesson(d)}break;
+    case "lsstep":if(d){const n=lessonParts(d.lesson?.text).parts.length,c=+((X.lesP??={})[d.id]||0);X.lesP[d.id]=Math.max(0,Math.min(n-1,c+ +b.dataset.v));render();window.scrollTo(0,0)}break;
+    case "lsall":if(d){(X.lesAll??={})[d.id]=!X.lesAll[d.id];render()}break;
     case "rcstep":if(d){const n=recParts(d).length,c=+(X.rcSec?.[d.id]||0),v=Math.max(0,Math.min(n-1,c+ +b.dataset.v));(X.rcSec??={})[d.id]=String(v);(X.rcRes??={})[d.id]=null;render();window.scrollTo(0,0)}break;
     case "trsec":X.trSec=b.dataset.s;render();break;
     case "trhide":X.trHide=b.dataset.v==="1";X.trShow={};render();break;
@@ -3233,7 +3256,7 @@ function renderFab(){let f=document.getElementById("fab");if(!f){f=document.crea
 
 document.addEventListener("input",e=>{if(e.target.id==="ch-note"&&X.chrono){X.chrono.note=e.target.value;chronoSave()}});
 document.addEventListener("input",e=>{const t=e.target;if(t.id==="rc-text"&&t.dataset.rcd){(X.rcDraft??={})[t.dataset.rcd]=t.value}});
-document.addEventListener("change",e=>{const t=e.target;if(t.id==="rc-sec"&&t.dataset.rcsec){(X.rcSec??={})[t.dataset.rcsec]=t.value;(X.rcRes??={})[t.dataset.rcsec]=null;render()}});
+document.addEventListener("change",e=>{const t=e.target;if(t.id==="ls-sec"&&t.dataset.lssec){(X.lesP??={})[t.dataset.lssec]=+t.value;render();window.scrollTo(0,0)}if(t.id==="rc-sec"&&t.dataset.rcsec){(X.rcSec??={})[t.dataset.rcsec]=t.value;(X.rcRes??={})[t.dataset.rcsec]=null;render()}});
 
 renderTabbar();
 boot().then(bootExtras);

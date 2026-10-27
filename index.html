@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261026222941";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261027100735";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -805,6 +805,7 @@ function render(){
   else if(S.view==="revise")h=viewRevise();
   else if(S.view==="assist")h=viewAssist();
   else if(S.view==="synd")h=viewSynd();
+  else if(S.view==="cas")h=viewCas();
   app.innerHTML=chronoBar()+h;renderFab();
   renderTabbar();
   if(S.view==="timer"){tickTimer();tickChrono()}
@@ -870,6 +871,7 @@ function viewMatieres(){
   return topbar("Matières")+`<div class="row" style="justify-content:space-between;margin-bottom:14px"><h1>Mes matières · ${esc(curPer())}</h1><button class="btn" data-act="new">+ Chapitre</button></div>
   <div class="chips" style="margin-bottom:14px">${allPers().map(p=>`<button class="chip" data-act="perset" data-p="${esc(p)}" aria-pressed="${p===curPer()}">${esc(p)} <span style="opacity:.7">· ${S.decks.filter(d=>perOf(d)===p).length}</span></button>`).join("")}<button class="chip" data-act="peradd">+ Semestre</button></div>
   ${searchBox("hq","","Chercher dans toutes les matières…")}
+  <button class="mini" data-act="casview" style="margin-bottom:8px"><span><strong>🧑‍⚕️ Cas cliniques</strong> <span class="muted">· tous les cours vus</span></span><span class="pill">→</span></button>
   <button class="mini" data-act="synopen" data-m="" style="margin-bottom:14px"><span><strong>Syndromes et triades</strong> <span class="muted">· toutes les matières</span></span><span class="pill">→</span></button>
   ${keys.length?`<div class="mgrid pins">${keys.map(k=>{const list=groups[k],done=list.filter(d=>d.learnedOn).length,due=list.reduce((n,d)=>n+dueCards(d).length,0),src=list.filter(d=>S.src.has(d.id)).length;
     const im=list.map(pinImg).find(Boolean),hh=pinHash(k);
@@ -890,6 +892,7 @@ function viewMatiere(){
   return topbar(S.mat,true)+`<div class="hero"><div class="label">Matière</div><h1>${esc(S.mat)}</h1>
     <div class="progress" style="margin-top:8px"><i style="width:${Math.round(done/all.length*100)}%"></i></div>
     <div class="help">${done} révisé${done>1?"s":""} · ${all.length-done} à réviser · ${all.length} au total</div></div>
+  <button class="mini" data-act="casview" data-m="${esc(S.mat)}" style="margin-bottom:8px"><span><strong>🧑‍⚕️ Cas cliniques</strong> <span class="muted">· cette matière</span></span><span class="pill">→</span></button>
   <button class="mini" data-act="synopen" data-m="${esc(S.mat)}" style="margin-bottom:12px"><span><strong>Syndromes et triades</strong> <span class="muted">· ${syndromes(S.mat).length} relevés dans les cours</span></span><span class="pill">→</span></button>
   <div class="chips" style="margin-bottom:14px">${[["all","Tous"],["todo","À réviser"],["done","Révisés"]].map(([k,l])=>`<button class="chip" data-act="mfilter" data-f="${k}" aria-pressed="${S.mf===k}">${l}</button>`).join("")}</div>
   <div class="section">${list.length?inner:`<div class="empty">Aucun chapitre dans ce filtre.</div>`}</div>`;
@@ -1126,7 +1129,7 @@ document.addEventListener("click",e=>{
   const go=()=>{render()};
   switch(a){
     case "nav":S.view=b.dataset.v;S.session=null;S.editing=null;go();window.scrollTo(0,0);if(S.view==="search")focusSearch();break;
-    case "back":{const from=S.view;if(from==="classe"&&X.form){X.form=null;X.imp=null;go();window.scrollTo(0,0);break}
+    case "back":{const from=S.view;if(from==="cas"&&X.casOpen){X.casOpen=null;go();window.scrollTo(0,0);break}if(from==="classe"&&X.form){X.form=null;X.imp=null;go();window.scrollTo(0,0);break}
       if(from==="revise"&&X.xs){X.xs=null;go();break}
       S.view=from==="deck"?(S.backTo||"matieres"):from==="revise"?"home":from==="synd"?(S.mat?"matiere":"matieres"):"matieres";S.session=null;S.editing=null;go();window.scrollTo(0,0);break}
     case "new":S.view="new";go();window.scrollTo(0,0);break;
@@ -2890,6 +2893,28 @@ async function doTutorGen(d){const k="tug-"+d.id;if(X.ai[k])return;X.ai[k]=true;
 
 function tuSafeSvg(x){x=String(x||"");if(x[0]==="@")x=(typeof TU_SVG!=="undefined"&&TU_SVG[x.slice(1)])||"";if(!/^<svg[\s>]/.test(x)||/<script|<foreignObject|\son\w+\s*=|javascript:|<image|href=/i.test(x))return "";return x}
 
+/* ---------- Cas cliniques : tous les cas des cours vus, réunis au même endroit (d.cas) ---------- */
+function casDecks(){return S.decks.filter(d=>(d.cas||[]).length)}
+function viewCas(){
+  const D=casDecks(),mats=[...new Set(D.map(d=>d.matiere||"Autre"))],m=X.casMat||"";
+  const open=X.casOpen;if(open){const d=getDeck(open.d);const c=d&&(d.cas||[]).find(x=>x.id===open.c);if(c)return casPlay(d,c)}
+  const list=D.filter(d=>!m||(d.matiere||"Autre")===m);const done=d=>d.casDone||{};
+  const tot=D.reduce((n,d)=>n+d.cas.length,0),ok=D.reduce((n,d)=>n+Object.keys(done(d)).length,0);
+  return topbar("Cas cliniques",true)+`<div class="hero"><div class="label">${ok}/${tot} cas faits</div><h1>Cas cliniques</h1></div>
+  <div class="chips" style="margin-bottom:12px"><button class="chip" data-act="casmat" data-m="" aria-pressed="${!m}">Tous</button>${mats.map(x=>`<button class="chip" data-act="casmat" data-m="${esc(x)}" aria-pressed="${m===x}">${esc(x)}</button>`).join("")}</div>
+  ${list.map(d=>`<div class="panel stack" style="margin-bottom:10px"><div class="label">${esc(d.matiere||"")}</div><h3 style="margin:0">${esc(d.name)}</h3>
+    ${d.cas.map(c=>{const r=done(d)[c.id];return `<button class="mini" data-act="casopen" data-d="${d.id}" data-c="${c.id}"><span><strong>${esc(c.titre)}</strong> <span class="muted">· ${c.etapes.length} questions</span></span><span class="pill">${r?`${r.s}/${c.etapes.length} ✓`:"→"}</span></button>`}).join("")}</div>`).join("")||`<div class="panel"><p class="help" style="margin:0">Pas encore de cas.</p></div>`}`}
+function casPlay(d,c){const k=d.id+"|"+c.id,A=(X.casAns??={})[k]||[],i=A.length,E=c.etapes;
+  const shown=E.slice(0,Math.min(i+1,E.length)).map((e,j)=>{const r=A[j];
+    const opts=e.options.map((o,oi)=>{let cls="";if(r!=null){if(oi===e.correct)cls="ok";else if(oi===r)cls="ko"}return `<button class="tu-opt ${cls}" data-act="casans" data-k="${esc(k)}" data-j="${j}" data-v="${oi}" ${r!=null?"disabled":""}>${esc(o)}</button>`}).join("");
+    return `<div class="panel stack tu-check" style="margin-top:10px"><div class="label">Question ${j+1}/${E.length}</div><p style="margin:0"><strong>${esc(e.q)}</strong></p><div class="tu-opts">${opts}</div>${r!=null?`<div class="tu-fb ${r===e.correct?"ok":"ko"}"><strong>${r===e.correct?"✅ Exact.":"❌ Non."}</strong><div>${md(e.expl||"")}</div></div>`:""}</div>`}).join("");
+  const fin=i>=E.length?(()=>{const s=A.filter((r,j)=>r===E[j].correct).length;return `<div class="panel stack" style="margin-top:10px"><div class="label">Résultat</div><p style="margin:0"><strong>${s}/${E.length}</strong> ${s===E.length?"🎉 Parfait !":"· refais-le demain pour fixer."}</p><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn" data-act="casback">Autres cas</button><button class="btn soft" data-act="casredo" data-k="${esc(k)}">Recommencer</button><button class="btn ghost" data-act="goto" data-id="${d.id}" data-tab="lesson">Revoir le cours</button></div></div>`})():"";
+  return topbar("Cas cliniques",true)+`<div class="panel stack" style="margin-bottom:10px"><button class="btn ghost small" data-act="casback" style="align-self:flex-start">◀ Tous les cas</button><div class="label">${esc(d.matiere||"")} · ${esc(d.name)}</div><h3 style="margin:0">🧑‍⚕️ ${esc(c.titre)}</h3><div class="fiche">${md(c.histoire)}</div></div>${shown}${fin}`}
+function casAnswer(k,j,v){const [did,cid]=k.split("|");const A=((X.casAns??={})[k]??=[]);if(A[j]!=null)return;A[j]=v;
+  const d=getDeck(did),c=d&&(d.cas||[]).find(x=>x.id===cid);
+  if(c&&A.length>=c.etapes.length){const s=A.filter((r,i)=>r===c.etapes[i].correct).length;d.casDone??={};d.casDone[cid]={s,at:today()};markDirty(d.id)}
+  render()}
+
 /* ---------- Objectifs : chaque objectif du cours avec sa réponse type, à mémoriser ---------- */
 function ficheObjectifs(d){
   const out=[];let on=false;
@@ -3274,6 +3299,12 @@ document.addEventListener("click",async e=>{
     case "rcstep":if(d){const n=recParts(d).length,c=+(X.rcSec?.[d.id]||0),v=Math.max(0,Math.min(n-1,c+ +b.dataset.v));(X.rcSec??={})[d.id]=String(v);(X.rcRes??={})[d.id]=null;render();window.scrollTo(0,0)}break;
     case "dgroup":{const G=DECK_GROUPS.find(x=>x[0]===b.dataset.g);if(G){const k=G[2][0][0];if(k==="cmp"){X.trSec="tab";X.trOnlyTab=true;S.tab="train"}else{if(k==="train"){X.trSec="";X.trOnlyTab=false}S.tab=k}render()}}break;
     case "dtab":{const k=b.dataset.t;if(k==="cmp"){X.trSec="tab";X.trHideT=false;X.trOnlyTab=true;S.tab="train"}else{if(k==="train"){X.trOnlyTab=false;if(X.trSec==="tab")X.trSec=""}S.tab=k}render()}break;
+    case "casview":X.casMat=b.dataset.m||"";X.casOpen=null;S.view="cas";render();window.scrollTo(0,0);break;
+    case "casmat":X.casMat=b.dataset.m||"";render();break;
+    case "casopen":X.casOpen={d:b.dataset.d,c:b.dataset.c};delete (X.casAns??={})[b.dataset.d+"|"+b.dataset.c];render();window.scrollTo(0,0);break;
+    case "casans":casAnswer(b.dataset.k,+b.dataset.j,+b.dataset.v);break;
+    case "casback":X.casOpen=null;render();window.scrollTo(0,0);break;
+    case "casredo":delete X.casAns[b.dataset.k];render();window.scrollTo(0,0);break;
     case "trhidet":X.trHideT=b.dataset.v==="1";render();break;
     case "tutab":if(d){X.trSec="tab";X.trHideT=false;X.trOnlyTab=true;S.tab="train";render();window.scrollTo(0,0)}break;
     case "trsec":X.trSec=b.dataset.s;render();break;

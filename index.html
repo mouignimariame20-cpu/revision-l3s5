@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261027100735";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261027104631";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -400,6 +400,28 @@ table.grille th{text-align:left;width:34%;white-space:normal}table.grille td{wid
 .dnav-g:last-child{grid-column:span 2;padding:6px;font-size:.8rem}
 .dnav-s{margin-bottom:14px}
 .seg-sep{flex:0 0 2px;align-self:stretch;margin:6px 3px;background:var(--line);border-radius:2px}
+
+/* fiche mémo */
+.sy{font-family:Inter,system-ui,-apple-system,sans-serif;background:#fff;color:#1f2430;border-radius:18px;padding:14px;border:1px solid #e6e8ef;font-size:.9rem}
+.sy-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;background:linear-gradient(135deg,#1e2a5a,#2b3f8f);color:#fff;border-radius:14px;padding:16px 14px;margin-bottom:12px}
+.sy-t{font-weight:900;font-size:1.15rem;letter-spacing:.01em;text-transform:uppercase}.sy-s{font-size:.78rem;opacity:.85;margin-top:3px}
+.sy-badge{border:1px solid rgba(255,255,255,.6);border-radius:99px;padding:4px 10px;font-size:.7rem;white-space:nowrap}
+.sy-def{border-left:4px solid #2b6cb0;background:#eef4fb;border-radius:8px;padding:10px 12px;margin-bottom:12px}
+.sy-def p{margin:0}
+.sy-h{font-family:inherit;font-size:1rem;font-weight:900;text-transform:uppercase;margin:16px 0 8px;color:#1f2430;border-bottom:2px solid #e6e8ef;padding-bottom:4px}.sy-h span{color:#2b6cb0}
+.sy-flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.sy-fs{border:1.5px solid;border-radius:10px;padding:8px 10px;flex:1 1 120px;text-align:center;font-size:.8rem}.sy-fs strong{display:block}.sy-fs span{font-size:.72rem;color:#555}
+.sy-arr{color:#888;font-weight:900}
+.sy-tab{width:100%;border-collapse:collapse;font-size:.8rem}.sy-tab thead th{background:#1f2430;color:#fff;text-align:left;padding:7px}
+.sy-tab tbody th{background:#f6f7fb;text-align:left;padding:7px;font-weight:800;vertical-align:top}.sy-tab td{padding:7px;border-bottom:1px solid #eceef4;vertical-align:top}
+.sy-tab mark{background:#ffe9a8;padding:0 3px;border-radius:3px}
+.sy-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+.sy-card{border:1px solid #e6e8ef;border-radius:12px;padding:10px 12px}.sy-ct{font-weight:900;margin-bottom:4px}.sy-card ul,.sy-grp ul{margin:0;padding-left:18px}.sy-card li,.sy-grp li{margin:2px 0}
+.sy-grp{border:1.5px solid;border-radius:12px;margin-bottom:8px;overflow:hidden}.sy-gt{font-weight:900;padding:7px 10px;font-size:.85rem}
+.sy-gcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px;padding:8px 10px}.sy-gct{font-weight:800;font-size:.82rem;margin-bottom:2px}
+.sy-rule{border:1.5px solid #e8c547;background:#fffbea;border-radius:12px;padding:10px 12px;margin-bottom:8px}.sy-rt{font-weight:900;margin-bottom:4px}.sy-rule p{margin:0}
+.sy-note{font-size:.75rem;color:#666;margin:6px 0 0}
+@media print{body.psynth *{visibility:hidden}body.psynth #synth,body.psynth #synth *{visibility:visible}body.psynth #synth{position:absolute;left:0;top:0;width:100%;border:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}body.psynth .sy-grp,body.psynth .sy-card,body.psynth .sy-tab tr{break-inside:avoid}}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -932,7 +954,7 @@ function viewDeck(){
   const d=getDeck(S.deckId); if(!d){S.view="matieres";return viewMatieres()}
   const tabs=[["source","Cours source"],["fiche","Fiche synthétique"],["obj","Objectifs"],["train","🩺 S'entraîner"],["flyer","Flyer"],["recite","Réciter"],["simple","Cours simplifié"],["lesson","Cours expliqué"],["visuel","Visuel"],["memo","Mémoriser"],["explain","Comprendre"],["cards","Flashcards"],["qcm","QCM"],["cov","Couverture"],["edit","Modifier"]];
   let body="";
-  if(S.tab==="fiche")body=tabFiche(d);
+  if(S.tab==="fiche")body=tabFicheTop(d);
   else if(S.tab==="cards")body=tabCards(d);
   else if(S.tab==="qcm")body=tabQcm(d);
   else if(S.tab==="source")body=tabSource(d);
@@ -2915,6 +2937,27 @@ function casAnswer(k,j,v){const [did,cid]=k.split("|");const A=((X.casAns??={})[
   if(c&&A.length>=c.etapes.length){const s=A.filter((r,i)=>r===c.etapes[i].correct).length;d.casDone??={};d.casDone[cid]={s,at:today()};markDirty(d.id)}
   render()}
 
+/* ---------- Fiche mémo examen : synthèse visuelle d'un cours (d.synth = {sub, blocks:[…]}) ---------- */
+const SY_COL=["#fde2e4","#fff1c9","#dbeafe","#d9f2e3","#ede4fb","#ffe4cc"],SY_BOR=["#e7a1ab","#e8c547","#7aa7e0","#6cc195","#b39ddb","#f0a35e"];
+function syTab(t){const rows=String(t||"").split("\n").filter(Boolean).map(r=>r.split("|").map(c=>c.trim()));if(!rows.length)return "";
+  return `<div class="tblwrap"><table class="sy-tab"><thead><tr>${rows[0].map(c=>`<th>${md(c).replace(/^<p>|<\/p>$/g,"")}</th>`).join("")}</tr></thead><tbody>${rows.slice(1).map(r=>`<tr>${r.map((c,i)=>i===0?`<th>${md(c).replace(/^<p>|<\/p>$/g,"")}</th>`:`<td>${md(c).replace(/^<p>|<\/p>$/g,"")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`}
+function syBlock(b,n){const h=b.titre?`<h2 class="sy-h"><span>${n}.</span> ${esc(b.titre)}</h2>`:"";
+  if(b.type==="def")return `<div class="sy-def">${md(b.text)}</div>`;
+  if(b.type==="flow")return h+`<div class="sy-flow">${b.steps.map((s,i)=>`<div class="sy-fs" style="background:${SY_COL[i%6]};border-color:${SY_BOR[i%6]}"><strong>${esc(s.t)}</strong>${s.s?`<span>${esc(s.s)}</span>`:""}</div>`).join(`<div class="sy-arr">→</div>`)}</div>`;
+  if(b.type==="table")return h+syTab(b.tab)+(b.note?`<p class="sy-note">${md(b.note)}</p>`:"");
+  if(b.type==="cards")return h+`<div class="sy-cards">${b.cards.map(c=>`<div class="sy-card"><div class="sy-ct">${esc(c.icon||"")} ${esc(c.titre)}</div><ul>${c.items.map(x=>`<li>${md(x).replace(/^<p>|<\/p>$/g,"")}</li>`).join("")}</ul></div>`).join("")}</div>`;
+  if(b.type==="groups")return h+b.groups.map((g,i)=>`<div class="sy-grp" style="border-color:${SY_BOR[(g.c??i)%6]}"><div class="sy-gt" style="background:${SY_COL[(g.c??i)%6]}">${esc(g.icon||"")} ${esc(g.titre)}</div><div class="sy-gcols">${g.cols.map(c=>`<div>${c.titre?`<div class="sy-gct">${esc(c.titre)}</div>`:""}<ul>${c.items.map(x=>`<li>${md(x).replace(/^<p>|<\/p>$/g,"")}</li>`).join("")}</ul></div>`).join("")}</div></div>`).join("");
+  if(b.type==="rule")return h+`<div class="sy-rule"><div class="sy-rt">📌 ${esc(b.rt||"")}</div>${md(b.text)}</div>`;
+  return ""}
+function synthView(d){const Y=d.synth;let n=0;
+  return `<div id="synth" class="sy">
+  <div class="sy-head"><div><div class="sy-t">${esc(Y.titre||d.name)}</div><div class="sy-s">${esc(Y.sub||d.source||"")}</div></div><span class="sy-badge">Fiche Mémo Examen</span></div>
+  ${Y.blocks.map(b=>syBlock(b,b.titre?++n:n)).join("")}
+  ${Y.comp?`<p class="sy-note">ℹ️ ${md(Y.comp)}</p>`:""}</div>
+  <div class="row" style="gap:8px;margin-top:10px"><button class="btn soft small" data-act="syprint">🖨️ Imprimer / PDF</button></div>`}
+function tabFicheTop(d){if(!d.synth)return tabFiche(d);const m=(X.syMode??={})[d.id]||"memo";
+  return `<div class="seg tu-seg" style="margin-bottom:12px"><button aria-selected="${m==="memo"}" data-act="symode" data-v="memo">🗂️ Fiche mémo</button><button aria-selected="${m==="full"}" data-act="symode" data-v="full">📄 Fiche détaillée</button></div>`+(m==="memo"?synthView(d):tabFiche(d))}
+
 /* ---------- Objectifs : chaque objectif du cours avec sa réponse type, à mémoriser ---------- */
 function ficheObjectifs(d){
   const out=[];let on=false;
@@ -3305,6 +3348,8 @@ document.addEventListener("click",async e=>{
     case "casans":casAnswer(b.dataset.k,+b.dataset.j,+b.dataset.v);break;
     case "casback":X.casOpen=null;render();window.scrollTo(0,0);break;
     case "casredo":delete X.casAns[b.dataset.k];render();window.scrollTo(0,0);break;
+    case "symode":if(d){(X.syMode??={})[d.id]=b.dataset.v;render()}break;
+    case "syprint":document.body.classList.add("psynth");setTimeout(()=>{window.print();setTimeout(()=>document.body.classList.remove("psynth"),500)},50);break;
     case "trhidet":X.trHideT=b.dataset.v==="1";render();break;
     case "tutab":if(d){X.trSec="tab";X.trHideT=false;X.trOnlyTab=true;S.tab="train";render();window.scrollTo(0,0)}break;
     case "trsec":X.trSec=b.dataset.s;render();break;

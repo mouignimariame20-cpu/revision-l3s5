@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261028141735";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261029195015";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1038,6 +1038,7 @@ function tabCards(d){
         <div class="face back"><div class="label">Réponse</div><div>${esc(c.a).replace(/\n/g,"<br>")}</div>${c.src?`<div class="label">Section : ${esc(c.src)}</div>`:""}${mnemoBlock(d,c)}</div>
       </div></div>
       ${s.flipped?`<div class="answer-row"><button class="btn danger" data-act="grade" data-g="0">À revoir</button><button class="btn" data-act="grade" data-g="1">Je savais</button></div>`:`<button class="btn soft" data-act="flip">Voir la réponse</button>`}
+      ${reportLink(d,"Flashcard",c.q)}
     </div>`;
   }
   const due=dueCards(d).length, n=(d.cards||[]).length;
@@ -1054,6 +1055,8 @@ function tabCards(d){
   <div class="section" style="margin-top:18px"><h2>Toutes les cartes · ${n}</h2><p class="help">Touche une question pour voir la réponse.</p>
     ${d.cards.map(c=>`<details class="item" id="card-${c.id}"><summary>${esc(c.q)}</summary><div>${c.img&&safeUrl(c.img)?`<img class="cimg zoomable" data-act="zoom" data-src="${esc(c.img)}" src="${esc(c.img)}" alt="Schéma du cours">`:""}${esc(c.a).replace(/\n/g,"<br>")}${c.src?`<div class="label" style="margin-top:6px">Section : ${esc(c.src)}</div>`:""}${(c.lapses||0)>0?`<div class="label" style="margin-top:4px;color:var(--late)">Ratée ${c.lapses} fois</div>`:""}${mnemoBlock(d,c)}</div></details>`).join("")}</div>`;
 }
+function reportLink(d,kind,txt){const m=`Bonjour, je signale une erreur dans Révisions L3.\nMatière : ${d.matiere||""}\nChapitre : ${d.name||""}\n${kind} : ${String(txt||"").slice(0,300)}\nL'erreur : `;
+  return `<a class="btn ghost small" style="align-self:center;text-decoration:none" href="https://wa.me/221781718876?text=${encodeURIComponent(m)}" target="_blank" rel="noopener">⚠️ Signaler une erreur</a>`}
 function tabQcm(d){
   const s=S.session;
   if(s&&s.type==="qcm"&&s.deckId===d.id){
@@ -1070,7 +1073,7 @@ function tabQcm(d){
     return `<div class="stack"><div class="row" style="justify-content:space-between"><span class="label">Question ${s.i+1} / ${s.order.length}</span><button class="btn ghost small" data-act="endsession">Arrêter</button></div>
       <div class="progress"><i style="width:${Math.round(s.i/s.order.length*100)}%"></i></div>
       ${isProfQ(q)?`<span class="pill prof">📝 QCM du prof</span>`:""}<h3 style="font-size:1.15rem">${esc(qTxt(q))}</h3><div class="stack" style="gap:8px">${opts}</div>
-      ${s.checked?`<div class="expl"><strong>${s.lastOk?"Juste":"Réponse attendue : "+q.correct.map(k=>L[k]).join(", ")}</strong>${q.expl?`<div>${esc(q.expl)}</div>`:""}</div>${qDetailBlock(d,q)}<button class="btn" data-act="nextq">${s.i+1<s.order.length?"Question suivante":"Voir le résultat"}</button>`:`<button class="btn" data-act="checkq" ${s.sel.length?"":"disabled"}>Valider</button>`}
+      ${s.checked?`<div class="expl"><strong>${s.lastOk?"Juste":"Réponse attendue : "+q.correct.map(k=>L[k]).join(", ")}</strong>${q.expl?`<div>${esc(q.expl)}</div>`:""}</div>${qDetailBlock(d,q)}${reportLink(d,"QCM",qTxt(q))}<button class="btn" data-act="nextq">${s.i+1<s.order.length?"Question suivante":"Voir le résultat"}</button>`:`<button class="btn" data-act="checkq" ${s.sel.length?"":"disabled"}>Valider</button>`}
     </div>`;
   }
   const n=(d.qcm||[]).length;
@@ -1082,7 +1085,7 @@ function tabQcm(d){
     ${d.lastScore!=null?`<p>Dernier score : <strong>${d.lastScore}%</strong></p>`:""}
     <button class="btn" data-act="startqcm">Commencer le QCM</button></div>${qcmParts(d)}
   <div class="section" style="margin-top:18px"><h2>Toutes les questions</h2><p class="help">Ouvre une question pour voir la correction.</p>
-    ${d.qcm.map((q,i)=>`<details class="item" id="q-${q.id}"><summary>${i+1}. ${esc(q.q)}</summary><div>${q.options.map((o,k)=>`<div class="${q.correct.includes(k)?"":"muted"}">${q.correct.includes(k)?"✓":"✗"} ${"ABCDEFGH"[k]}. ${esc(o)}</div>`).join("")}${q.expl?`<div class="expl" style="margin-top:6px">${esc(q.expl)}</div>`:""}${(q.errs||0)>0?`<div class="label" style="margin-top:4px;color:var(--late)">Ratée ${q.errs} fois</div>`:""}<div style="margin-top:6px">${qDetailBlock(d,q)}</div></div></details>`).join("")}</div>`;
+    ${d.qcm.map((q,i)=>`<details class="item" id="q-${q.id}"><summary>${i+1}. ${esc(q.q)}</summary><div>${q.options.map((o,k)=>`<div class="${q.correct.includes(k)?"":"muted"}">${q.correct.includes(k)?"✓":"✗"} ${"ABCDEFGH"[k]}. ${esc(o)}</div>`).join("")}${q.expl?`<div class="expl" style="margin-top:6px">${esc(q.expl)}</div>`:""}${(q.errs||0)>0?`<div class="label" style="margin-top:4px;color:var(--late)">Ratée ${q.errs} fois</div>`:""}<div style="margin-top:6px">${qDetailBlock(d,q)}</div><div style="margin-top:6px">${reportLink(d,"QCM",q.q)}</div></div></details>`).join("")}</div>`;
 }
 function tabEdit(d){
   const e=S.editing&&S.editing.id===d.id?S.editing:(S.editing=clone(d));

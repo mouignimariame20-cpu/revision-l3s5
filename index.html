@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261029195015";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261029195300";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1056,7 +1056,7 @@ function tabCards(d){
     ${d.cards.map(c=>`<details class="item" id="card-${c.id}"><summary>${esc(c.q)}</summary><div>${c.img&&safeUrl(c.img)?`<img class="cimg zoomable" data-act="zoom" data-src="${esc(c.img)}" src="${esc(c.img)}" alt="Schéma du cours">`:""}${esc(c.a).replace(/\n/g,"<br>")}${c.src?`<div class="label" style="margin-top:6px">Section : ${esc(c.src)}</div>`:""}${(c.lapses||0)>0?`<div class="label" style="margin-top:4px;color:var(--late)">Ratée ${c.lapses} fois</div>`:""}${mnemoBlock(d,c)}</div></details>`).join("")}</div>`;
 }
 function reportLink(d,kind,txt){const m=`Bonjour, je signale une erreur dans Révisions L3.\nMatière : ${d.matiere||""}\nChapitre : ${d.name||""}\n${kind} : ${String(txt||"").slice(0,300)}\nL'erreur : `;
-  return `<a class="btn ghost small" style="align-self:center;text-decoration:none" href="https://wa.me/221781718876?text=${encodeURIComponent(m)}" target="_blank" rel="noopener">⚠️ Signaler une erreur</a>`}
+  return `<a class="btn ghost small" style="align-self:center;text-decoration:none" href="mailto:mouignimariame0@gmail.com?subject=${encodeURIComponent("Erreur signalée – "+(d.name||"Révisions L3"))}&body=${encodeURIComponent(m)}">⚠️ Signaler une erreur</a>`}
 function tabQcm(d){
   const s=S.session;
   if(s&&s.type==="qcm"&&s.deckId===d.id){

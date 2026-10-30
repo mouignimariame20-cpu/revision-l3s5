@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261029211532";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261030013042";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -422,6 +422,8 @@ table.grille th{text-align:left;width:34%;white-space:normal}table.grille td{wid
 .sy-rule{border:1.5px solid #e8c547;background:#fffbea;border-radius:12px;padding:10px 12px;margin-bottom:8px}.sy-rt{font-weight:900;margin-bottom:4px}.sy-rule p{margin:0}
 .sy-note{font-size:.75rem;color:#666;margin:6px 0 0}
 @media print{body.psynth *{visibility:hidden}body.psynth #synth,body.psynth #synth *{visibility:visible}body.psynth #synth{position:absolute;left:0;top:0;width:100%;border:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}body.psynth .sy-grp,body.psynth .sy-card,body.psynth .sy-tab tr{break-inside:avoid}}
+
+.ret-mn{padding:8px 0;border-bottom:1px dashed #e8c547}.ret-mn:last-of-type{border:0}.ret-key{font-size:1.15em;color:#7a1f3d;margin:4px 0;font-weight:700}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -964,6 +966,7 @@ function viewDeck(){
   else if(S.tab==="lesson")body=tabLessonTop(d);
   else if(S.tab==="simple")body=tabSimple(d);
   else if(S.tab==="obj")body=tabObjectifs(d);
+  else if(S.tab==="ret")body=tabRetenir(d);
   else if(S.tab==="flyer")body=tabFlyer(d);
   else if(S.tab==="train")body=tabTrain(d);
   else if(S.tab==="recite")body=tabRecite(d);
@@ -1038,7 +1041,6 @@ function tabCards(d){
         <div class="face back"><div class="label">Réponse</div><div>${esc(c.a).replace(/\n/g,"<br>")}</div>${c.src?`<div class="label">Section : ${esc(c.src)}</div>`:""}${mnemoBlock(d,c)}</div>
       </div></div>
       ${s.flipped?`<div class="answer-row"><button class="btn danger" data-act="grade" data-g="0">À revoir</button><button class="btn" data-act="grade" data-g="1">Je savais</button></div>`:`<button class="btn soft" data-act="flip">Voir la réponse</button>`}
-      ${reportLink(d,"Flashcard",c.q)}
     </div>`;
   }
   const due=dueCards(d).length, n=(d.cards||[]).length;
@@ -1055,8 +1057,6 @@ function tabCards(d){
   <div class="section" style="margin-top:18px"><h2>Toutes les cartes · ${n}</h2><p class="help">Touche une question pour voir la réponse.</p>
     ${d.cards.map(c=>`<details class="item" id="card-${c.id}"><summary>${esc(c.q)}</summary><div>${c.img&&safeUrl(c.img)?`<img class="cimg zoomable" data-act="zoom" data-src="${esc(c.img)}" src="${esc(c.img)}" alt="Schéma du cours">`:""}${esc(c.a).replace(/\n/g,"<br>")}${c.src?`<div class="label" style="margin-top:6px">Section : ${esc(c.src)}</div>`:""}${(c.lapses||0)>0?`<div class="label" style="margin-top:4px;color:var(--late)">Ratée ${c.lapses} fois</div>`:""}${mnemoBlock(d,c)}</div></details>`).join("")}</div>`;
 }
-function reportLink(d,kind,txt){const m=`Bonjour, je signale une erreur dans Révisions L3.\nMatière : ${d.matiere||""}\nChapitre : ${d.name||""}\n${kind} : ${String(txt||"").slice(0,300)}\nL'erreur : `;
-  return `<a class="btn ghost small" style="align-self:center;text-decoration:none" href="mailto:mouignimariame0@gmail.com?subject=${encodeURIComponent("Erreur signalée – "+(d.name||"Révisions L3"))}&body=${encodeURIComponent(m)}">⚠️ Signaler une erreur</a>`}
 function tabQcm(d){
   const s=S.session;
   if(s&&s.type==="qcm"&&s.deckId===d.id){
@@ -1073,7 +1073,7 @@ function tabQcm(d){
     return `<div class="stack"><div class="row" style="justify-content:space-between"><span class="label">Question ${s.i+1} / ${s.order.length}</span><button class="btn ghost small" data-act="endsession">Arrêter</button></div>
       <div class="progress"><i style="width:${Math.round(s.i/s.order.length*100)}%"></i></div>
       ${isProfQ(q)?`<span class="pill prof">📝 QCM du prof</span>`:""}<h3 style="font-size:1.15rem">${esc(qTxt(q))}</h3><div class="stack" style="gap:8px">${opts}</div>
-      ${s.checked?`<div class="expl"><strong>${s.lastOk?"Juste":"Réponse attendue : "+q.correct.map(k=>L[k]).join(", ")}</strong>${q.expl?`<div>${esc(q.expl)}</div>`:""}</div>${qDetailBlock(d,q)}${reportLink(d,"QCM",qTxt(q))}<button class="btn" data-act="nextq">${s.i+1<s.order.length?"Question suivante":"Voir le résultat"}</button>`:`<button class="btn" data-act="checkq" ${s.sel.length?"":"disabled"}>Valider</button>`}
+      ${s.checked?`<div class="expl"><strong>${s.lastOk?"Juste":"Réponse attendue : "+q.correct.map(k=>L[k]).join(", ")}</strong>${q.expl?`<div>${esc(q.expl)}</div>`:""}</div>${qDetailBlock(d,q)}<button class="btn" data-act="nextq">${s.i+1<s.order.length?"Question suivante":"Voir le résultat"}</button>`:`<button class="btn" data-act="checkq" ${s.sel.length?"":"disabled"}>Valider</button>`}
     </div>`;
   }
   const n=(d.qcm||[]).length;
@@ -1085,7 +1085,7 @@ function tabQcm(d){
     ${d.lastScore!=null?`<p>Dernier score : <strong>${d.lastScore}%</strong></p>`:""}
     <button class="btn" data-act="startqcm">Commencer le QCM</button></div>${qcmParts(d)}
   <div class="section" style="margin-top:18px"><h2>Toutes les questions</h2><p class="help">Ouvre une question pour voir la correction.</p>
-    ${d.qcm.map((q,i)=>`<details class="item" id="q-${q.id}"><summary>${i+1}. ${esc(q.q)}</summary><div>${q.options.map((o,k)=>`<div class="${q.correct.includes(k)?"":"muted"}">${q.correct.includes(k)?"✓":"✗"} ${"ABCDEFGH"[k]}. ${esc(o)}</div>`).join("")}${q.expl?`<div class="expl" style="margin-top:6px">${esc(q.expl)}</div>`:""}${(q.errs||0)>0?`<div class="label" style="margin-top:4px;color:var(--late)">Ratée ${q.errs} fois</div>`:""}<div style="margin-top:6px">${qDetailBlock(d,q)}</div><div style="margin-top:6px">${reportLink(d,"QCM",q.q)}</div></div></details>`).join("")}</div>`;
+    ${d.qcm.map((q,i)=>`<details class="item" id="q-${q.id}"><summary>${i+1}. ${esc(q.q)}</summary><div>${q.options.map((o,k)=>`<div class="${q.correct.includes(k)?"":"muted"}">${q.correct.includes(k)?"✓":"✗"} ${"ABCDEFGH"[k]}. ${esc(o)}</div>`).join("")}${q.expl?`<div class="expl" style="margin-top:6px">${esc(q.expl)}</div>`:""}${(q.errs||0)>0?`<div class="label" style="margin-top:4px;color:var(--late)">Ratée ${q.errs} fois</div>`:""}<div style="margin-top:6px">${qDetailBlock(d,q)}</div></div></details>`).join("")}</div>`;
 }
 function tabEdit(d){
   const e=S.editing&&S.editing.id===d.id?S.editing:(S.editing=clone(d));
@@ -2962,6 +2962,22 @@ function synthView(d){const Y=d.synth;let n=0;
 function tabFicheTop(d){if(!d.synth)return tabFiche(d);const m=(X.syMode??={})[d.id]||"memo";
   return `<div class="seg tu-seg" style="margin-bottom:12px"><button aria-selected="${m==="memo"}" data-act="symode" data-v="memo">🗂️ Fiche mémo</button><button aria-selected="${m==="full"}" data-act="symode" data-v="full">📄 Fiche détaillée</button></div>`+(m==="memo"?synthView(d):tabFiche(d))}
 
+/* ---------- À retenir : les points clés de chaque partie du cours + mnémotechniques (d.mnemos) ---------- */
+function retParts(d){
+  const T=(d.tutor&&d.tutor.notions)||[];
+  if(T.some(n=>(n.retenir||[]).length))return {from:"Comprendre pas à pas",parts:T.filter(n=>(n.retenir||[]).length).map(n=>({g:n.g||"",t:n.titre,items:n.retenir}))};
+  const P=(d.simple&&d.simple.sections)||[];
+  if(P.some(s=>(s.retenir||[]).length))return {from:"Cours simplifié",parts:P.filter(s=>(s.retenir||[]).length).map(s=>({g:s.g||"",t:s.titre,items:s.retenir}))};
+  const m=new Map();for(const c of d.cards||[]){const k=String(c.src||"Autres").replace(/\s*·\s*diapo.*$/i,"").trim()||"Autres";if(!m.has(k))m.set(k,[]);m.get(k).push(`**${c.q}** : ${c.a}`)}
+  return {from:"tes flashcards",parts:[...m].map(([t,items])=>({g:"",t,items}))}}
+function tabRetenir(d){const R=retParts(d),M=d.mnemos||[];let lastG="";
+  const mn=M.length?`<div class="panel stack" style="margin-bottom:12px;border:2px solid #e8c547;background:#fffaf0"><div class="label">🧠 Mnémotechniques</div>
+    ${M.map(x=>`<div class="ret-mn"><div style="font-weight:700">${esc(x.titre)}</div><div class="ret-key">${md(x.mnemo).replace(/^<p>|<\/p>$/g,"")}</div>${x.detail?`<div class="fiche" style="font-size:.93em">${md(x.detail)}</div>`:""}</div>`).join("")}
+    <p class="help" style="margin:0">Moyens mnémotechniques ajoutés pour t'aider (pas dans les diapos). Le contenu vient du cours.</p></div>`:"";
+  return mn+`<p class="help" style="margin:0 0 10px">Les « à retenir » de chaque partie, dans l'ordre du cours (tirés de ${esc(R.from)}).</p>`+
+  R.parts.map((p,i)=>{const g=p.g&&p.g!==lastG?`<h3 style="margin:14px 0 6px">${esc(p.g)}</h3>`:"";lastG=p.g||lastG;
+    return g+`<div class="panel stack" style="margin-bottom:8px"><div style="font-weight:700">${i+1}. ${esc(p.t)}</div><ul style="margin:0;padding-left:18px">${p.items.map(x=>`<li>${md(x).replace(/^<p>|<\/p>$/g,"")}</li>`).join("")}</ul></div>`}).join("")||`<div class="panel"><p class="help" style="margin:0">Rien à retenir pour l'instant.</p></div>`}
+
 /* ---------- Objectifs : chaque objectif du cours avec sa réponse type, à mémoriser ---------- */
 function ficheObjectifs(d){
   const out=[];let on=false;
@@ -3540,7 +3556,7 @@ const DECK_GROUPS=[["c","1 · Comprendre",[["lesson","Cours expliqué"],["simple
 function deckNav(){const t=S.tab==="train"&&X.trSec==="tab"&&X.trOnlyTab?"cmp":S.tab;const g=DECK_GROUPS.find(G=>G[2].some(x=>x[0]===t))||DECK_GROUPS[0];
   return `<div class="dnav">${DECK_GROUPS.map(G=>`<button class="dnav-g" data-act="dgroup" data-g="${G[0]}" aria-selected="${G===g}">${G[1]}</button>`).join("")}</div>
   <div class="chips dnav-s">${g[2].map(([k,l])=>`<button class="chip" data-act="dtab" data-t="${k}" aria-pressed="${t===k}">${l}</button>`).join("")}</div>`}
-const DECK_TABS=[["source","Cours source"],["fiche","Fiche synthétique"],["obj","Objectifs"],0,["lesson","Cours expliqué"],["simple","Cours simplifié"],["visuel","Visuel"],0,["cmp","📊 Tableaux"],["flyer","Flyer"],0,["cards","Flashcards"],["recite","Réciter"],["memo","Mémoriser"],0,["qcm","QCM"],["train","🩺 S'entraîner"],0,["explain","Comprendre"],["cov","Couverture"],["edit","Modifier"]];
+const DECK_TABS=[["source","Cours source"],["fiche","Fiche synthétique"],["ret","⭐ À retenir"],["obj","Objectifs"],0,["lesson","Cours expliqué"],["simple","Cours simplifié"],["visuel","Visuel"],0,["cmp","📊 Tableaux"],["flyer","Flyer"],0,["cards","Flashcards"],["recite","Réciter"],["memo","Mémoriser"],0,["qcm","QCM"],["train","🩺 S'entraîner"],0,["explain","Comprendre"],["cov","Couverture"],["edit","Modifier"]];
 function deckNav2(){const t=S.tab==="train"&&X.trSec==="tab"&&X.trOnlyTab?"cmp":S.tab;
   return `<div class="seg" role="tablist">${DECK_TABS.map(x=>x?`<button role="tab" data-act="dtab" data-t="${x[0]}" aria-selected="${t===x[0]}">${x[1]}</button>`:`<span class="seg-sep"></span>`).join("")}</div>`}
 renderTabbar();

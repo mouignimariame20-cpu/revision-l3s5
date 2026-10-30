@@ -15,7 +15,7 @@
 <script>if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))</script>
 <script src="data.js"></script>
 <script src="static-db.js"></script>
-<script>window.__BUILD="20261030015653";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
+<script>window.__BUILD="20261030020938";(function(){var busy=false;function chk(){if(busy||!navigator.onLine)return;busy=true;fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==window.__BUILD){var k="rev-upd-"+j.v;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,"1")}catch(e){}var p=[];if(window.caches)p.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(x){return caches.delete(x)}))}));if(navigator.serviceWorker)p.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.update()}))}));Promise.all(p).catch(function(){}).then(function(){location.reload()})}}).catch(function(){}).then(function(){busy=false})}addEventListener("load",chk);document.addEventListener("visibilitychange",function(){if(!document.hidden)chk()})})();</script>
 <title>Révisions L3</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -424,6 +424,7 @@ table.grille th{text-align:left;width:34%;white-space:normal}table.grille td{wid
 @media print{body.psynth *{visibility:hidden}body.psynth #synth,body.psynth #synth *{visibility:visible}body.psynth #synth{position:absolute;left:0;top:0;width:100%;border:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}body.psynth .sy-grp,body.psynth .sy-card,body.psynth .sy-tab tr{break-inside:avoid}}
 
 .ret-mn{padding:8px 0;border-bottom:1px dashed #e8c547}.ret-mn:last-of-type{border:0}.ret-key{font-size:1.15em;color:#7a1f3d;margin:4px 0;font-weight:700}
+.tu-opt.sel{border-color:#7a1f3d;background:#fde2e4;font-weight:600}
 
 /* ===== Thème « rose poudré coquette » + mosaïque façon Pinterest ===== */
 :root{
@@ -967,6 +968,7 @@ function viewDeck(){
   else if(S.tab==="simple")body=tabSimple(d);
   else if(S.tab==="obj")body=tabObjectifs(d);
   else if(S.tab==="ret")body=tabRetenir(d);
+  else if(S.tab==="un")body=tabAnnales(d);
   else if(S.tab==="flyer")body=tabFlyer(d);
   else if(S.tab==="train")body=tabTrain(d);
   else if(S.tab==="recite")body=tabRecite(d);
@@ -2978,6 +2980,25 @@ function tabRetenir(d){const R=retParts(d),M=d.mnemos||[];let lastG="";
   R.parts.map((p,i)=>{const g=p.g&&p.g!==lastG?`<h3 style="margin:14px 0 6px">${esc(p.g)}</h3>`:"";lastG=p.g||lastG;
     return g+`<div class="panel stack" style="margin-bottom:8px"><div style="font-weight:700">${i+1}. ${esc(p.t)}</div><ul style="margin:0;padding-left:18px">${p.items.map(x=>`<li>${md(x).replace(/^<p>|<\/p>$/g,"")}</li>`).join("")}</ul></div>`}).join("")||`<div class="panel"><p class="help" style="margin:0">Rien à retenir pour l'instant.</p></div>`}
 
+/* ---------- QCM de la fac : questions d'examens UFR classées par chapitre (d.annales, résultats d.unDone) ---------- */
+function tabAnnales(d){const A=d.annales||[];
+  if(!A.length)return `<div class="panel"><p class="help" style="margin:0">Pas encore de QCM d'examen de la fac classés dans ce chapitre.</p></div>`;
+  const R=d.unDone||{},S2=(X.unSel??={}),ok=A.filter(a=>R[a.id]&&R[a.id].ok).length,fait=A.filter(a=>R[a.id]).length;
+  return `<div class="panel stack" style="margin-bottom:10px"><div class="label">🎓 QCM de l'université</div><p style="margin:0"><strong>${A.length}</strong> question${A.length>1?"s":""} d'examen sur ce chapitre · ${fait?`<strong>${ok}/${fait}</strong> justes`:"pas encore fait"}</p>
+   <p class="help" style="margin:0">Corrigé <strong>proposé</strong> (pas le corrigé officiel), vérifié avec ton cours. ⚠️ = réponse discutable, à confirmer avec le prof.</p>
+   ${fait?`<button class="btn ghost small" data-act="unreset" style="align-self:flex-start">Tout recommencer</button>`:""}</div>`+
+  A.map((a,i)=>{const r=R[a.id],sel=S2[a.id]||[],done=!!r&&X.unShow?.[a.id]!==false;
+    const opts=a.options.map((o,j)=>{const on=done?(r.sel||[]).includes(j):sel.includes(j);let cls=on?"sel":"";if(done){if(a.correct.includes(j))cls="ok";else if(on)cls="ko"}
+      return `<button class="tu-opt ${cls}" data-act="unpick" data-id="${a.id}" data-j="${j}" ${done?"disabled":""}>${"ABCDE"[j]}. ${esc(o)}</button>`}).join("");
+    return `<div class="panel stack tu-check" style="margin-bottom:10px"><div class="label">Q${i+1} · ${esc(a.srcs.join(" · "))}${a.doute?" · ⚠️":""}</div>
+     <div style="font-weight:600">${md(a.q)}</div><div class="tu-opts">${opts}</div>
+     ${done?`<div class="tu-fb ${r.ok?"ok":"ko"}"><strong>${r.ok?"✅ Juste.":"❌ Réponse : "+a.correct.map(j=>"ABCDE"[j]).join(", ")}</strong><div>${md(a.expl||"")}</div></div><button class="btn ghost small" data-act="unredo" data-id="${a.id}" style="align-self:flex-start">Refaire</button>`
+       :`<button class="btn small" data-act="unval" data-id="${a.id}" style="align-self:flex-start" ${sel.length?"":"disabled"}>Valider</button>`}</div>`}).join("")}
+function unPick(id,j){const s=((X.unSel??={})[id]??=[]);const k=s.indexOf(j);k<0?s.push(j):s.splice(k,1);render()}
+function unVal(d,id){const a=(d.annales||[]).find(x=>x.id===id);if(!a)return;const sel=((X.unSel||{})[id]||[]).slice().sort();
+  const ok=sel.length===a.correct.length&&a.correct.slice().sort().every((v,i)=>v===sel[i]);
+  (d.unDone??={})[id]={ok,sel,at:today()};(X.unShow??={})[id]=true;markDirty(d.id);render()}
+
 /* ---------- Objectifs : chaque objectif du cours avec sa réponse type, à mémoriser ---------- */
 function ficheObjectifs(d){
   const out=[];let on=false;
@@ -3361,6 +3382,10 @@ document.addEventListener("click",async e=>{
     case "lsall":if(d){(X.lesAll??={})[d.id]=!X.lesAll[d.id];render()}break;
     case "rcstep":if(d){const n=recParts(d).length,c=+(X.rcSec?.[d.id]||0),v=Math.max(0,Math.min(n-1,c+ +b.dataset.v));(X.rcSec??={})[d.id]=String(v);(X.rcRes??={})[d.id]=null;render();window.scrollTo(0,0)}break;
     case "dgroup":{const G=DECK_GROUPS.find(x=>x[0]===b.dataset.g);if(G){const k=G[2][0][0];if(k==="cmp"){X.trSec="tab";X.trOnlyTab=true;S.tab="train"}else{if(k==="train"){X.trSec="";X.trOnlyTab=false}S.tab=k}render()}}break;
+    case "unpick":unPick(b.dataset.id,+b.dataset.j);break;
+    case "unval":{const d=getDeck(S.deckId);if(d)unVal(d,b.dataset.id)}break;
+    case "unredo":{const d=getDeck(S.deckId);if(d&&d.unDone){delete d.unDone[b.dataset.id];(X.unSel??={})[b.dataset.id]=[];markDirty(d.id);render()}}break;
+    case "unreset":{const d=getDeck(S.deckId);if(d){d.unDone={};X.unSel={};markDirty(d.id);render()}}break;
     case "dtab":{const k=b.dataset.t;if(k==="cmp"){X.trSec="tab";X.trHideT=false;X.trOnlyTab=true;S.tab="train"}else{if(k==="train"){X.trOnlyTab=false;if(X.trSec==="tab")X.trSec=""}S.tab=k}render()}break;
     case "casview":X.casMat=b.dataset.m||"";X.casOpen=null;S.view="cas";render();window.scrollTo(0,0);break;
     case "casmat":X.casMat=b.dataset.m||"";render();break;
@@ -3552,7 +3577,7 @@ document.addEventListener("input",e=>{if(e.target.id==="ch-note"&&X.chrono){X.ch
 document.addEventListener("input",e=>{const t=e.target;if(t.id==="rc-text"&&t.dataset.rcd){(X.rcDraft??={})[t.dataset.rcd]=t.value}});
 document.addEventListener("change",e=>{const t=e.target;if(t.id==="tu-sec"&&t.dataset.tusec){(X.tuI??={})[t.dataset.tusec]=+t.value;render();window.scrollTo(0,0)}if(t.id==="sp-sec"&&t.dataset.spsec){(X.spP??={})[t.dataset.spsec]=+t.value;render();window.scrollTo(0,0)}if(t.id==="ls-sec"&&t.dataset.lssec){(X.lesP??={})[t.dataset.lssec]=+t.value;render();window.scrollTo(0,0)}if(t.id==="rc-sec"&&t.dataset.rcsec){(X.rcSec??={})[t.dataset.rcsec]=t.value;(X.rcRes??={})[t.dataset.rcsec]=null;render()}});
 
-const DECK_GROUPS=[["c","1 · Comprendre",[["lesson","Cours expliqué"],["simple","Cours simplifié"],["visuel","Schémas"]]],["a","2 · Apprendre",[["fiche","Fiche"],["obj","Objectifs"],["cmp","Tableaux"],["flyer","Flyer"]]],["m","3 · Mémoriser",[["cards","Flashcards"],["recite","Réciter"],["memo","Astuces"]]],["e","4 · S'entraîner",[["qcm","QCM"],["train","Cas, grilles, signes"]]],["p","Plus",[["source","Cours source"],["explain","Notions (ancien)"],["cov","Couverture"],["edit","Modifier"]]]];
+const DECK_GROUPS=[["c","1 · Comprendre",[["lesson","Cours expliqué"],["simple","Cours simplifié"],["visuel","Schémas"]]],["a","2 · Apprendre",[["fiche","Fiche"],["obj","Objectifs"],["cmp","Tableaux"],["flyer","Flyer"]]],["m","3 · Mémoriser",[["cards","Flashcards"],["recite","Réciter"],["memo","Astuces"]]],["e","4 · S'entraîner",[["qcm","QCM"],["un","🎓 QCM fac"],["train","Cas, grilles, signes"]]],["p","Plus",[["source","Cours source"],["explain","Notions (ancien)"],["cov","Couverture"],["edit","Modifier"]]]];
 function deckNav(){const t=S.tab==="train"&&X.trSec==="tab"&&X.trOnlyTab?"cmp":S.tab;const g=DECK_GROUPS.find(G=>G[2].some(x=>x[0]===t))||DECK_GROUPS[0];
   return `<div class="dnav">${DECK_GROUPS.map(G=>`<button class="dnav-g" data-act="dgroup" data-g="${G[0]}" aria-selected="${G===g}">${G[1]}</button>`).join("")}</div>
   <div class="chips dnav-s">${g[2].map(([k,l])=>`<button class="chip" data-act="dtab" data-t="${k}" aria-pressed="${t===k}">${l}</button>`).join("")}</div>`}

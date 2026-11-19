@@ -497,6 +497,32 @@ input[type=text],input[type=date],input[type=time],textarea,select{border-radius
 .mgrid.pins{display:block}
 body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:6;pointer-events:none}
 
+.phy{display:flex;flex-direction:column}
+.phy-leg{margin:0 0 8px}
+.phy-tag{display:inline-block;font-size:.68rem;padding:0 6px;margin-left:5px;border-radius:6px;background:#fbe7b8;color:#7a5200;vertical-align:1px;white-space:nowrap}
+:root[data-theme="dark"] .phy-tag{background:#4a3a12;color:#f5d98a}
+.phy-box{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 11px;line-height:1.45}
+.phy-box ul{margin:2px 0 0 16px;padding:0}.phy-box li{margin:2px 0}
+.phy-base{background:var(--bg)}
+.phy-arr{font-size:.86rem;color:var(--muted);margin:3px 0 3px 16px;padding:3px 0 3px 14px;border-left:2px solid var(--muted)}
+.phy-arr:before{content:"↓ ";font-weight:700}
+.phy-arr0{min-height:12px;padding:0}
+.phy-central{background:var(--late-soft);color:var(--late);font-weight:700;border-radius:12px;padding:9px 12px}
+.phy-br{margin-top:16px;padding-left:10px;border-left:4px solid var(--scrub)}
+.phy-bh{font-weight:700;padding:6px 10px;border-radius:10px;margin-bottom:6px;background:var(--scrub-soft);color:var(--scrub)}
+.phy-b{border-left-color:#5b7fd6}.phy-b .phy-bh{background:#e3eafb;color:#2c4a99}
+.phy-c{border-left-color:#9a8bb8}.phy-c .phy-bh{background:#ece7f5;color:#56477a}
+.phy-d{border-left-color:#c99a1c}.phy-d .phy-bh{background:#f7ecd0;color:#7a5a08}
+.phy-e{border-left-color:var(--late)}.phy-e .phy-bh{background:var(--late-soft);color:var(--late)}
+:root[data-theme="dark"] .phy-b .phy-bh{background:#1e2840;color:#a9bff2}
+:root[data-theme="dark"] .phy-c .phy-bh{background:#2a2438;color:#cdbfe8}
+:root[data-theme="dark"] .phy-d .phy-bh{background:#3a2f12;color:#f0d68a}
+.phy-sub{font-size:.8rem;color:var(--muted);margin:10px 0 4px;font-weight:700}
+.phy-var{margin-top:6px;border-style:dashed}
+.phy-causes{font-size:.9rem}
+.phy-ax{display:flex;gap:8px;align-items:flex-start}
+.phy-n{flex:0 0 26px;height:26px;border-radius:50%;background:var(--scrub-soft);color:var(--scrub);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:.8rem;margin-top:6px}
+.phy-panne{margin-top:6px;border-radius:8px;padding:5px 8px;background:var(--late-soft);color:var(--late);font-size:.88rem}
 </style>
 <script>(function(){var r=document.documentElement;function m(){try{return localStorage.getItem("revision-theme")||"light"}catch(e){return "light"}}function f(){var t=m();if(t==="auto"){if(r.hasAttribute("data-theme"))r.removeAttribute("data-theme")}else if(r.getAttribute("data-theme")!==t)r.setAttribute("data-theme",t)}window.__applyTheme=f;f();try{new MutationObserver(f).observe(r,{attributes:true,attributeFilter:["data-theme"]})}catch(e){}})()</script>
 
@@ -964,6 +990,7 @@ function viewDeck(){
   else if(S.tab==="cov")body=tabCov(d);
   else if(S.tab==="explain")body=tabExplain(d);
   else if(S.tab==="visuel")body=tabVisuel(d);
+  else if(S.tab==="physio")body=tabPhysio(d);
   else if(S.tab==="lesson")body=tabLessonTop(d);
   else if(S.tab==="simple")body=tabSimple(d);
   else if(S.tab==="obj")body=tabObjectifs(d);
@@ -1675,6 +1702,71 @@ Réponds uniquement avec un objet JSON {"intro":"…","sections":[…],"compleme
 ${courseText(d)}`,{modelTier:"default"});
     if(!o||!Array.isArray(o.sections))throw {code:"invalid_json"};
     const live=getDeck(d.id);live.explain={at:today(),intro:String(o.intro||""),sections:o.sections.slice(0,40),complements:(o.complements||[]).map(String).slice(0,6)};markDirty(live.id);
+  }catch(e){toast(aiErr(e))}
+  X.ai[k]=false;render();
+}
+/* ---------- Schéma physiopathologique (mécanisme central → étapes causales → embranchements → conséquences) ---------- */
+const PHY_SRC=s=>s==="physio"?`<span class="phy-tag" title="Explication physiologique classique, absente du cours">physio</span>`:"";
+function phyChain(steps){
+  return (steps||[]).map((s,i)=>`${i&&(s.fleche||"").trim()?`<div class="phy-arr">${esc(s.fleche)}${PHY_SRC(s.fsrc)}</div>`:i?`<div class="phy-arr phy-arr0"></div>`:""}<div class="phy-box">${esc(s.texte)}${PHY_SRC(s.src)}</div>`).join("");
+}
+function phyView(p){
+  if(!p)return "";
+  if(p.applicable===false)return `<div class="panel"><p class="help" style="margin:0">${esc(p.raison||"Ce chapitre ne décrit pas de mécanisme physiopathologique : pas de schéma causal à construire.")}</p></div>`;
+  const tone=["a","b","c","d","e"];
+  return `<div class="phy">
+  <p class="help phy-leg">Sans étiquette = écrit dans ton cours · ${PHY_SRC("physio")} = explication classique absente de tes diapos (à vérifier)</p>
+  ${p.rappel&&!(p.axes||[]).length?`<div class="phy-box phy-base"><strong>${esc(p.rappel.titre||"Rappel : situation normale")}</strong><br>${esc(p.rappel.texte||"")}</div>${(p.rappel.fleche||"").trim()?`<div class="phy-arr">${esc(p.rappel.fleche)}${PHY_SRC(p.rappel.fsrc)}</div>`:""}`:""}
+  ${(p.axes||[]).length?`<div class="phy-sub" style="margin-top:0">Les axes : par où passe le processus, dans l'ordre</div>${p.axes.map((a,i)=>`${i&&(a.fleche||"").trim()?`<div class="phy-arr">${esc(a.fleche)}${PHY_SRC(a.fsrc)}</div>`:i?`<div class="phy-arr phy-arr0"></div>`:""}<div class="phy-ax"><span class="phy-n">${i+1}</span><div class="phy-box" style="flex:1"><strong>${esc(a.nom||"")}</strong>${a.role?`<br>${esc(a.role)}`:""}${(a.pannes||[]).map(x=>`<div class="phy-panne">${esc(x.texte)}${PHY_SRC(x.src)}</div>`).join("")}</div></div>`).join("")}<div class="phy-sub">Mécanisme central</div>`:""}
+  <div class="phy-central">${esc(p.central||"")}</div>
+  ${p.note?`<p class="help" style="margin:4px 0 0">${esc(p.note)}</p>`:""}
+  ${(p.branches||[]).length?`<div class="phy-sub" style="margin-top:14px">Les mécanismes en détail</div>`:""}
+  ${(p.branches||[]).map((b,i)=>`<div class="phy-br phy-${tone[i%5]}">
+    <div class="phy-bh">${esc(b.titre||"")}</div>
+    ${phyChain(b.etapes)}
+    ${(b.paralleles||[]).length?`<div class="phy-sub">Conséquences parallèles</div><div class="phy-box"><ul>${b.paralleles.map(x=>`<li>${esc(x.texte)}${PHY_SRC(x.src)}</li>`).join("")}</ul></div>`:""}
+    ${(b.variantes||[]).length?b.variantes.map(v=>`<div class="phy-box phy-var"><strong>${esc(v.titre||"Variante")}</strong> : ${esc(v.texte||"")}${PHY_SRC(v.src)}</div>`).join(""):""}
+    ${(b.causes||[]).length?`<div class="phy-sub">Causes (cours)</div><div class="phy-box phy-causes">${b.causes.map(esc).join(" · ")}</div>`:""}
+  </div>`).join("")}
+  </div>`;
+}
+function tabPhysio(d){
+  const p=d.physio,busy=X.ai["phy-"+d.id];
+  return `<div class="panel stack" style="margin-bottom:14px"><div class="label">Schéma physiopathologique</div>
+    <p class="help">Les axes du cours (systèmes traversés, dans l'ordre), puis le mécanisme central et ses branches. Chaque flèche dit pourquoi ; « physio » = pourquoi absent du cours.</p>
+    ${aiOK()?`<div class="row"><button class="btn" data-act="physio" ${busy?"disabled":""}>${busy?"Construction du schéma…":p?"Refaire le schéma":"Construire le schéma"}</button>${busy?`<span class="spin" aria-hidden="true"></span>`:""}</div>`:(p?"":noAI)}</div>
+  ${p?phyView(p)+`<p class="help" style="margin-top:10px">${p.at?"Schéma fait le "+esc(fmtDate(p.at))+". ":""}En cas de doute, c'est le cours qui fait foi.</p>`:""}`;
+}
+async function doPhysio(d){
+  const k="phy-"+d.id;X.ai[k]=true;render();
+  try{
+    const o=await askJSON(`Tu es professeur de médecine. À partir du chapitre « ${d.name} » (${d.matiere||""}), construis un VÉRITABLE SCHÉMA PHYSIOPATHOLOGIQUE pour une étudiante de L3.
+OBJECTIF : remettre les axes du cours dans un ordre logique et causal, du mécanisme central vers les conséquences. Ne te contente pas d'énumérer des systèmes ou des signes : chaque signe, examen ou complication du cours doit être rattaché au mécanisme qui l'explique.
+ÉTAPE 1, LES AXES : commence par identifier les systèmes, organes ou compartiments que traverse le processus, DANS L'ORDRE où il les traverse, en partant de celui où tout commence (ex. pour l'ictère : sang/globules rouges → macrophages → plasma → foie → voies biliaires → intestin → rein). Pour chaque axe : son rôle normal d'après le cours, puis ce que le cours décrit quand cet axe est atteint ("pannes" : mécanisme → type d'atteinte, signes ou examens qui en découlent à ce niveau).
+ÉTAPE 2, LES MÉCANISMES : détaille ensuite chaque grand mécanisme du cours sous forme de branche causale.
+RÈGLES STRICTES :
+- Les cases ("texte", "paralleles", "variantes", "causes") contiennent UNIQUEMENT des notions présentes dans le cours. N'ajoute aucun signe, examen, cause ou chiffre absent du cours.
+- Chaque flèche ("fleche") dit en une phrase courte POURQUOI l'étape précédente entraîne la suivante. Si le cours donne ce pourquoi, "fsrc":"cours". Si le cours ne le donne pas mais que c'est un mécanisme physiologique classique et consensuel, "fsrc":"physio". Si tu n'es pas certain du lien, laisse "fleche" vide : n'invente AUCUN lien causal.
+- Même règle pour une conséquence parallèle : "src":"cours" si le lien est dans le cours, "physio" si seul le pourquoi classique a été ajouté.
+- Respecte la classification et le vocabulaire du cours (ses grands mécanismes deviennent les branches).
+- Si le chapitre ne décrit aucun mécanisme menant à des conséquences (anatomie, examen normal, technique, liste descriptive), réponds {"applicable":false,"raison":"une phrase"}.
+FORMAT JSON :
+{"applicable":true,
+ "axes":[{"nom":"système ou organe","role":"rôle normal d'après le cours","fleche":"pourquoi on passe de l'axe précédent à celui-ci (vide pour le premier)","fsrc":"cours|physio","pannes":[{"texte":"atteinte de cet axe → conséquence","src":"cours|physio"}]}],
+ "rappel":{"titre":"Rappel : …","texte":"situation normale décrite dans le cours, en une chaîne avec des →","fleche":"ce qui se passe quand ça se dérègle","fsrc":"cours|physio"} ou null,
+ "central":"le mécanisme central commun, formulé comme une chaîne courte (ex. ↑ X → Y)",
+ "note":"une phrase : comment le cours organise les mécanismes" ou "",
+ "branches":[{"titre":"Branche A · mécanisme","etapes":[{"fleche":"","fsrc":"","texte":"point de départ","src":"cours"},{"fleche":"pourquoi","fsrc":"cours|physio","texte":"étape suivante","src":"cours"}],
+   "paralleles":[{"texte":"conséquence → signe ou examen du cours","src":"cours|physio"}],
+   "variantes":[{"titre":"…","texte":"…","src":"cours"}],
+   "causes":["cause citée dans le cours"]}]}
+3 à 9 axes, 2 à 6 branches, 2 à 6 étapes par branche, textes courts (≤ 160 caractères). Réponds uniquement avec l'objet JSON.
+
+${courseText(d)}`,{modelTier:"default"});
+    if(!o||(o.applicable!==false&&!Array.isArray(o.branches)))throw {code:"invalid_json"};
+    const live=getDeck(d.id);
+    live.physio=o.applicable===false?{at:today(),applicable:false,raison:String(o.raison||"")}:{at:today(),applicable:true,axes:Array.isArray(o.axes)?o.axes.slice(0,10):[],rappel:o.rappel||null,central:String(o.central||""),note:String(o.note||""),branches:o.branches.slice(0,6)};
+    markDirty(live.id);
   }catch(e){toast(aiErr(e))}
   X.ai[k]=false;render();
 }
@@ -3473,6 +3565,7 @@ document.addEventListener("click",async e=>{
     case "jobclose":X.job=null;jobRender();break;
     /* Comprendre / mémoriser */
     case "explain":if(d)doExplain(d);break;
+    case "physio":if(d)doPhysio(d);break;
     case "askq":{const el=$("#askq");if(d&&el){const q=el.value;el.value="";doAsk(d,q)}break}
     case "mnemo":{const dk=getDeck(b.dataset.d),c=dk?.cards.find(x=>x.id===b.dataset.c);if(c)doMnemo(dk,c);break}
     case "mnemof":if(d)doMnemoFiche(d,!!b.dataset.re);break;
@@ -3577,11 +3670,11 @@ document.addEventListener("input",e=>{if(e.target.id==="ch-note"&&X.chrono){X.ch
 document.addEventListener("input",e=>{const t=e.target;if(t.id==="rc-text"&&t.dataset.rcd){(X.rcDraft??={})[t.dataset.rcd]=t.value}});
 document.addEventListener("change",e=>{const t=e.target;if(t.id==="tu-sec"&&t.dataset.tusec){(X.tuI??={})[t.dataset.tusec]=+t.value;render();window.scrollTo(0,0)}if(t.id==="sp-sec"&&t.dataset.spsec){(X.spP??={})[t.dataset.spsec]=+t.value;render();window.scrollTo(0,0)}if(t.id==="ls-sec"&&t.dataset.lssec){(X.lesP??={})[t.dataset.lssec]=+t.value;render();window.scrollTo(0,0)}if(t.id==="rc-sec"&&t.dataset.rcsec){(X.rcSec??={})[t.dataset.rcsec]=t.value;(X.rcRes??={})[t.dataset.rcsec]=null;render()}});
 
-const DECK_GROUPS=[["c","1 · Comprendre",[["lesson","Cours expliqué"],["simple","Cours simplifié"],["visuel","Schémas"]]],["a","2 · Apprendre",[["fiche","Fiche"],["obj","Objectifs"],["cmp","Tableaux"],["flyer","Flyer"]]],["m","3 · Mémoriser",[["cards","Flashcards"],["recite","Réciter"],["memo","Astuces"]]],["e","4 · S'entraîner",[["qcm","QCM"],["un","🎓 QCM fac"],["train","Cas, grilles, signes"]]],["p","Plus",[["source","Cours source"],["explain","Notions (ancien)"],["cov","Couverture"],["edit","Modifier"]]]];
+const DECK_GROUPS=[["c","1 · Comprendre",[["lesson","Cours expliqué"],["simple","Cours simplifié"],["visuel","Schémas"],["physio","Schéma physiopath"]]],["a","2 · Apprendre",[["fiche","Fiche"],["obj","Objectifs"],["cmp","Tableaux"],["flyer","Flyer"]]],["m","3 · Mémoriser",[["cards","Flashcards"],["recite","Réciter"],["memo","Astuces"]]],["e","4 · S'entraîner",[["qcm","QCM"],["un","🎓 QCM fac"],["train","Cas, grilles, signes"]]],["p","Plus",[["source","Cours source"],["explain","Notions (ancien)"],["cov","Couverture"],["edit","Modifier"]]]];
 function deckNav(){const t=S.tab==="train"&&X.trSec==="tab"&&X.trOnlyTab?"cmp":S.tab;const g=DECK_GROUPS.find(G=>G[2].some(x=>x[0]===t))||DECK_GROUPS[0];
   return `<div class="dnav">${DECK_GROUPS.map(G=>`<button class="dnav-g" data-act="dgroup" data-g="${G[0]}" aria-selected="${G===g}">${G[1]}</button>`).join("")}</div>
   <div class="chips dnav-s">${g[2].map(([k,l])=>`<button class="chip" data-act="dtab" data-t="${k}" aria-pressed="${t===k}">${l}</button>`).join("")}</div>`}
-const DECK_TABS=[["source","Cours source"],["fiche","Fiche synthétique"],["ret","⭐ À retenir"],["obj","Objectifs"],0,["lesson","Cours expliqué"],["simple","Cours simplifié"],["visuel","Visuel"],0,["cmp","📊 Tableaux"],["flyer","Flyer"],0,["cards","Flashcards"],["recite","Réciter"],["memo","Mémoriser"],0,["qcm","QCM"],["train","🩺 S'entraîner"],0,["explain","Comprendre"],["cov","Couverture"],["edit","Modifier"]];
+const DECK_TABS=[["source","Cours source"],["fiche","Fiche synthétique"],["ret","⭐ À retenir"],["obj","Objectifs"],0,["lesson","Cours expliqué"],["simple","Cours simplifié"],["visuel","Visuel"],["physio","Schéma physiopath"],0,["cmp","📊 Tableaux"],["flyer","Flyer"],0,["cards","Flashcards"],["recite","Réciter"],["memo","Mémoriser"],0,["qcm","QCM"],["train","🩺 S'entraîner"],0,["explain","Comprendre"],["cov","Couverture"],["edit","Modifier"]];
 function deckNav2(){const t=S.tab==="train"&&X.trSec==="tab"&&X.trOnlyTab?"cmp":S.tab;
   return `<div class="seg" role="tablist">${DECK_TABS.map(x=>x?`<button role="tab" data-act="dtab" data-t="${x[0]}" aria-selected="${t===x[0]}">${x[1]}</button>`:`<span class="seg-sep"></span>`).join("")}</div>`}
 renderTabbar();
